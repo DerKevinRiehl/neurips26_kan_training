@@ -70,30 +70,51 @@ for epoch in range(PARAM_N_EPOCHS):
 import sys
 sys.exit(0)
 
+# correct teacher-preserving initialization
+
 # # Converting
 model_mlp = copy.deepcopy(model)
 acc, f1, mcc = EvaluationTools.evaluate_classification(model_mlp, test_loader, device)
 print("MLP", ModelTools.get_nuber_parameters(model_mlp), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
 # MLP 235146 ACC=0.9615, F1=0.9611, MCC=0.9572
-model_kan = ModelTools.mlp_to_kan(model_mlp, device, grid_size=5, spline_order=1)
+model_kan = ModelTools.mlp_to_kan(model_mlp, device, n_basis=8, degree=3, grid_min=-3.0, grid_max=3.0)
 acc, f1, mcc = EvaluationTools.evaluate_classification(model_kan, test_loader, device)
 print("KAN", ModelTools.get_nuber_parameters(model_kan), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
-# KAN 1408906 ACC=0.7202, F1=0.7189, MCC=0.7087
+# KAN 2113162 ACC=0.9615, F1=0.9611, MCC=0.9572
 model_mlp2 = ModelTools.kan_to_mlp(model_kan, device)
 acc, f1, mcc = EvaluationTools.evaluate_classification(model_mlp2, test_loader, device)
 print("MLP2", ModelTools.get_nuber_parameters(model_mlp2), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
 # MLP2 235146 ACC=0.9615, F1=0.9611, MCC=0.9572
 
-model_kan2 = ModelTools.mlp_to_kan(model_mlp, device, grid_size=5, spline_order=2)
+model_kan2 = ModelTools.mlp_to_kan(model_mlp, device, n_basis=5, degree=2, grid_min=-3.0, grid_max=3.0)
 acc, f1, mcc = EvaluationTools.evaluate_classification(model_kan2, test_loader, device)
 print("KAN2", ModelTools.get_nuber_parameters(model_kan2), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
-# KAN2 1174154 ACC=0.7202, F1=0.7189, MCC=0.7087
+# KAN2 1408906 ACC=0.9615, F1=0.9611, MCC=0.9572
 model_mlp3 = ModelTools.kan_to_mlp(model_kan2, device)
 acc, f1, mcc = EvaluationTools.evaluate_classification(model_mlp3, test_loader, device)
 print("MLP3", ModelTools.get_nuber_parameters(model_mlp3), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
 # MLP3 235146 ACC=0.9615, F1=0.9611, MCC=0.9572
 
+model_kan3 = ModelTools.mlp_to_kan(model_mlp, device, n_basis=4, degree=2, grid_min=-3.0, grid_max=3.0)
+acc, f1, mcc = EvaluationTools.evaluate_classification(model_kan3, test_loader, device)
+print("KAN3", ModelTools.get_nuber_parameters(model_kan3), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
+# KAN3 1174154 ACC=0.9615, F1=0.9611, MCC=0.9572
+
+model_kan4 = ModelTools.mlp_to_kan(model_mlp, device, n_basis=3, degree=1, grid_min=-3.0, grid_max=3.0)
+acc, f1, mcc = EvaluationTools.evaluate_classification(model_kan4, test_loader, device)
+print("KAN4", ModelTools.get_nuber_parameters(model_kan4), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
+# KAN4 939402 ACC=0.9615, F1=0.9611, MCC=0.9572
+
+model_kan5 = ModelTools.mlp_to_kan(model_mlp, device, n_basis=2, degree=1, grid_min=-3.0, grid_max=3.0)
+acc, f1, mcc = EvaluationTools.evaluate_classification(model_kan5, test_loader, device)
+print("KAN5", ModelTools.get_nuber_parameters(model_kan5), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
+# KAN5 704650 ACC=0.9615, F1=0.9611, MCC=0.9572
+
+
+
+"""
 model_kan3 = ModelTools.compress_kan(model_kan, test_loader, device)
 acc, f1, mcc = EvaluationTools.evaluate_classification(model_kan3, test_loader, device)
 print("KAN3", ModelTools.get_nuber_parameters(model_kan3), f"ACC={acc:.4f}, F1={f1:.4f}, MCC={mcc:.4f}")
 # KAN3 939402 ACC=0.1358, F1=0.1055, MCC=0.0412
+"""

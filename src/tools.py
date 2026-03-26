@@ -7,6 +7,7 @@ import random
 import numpy as np
 from sklearn.metrics import f1_score, matthews_corrcoef
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import math
 
 
 
@@ -35,196 +36,106 @@ class ModelTools:
     def generate_network_mlp(device, layer_dims, activation="relu"):
         return MLP(layer_dims, activation).to(device)
 
-    @staticmethod
-    def generate_network_kan(device, layer_dims, grid_size, spline_order):
-        return KAN(layer_dims, grid_size, spline_order).to(device)
+    # @staticmethod
+    # def generate_network_kan(device, layer_dims, grid_size, spline_order):
+    #     return KAN(layer_dims, grid_size, spline_order).to(device)
 
     @staticmethod
-    def mlp_to_kan(mlp, device, grid_size=5, spline_order=1):
-        """
-        Convert an MLP (ReLU or RBF) to a KAN with same layer_dims and approximate parameter transfer.
-        Only works for MLPs built via layer_dims.
-        """
-        layers = mlp.net
-        dims = []
-        prev_out = None
-        # First recover layer_dims
-        for module in layers:
-            if isinstance(module, nn.Linear):
-                if prev_out is None:
-                    dims.append(module.in_features)
-                dims.append(module.out_features)
-                prev_out = module.out_features
-
-        assert len(dims) >= 2, "Cannot recover MLP structure"
-        # Start building KAN net
-        kan_layers = [nn.Flatten()]
-        # build an initial KAN using the recovered dims (previously used [0] which raised unpack error)
-        kan = KAN(layer_dims=dims, grid_size=grid_size, spline_order=spline_order).to(device)
-        kan.net = nn.Sequential(*kan_layers)
-        # Rebuild each layer with KAN, transferring weights
-        linear_layers = [m for m in layers if isinstance(m, nn.Linear)]
-        assert len(linear_layers) == len(dims) - 1, "Unexpected MLP structure"
-        for i in range(len(linear_layers) - 1):
-            lin = linear_layers[i]
-            in_dim, out_dim = dims[i], dims[i + 1]
-            # Transfer Linear → BasisKANLayer
-            kan_layer = transfer_linear_to_kan(
-                lin.to(device),
-                grid_size=grid_size,
-                spline_order=spline_order,
-            )
-            kan_layers.append(kan_layer)
-
-        # Last linear layer (to output_dim)
-        final_lin = linear_layers[-1]
-        final_kan = transfer_linear_to_kan(
-            final_lin.to(device),
-            grid_size=grid_size,
-            spline_order=spline_order,
-        )
-        kan_layers.append(final_kan)
-        kan.net = nn.Sequential(*kan_layers)
-        return kan
+    def generate_network_kan(
+        device,
+        layer_dims,
+        n_basis=8,
+        degree=3,
+        grid_min=-3.0,
+        grid_max=3.0,
+        use_base_linear=True,
+    ):
+        return ProperBSplineKAN(
+            layer_dims=layer_dims,
+            n_basis=n_basis,
+            degree=degree,
+            grid_min=grid_min,
+            grid_max=grid_max,
+            use_base_linear=use_base_linear,
+        ).to(device)
     
     @staticmethod
-    def kan_to_mlp(kan, device, activation="relu"):
-        """
-        Convert a KAN into an MLP with same layer_dims, using parameter‑transfer from KAN layers.
-        """
-        layers = kan.net
-        dims = []
+    def mlp_to_kan(
+        mlp,
+        device,
+        n_basis=8,
+        degree=3,
+        grid_min=-3.0,
+        grid_max=3.0,
+    ):
         kan_layers = []
-        # Extract layer_dims and BasisKANLayer instances
-        for module in layers:
-            if isinstance(module, BasisKANLayer):
+    
+        for module in mlp.net:
+            if isinstance(module, nn.Flatten):
+                kan_layers.append(nn.Flatten())
+    
+            elif isinstance(module, nn.Linear):
+                kan_layers.append(
+                    transfer_linear_to_proper_kan(
+                        module.to(device),
+                        n_basis=n_basis,
+                        degree=degree,
+                        grid_min=grid_min,
+                        grid_max=grid_max,
+                    )
+                )
+    
+            elif isinstance(module, nn.ReLU):
+                kan_layers.append(nn.ReLU())
+    
+            else:
+                raise ValueError(f"Unsupported module in MLP->KAN conversion: {type(module)}")
+    
+        # recover dims only for constructing shell model
+        dims = []
+        for module in mlp.net:
+            if isinstance(module, nn.Linear):
                 if not dims:
                     dims.append(module.in_features)
                 dims.append(module.out_features)
-                kan_layers.append(module)
-        assert len(dims) >= 2, "Cannot recover KAN structure"
-        # Build MLP net
-        mlp_layers = [nn.Flatten()]
-        # For each KAN layer, create a Linear layer with transferred weights
-        for i, kan_layer in enumerate(kan_layers):
-            if i == len(kan_layers) - 1:
-                # last layer, no activation after Linear
-                linear = transfer_kan_to_linear(kan_layer, device=device)
-                mlp_layers.append(linear)
+    
+        kan = ProperBSplineKAN(
+            layer_dims=dims,
+            n_basis=n_basis,
+            degree=degree,
+            grid_min=grid_min,
+            grid_max=grid_max,
+            use_base_linear=True,
+        ).to(device)
+    
+        kan.net = nn.Sequential(*kan_layers)
+        return kan
+
+    @staticmethod
+    def kan_to_mlp(kan, device, activation="relu"):
+        mlp_layers = []
+        dims = []
+    
+        for module in kan.net:
+            if isinstance(module, nn.Flatten):
+                mlp_layers.append(nn.Flatten())
+    
+            elif isinstance(module, ProperBSplineKANLayer):
+                if not dims:
+                    dims.append(module.in_features)
+                dims.append(module.out_features)
+                mlp_layers.append(transfer_proper_kan_to_linear(module, device=device))
+    
+            elif isinstance(module, nn.ReLU):
+                mlp_layers.append(nn.ReLU())
+    
             else:
-                # internal layer: Linear + activation
-                linear = transfer_kan_to_linear(kan_layer, device=device)
-                mlp_layers.append(linear)
-                if activation.lower() == "relu":
-                    mlp_layers.append(nn.ReLU())
-                elif activation.lower() == "rbf":
-                    # RBF is not directly reversible; here we just keep ReLU
-                    mlp_layers.append(nn.ReLU())
-                else:
-                    raise ValueError("activation must be 'relu' or 'rbf'")
+                raise ValueError(f"Unsupported module in KAN->MLP conversion: {type(module)}")
+    
         mlp = MLP(layer_dims=dims, activation="relu").to(device)
         mlp.net = nn.Sequential(*mlp_layers)
         return mlp
 
-    @staticmethod
-    @torch.no_grad()
-    def compress_kan(
-        kan,
-        loader,
-        device,
-        neuron_threshold=1e-3,    # kill neurons whose mean activation < this
-        grid_size_new=3,          # new grid_size after compression
-        spline_order=None,        # keep same or overwrite
-        verbose=True,
-    ):
-        """
-        Compress KAN in two steps:
-        (1) Prune low‑activity neurons.
-        (2) Reduce spline grid_size (basis resolution).
-        Returns a new, smaller KAN.
-        """
-        # Step 1: prune neurons (same as before, but return new KAN)
-        activations = {}
-        for name, module in kan.named_modules():
-            if isinstance(module, BasisKANLayer):
-                activations[name] = torch.zeros(
-                    module.out_features, device=device
-                )
-        def hook_factory(name):
-            def hook(module, inp, out):
-                # out: (batch, out_features)
-                mean_act = out.abs().mean(dim=0)
-                activations[name].add_(mean_act / len(loader))
-            return hook
-        handles = []
-        for name, module in kan.named_modules():
-            if isinstance(module, BasisKANLayer):
-                handles.append(module.register_forward_hook(hook_factory(name)))
-        kan.eval()
-        with torch.no_grad():
-            for x, y in loader:
-                x = x.to(device)
-                kan(x)
-        for h in handles:
-            h.remove()
-        # Build new layer_dims by pruning neurons
-        new_layer_dims = []
-        for i, (name, module) in enumerate(kan.named_modules()):
-            if isinstance(module, BasisKANLayer):
-                if not new_layer_dims:
-                    new_layer_dims.append(module.in_features)
-                keep_mask = activations[name] >= neuron_threshold
-                n_keep = keep_mask.sum().item()
-                if verbose:
-                    print(
-                        f"{name}: {module.out_features} → {n_keep} "
-                        f"({n_keep/module.out_features*100:.1f}%)"
-                    )
-                new_layer_dims.append(n_keep)
-        # Step 2: build intermediate KAN with pruned neurons
-        if spline_order is None:
-            sore_order = kan.net[1].spline_order
-        else:
-            sore_order = spline_order
-        # First KAN: only neuron‑pruned
-        pruned_kan = KAN(
-            layer_dims=new_layer_dims,
-            grid_size=kan.net[1].grid_size,
-            spline_order=sore_order,
-        ).to(device)
-        # Optional: transfer coeffs of kept neurons (skipped here for simplicity)
-        # Step 3: compress grid_size inside pruned_kan
-        final_kan = KAN(
-            layer_dims=new_layer_dims,
-            grid_size=grid_size_new,
-            spline_order=sore_order,
-        ).to(device)
-        # Transfer coeffs from pruned_kan to final_kan (coarser grid)
-        src_layers = [m for m in pruned_kan.net if isinstance(m, BasisKANLayer)]
-        dst_layers = [m for m in final_kan.net if isinstance(m, BasisKANLayer)]
-        for src, dst in zip(src_layers, dst_layers):
-            old_coeffs = src.coeffs
-            old_nbasis = old_coeffs.size(-1)
-            new_nbasis = dst.coeffs.size(-1)
-            with torch.no_grad():
-                if new_nbasis < old_nbasis:
-                    ratio = old_nbasis / new_nbasis
-                    for i in range(new_nbasis):
-                        s = int(round(i * ratio))
-                        e = int(round((i + 1) * ratio))
-                        e = min(e, old_nbasis)
-                        if s < e:
-                            dst.coeffs[:, :, i].copy_(
-                                old_coeffs[:, :, s:e].mean(dim=-1)
-                            )
-                        else:
-                            dst.coeffs[:, :, i].copy_(
-                                old_coeffs[:, :, s]
-                            )
-                else:
-                    # new_nbasis >= old_nbasis
-                    dst.coeffs[:, :, :old_nbasis].copy_(old_coeffs)
-        return final_kan
     
 
 class EvaluationTools:
@@ -390,155 +301,251 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.net(x)
     
-    
-def get_spline_basis(x, grid, k):
+
+def make_open_uniform_knots(grid_min, grid_max, n_basis, degree, device=None, dtype=None):
     """
-    Compute B‑spline basis of order k (degree = k-1) over grid.
-    x: (batch,)
-    grid: (n_knots,) in sorted order
-    k: spline_order ∈ {1, 2, 3}
-    Returns B: (batch, n_basis), where n_basis = n_knots - k
+    Create an open-uniform knot vector for B-splines.
+
+    Args:
+        grid_min, grid_max: domain endpoints
+        n_basis: number of basis functions
+        degree: spline degree (0=piecewise constant, 1=linear, 2=quadratic, 3=cubic)
+
+    Returns:
+        knots: shape (n_basis + degree + 1,)
     """
-    x = x.unsqueeze(-1)        # (batch, 1)
-    grid = grid.unsqueeze(0)   # (1, n_knots)
+    assert n_basis >= degree + 1, "Need n_basis >= degree + 1 for open-uniform B-splines."
 
-    # Use xp with shape (batch, 1); broadcasting handles comparisons with knot arrays
-    xp = x  # (batch, 1)
+    n_knots = n_basis + degree + 1
+    n_internal = n_knots - 2 * (degree + 1)
 
-    # For order 1: piecewise constant
-    if k == 1:
-        in_interval = (xp >= grid[:, :-1]) & (xp < grid[:, 1:])
-        B = torch.zeros(x.size(0), grid.size(1) - 1, device=x.device)
-        B += in_interval.float()
-        return B
+    if n_internal > 0:
+        internal = torch.linspace(
+            grid_min, grid_max, steps=n_internal + 2, device=device, dtype=dtype
+        )[1:-1]
+        knots = torch.cat([
+            torch.full((degree + 1,), grid_min, device=device, dtype=dtype),
+            internal,
+            torch.full((degree + 1,), grid_max, device=device, dtype=dtype),
+        ])
+    else:
+        knots = torch.cat([
+            torch.full((degree + 1,), grid_min, device=device, dtype=dtype),
+            torch.full((degree + 1,), grid_max, device=device, dtype=dtype),
+        ])
 
-    # For higher orders: Cox‑de Boor style (simplified)
-    # We'll build a matrix of B‑splines recursively
-    n_knots = grid.size(1)
-    n_basis = n_knots - k
-
-    B = torch.zeros(x.size(0), n_basis, device=x.device)
-
-    # Instead of full recursion, use a simple numerical recipe for k=2,3
-    for i in range(n_basis):
-        # Use cubic B‑spline-like blending (smooth bell‑shaped kernel)
-        center = grid[0, i + k//2]
-        width = (grid[0, i + k] - grid[0, i]) / 2 if i + k < n_knots else 1.0
-
-        if k == 2:
-            # Piecewise linear B‑spline
-            left = grid[0, i]
-            right = grid[0, i + 2]
-            in_support = (xp >= left) & (xp <= right)
-            # Linear blending
-            w = torch.clamp((xp - left) / (right - left), 0, 1)
-            w = torch.where(in_support, w, 0.0)
-            B[:, i] = w.squeeze(-1)
-        elif k == 3:
-            # Approximate cubic B‑spline (smoother, bell‑shaped)
-            # A simple smooth kernel instead of full Cox‑de Boor
-            diff = (xp - center) / (width + 1e-8)
-            weight = torch.exp(-0.5 * diff**2)  # Gaussian‑like shape
-            weight = torch.where(
-                (xp >= grid[0, i]) & (xp <= grid[0, i + 3]),
-                weight, 0.0
-            )
-            B[:, i] = weight.squeeze(-1)
-
-    # Normalize so that basis sums to ~1 locally
-    norm = B.sum(dim=1, keepdim=True)
-    norm = torch.where(norm > 1e-8, norm, torch.ones_like(norm))
-    B = B / norm
-
-    return B
+    return knots
 
 
-class BasisKANLayer(nn.Module):
-    def __init__(self, in_features, out_features, grid_size=5, spline_order=1, use_base_linear=True):
+def bspline_basis_1d(x, knots, degree):
+    """
+    Evaluate all B-spline basis functions of a given degree at points x
+    using the Cox-de Boor recursion.
+
+    Args:
+        x:     shape (batch,)
+        knots: shape (n_knots,)
+        degree: spline degree
+
+    Returns:
+        basis: shape (batch, n_basis)
+               where n_basis = len(knots) - degree - 1
+    """
+    x = x.unsqueeze(-1)  # (batch, 1)
+    device = x.device
+    dtype = x.dtype
+
+    n_knots = knots.numel()
+    n_basis = n_knots - degree - 1
+    assert n_basis > 0, "Invalid knot vector / degree."
+
+    # Degree-0 basis
+    # N_{i,0}(x) = 1 if t_i <= x < t_{i+1}, else 0
+    # Special-case the right boundary so x == knots[-1] belongs to the last basis.
+    B = ((x >= knots[:-1]) & (x < knots[1:])).to(dtype)  # (batch, n_knots-1)
+    B_last = (x.squeeze(-1) == knots[-1]).to(dtype)
+    if B_last.any():
+        B[B_last.bool(), -1] = 1.0
+
+    # Cox-de Boor recursion up to target degree
+    for p in range(1, degree + 1):
+        new_B = torch.zeros(x.size(0), n_knots - p - 1, device=device, dtype=dtype)
+
+        left_den = knots[p:n_knots - 1] - knots[:n_knots - p - 1]
+        right_den = knots[p + 1:n_knots] - knots[1:n_knots - p]
+
+        left_num = x - knots[:n_knots - p - 1].unsqueeze(0)
+        right_num = knots[p + 1:n_knots].unsqueeze(0) - x
+
+        left_term = torch.zeros_like(new_B)
+        right_term = torch.zeros_like(new_B)
+
+        left_mask = left_den > 0
+        right_mask = right_den > 0
+
+        if left_mask.any():
+            left_term[:, left_mask] = (
+                left_num[:, left_mask] / left_den[left_mask].unsqueeze(0)
+            ) * B[:, :n_knots - p - 1][:, left_mask]
+
+        if right_mask.any():
+            right_term[:, right_mask] = (
+                right_num[:, right_mask] / right_den[right_mask].unsqueeze(0)
+            ) * B[:, 1:n_knots - p][:, right_mask]
+
+        B = left_term + right_term
+
+    return B[:, :n_basis]
+
+# kaiming_uniform_ ?
+class ProperBSplineKANLayer(nn.Module):
+    def __init__(
+        self,
+        in_features,
+        out_features,
+        n_basis=8,
+        degree=3,
+        grid_min=-3.0,
+        grid_max=3.0,
+        use_base_linear=True,
+    ):
         super().__init__()
+
+        assert degree >= 0
+        assert n_basis >= degree + 1
+
         self.in_features = in_features
         self.out_features = out_features
-        self.grid_size = grid_size
-        self.spline_order = spline_order
+        self.n_basis = n_basis
+        self.degree = degree
+        self.grid_min = grid_min
+        self.grid_max = grid_max
         self.use_base_linear = use_base_linear
 
-        n_basis = grid_size + 1 - spline_order
-        assert n_basis > 0
-
+        # Spline residual coefficients: (out_features, in_features, n_basis)
         self.coeffs = nn.Parameter(torch.zeros(out_features, in_features, n_basis))
+
         if use_base_linear:
             self.base_weight = nn.Parameter(torch.empty(out_features, in_features))
             self.base_bias = nn.Parameter(torch.zeros(out_features))
-            nn.init.kaiming_uniform_(self.base_weight, a=np.sqrt(5))
+            nn.init.kaiming_uniform_(self.base_weight, a=math.sqrt(5))
+
+            fan_in = in_features
+            bound = 1 / math.sqrt(fan_in)
+            nn.init.uniform_(self.base_bias, -bound, bound)
         else:
             self.register_parameter("base_weight", None)
             self.register_parameter("base_bias", None)
 
-        self.register_buffer("grid", torch.linspace(-3, 3, grid_size + 1))
-        
+        knots = make_open_uniform_knots(
+            grid_min=grid_min,
+            grid_max=grid_max,
+            n_basis=n_basis,
+            degree=degree,
+            device=None,
+            dtype=torch.float32,
+        )
+        self.register_buffer("knots", knots)
+
     def forward(self, x):
+        """
+        x: shape (batch, in_features)
+        returns: shape (batch, out_features)
+        """
+        batch_size = x.size(0)
+        dtype = x.dtype
+        device = x.device
+
+        # Evaluate spline basis for each input dimension
+        # basis_all: (batch, in_features, n_basis)
         basis_list = []
         for i in range(self.in_features):
-            xp = x[:, i]
-            B = get_spline_basis(xp, self.grid, self.spline_order)
-            basis_list.append(B.unsqueeze(1))
-        basis = torch.cat(basis_list, dim=1)
-        spline_out = (basis.unsqueeze(1) * self.coeffs.unsqueeze(0)).sum(dim=(-1, -2))
-    
+            Bi = bspline_basis_1d(x[:, i], self.knots.to(device=device, dtype=dtype), self.degree)
+            basis_list.append(Bi.unsqueeze(1))
+        basis_all = torch.cat(basis_list, dim=1)
+
+        # Spline contribution:
+        # basis_all:          (batch, in, basis)
+        # coeffs.unsqueeze:   (1, out, in, basis)
+        # result:             (batch, out)
+        spline_out = (basis_all.unsqueeze(1) * self.coeffs.unsqueeze(0)).sum(dim=(-1, -2))
+
         if self.use_base_linear:
-            return x @ self.base_weight.t() + self.base_bias + spline_out
-        return spline_out
-    
-    
-class KAN(nn.Module):
-    def __init__(self, layer_dims, grid_size=5, spline_order=1):
+            linear_out = x @ self.base_weight.t() + self.base_bias
+            return linear_out + spline_out
+        else:
+            return spline_out
+
+# Proper Cox–de Boor Splines
+class ProperBSplineKAN(nn.Module):
+    def __init__(
+        self,
+        layer_dims,
+        n_basis=8,
+        degree=3,
+        grid_min=-3.0,
+        grid_max=3.0,
+        use_base_linear=True,
+    ):
         super().__init__()
+
         input_dim, *hidden_dims, output_dim = layer_dims
+        dims = [input_dim] + hidden_dims + [output_dim]
+
         layers = [nn.Flatten()]
-
-        dims = [input_dim] + hidden_dims
         for i in range(len(dims) - 1):
-            layers.append(BasisKANLayer(
-                dims[i], dims[i+1],
-                grid_size=grid_size,
-                spline_order=spline_order
-            ))
-
-        layers.append(BasisKANLayer(
-            dims[-1], output_dim,
-            grid_size=grid_size,
-            spline_order=spline_order
-        ))
+            layers.append(
+                ProperBSplineKANLayer(
+                    in_features=dims[i],
+                    out_features=dims[i + 1],
+                    n_basis=n_basis,
+                    degree=degree,
+                    grid_min=grid_min,
+                    grid_max=grid_max,
+                    use_base_linear=use_base_linear,
+                )
+            )
 
         self.net = nn.Sequential(*layers)
 
     def forward(self, x):
         return self.net(x)
-        
-def transfer_linear_to_kan(linear, grid_size=5, spline_order=1):
-    kan = BasisKANLayer(
-        linear.in_features,
-        linear.out_features,
-        grid_size=grid_size,
-        spline_order=spline_order,
+    
+    
+def transfer_linear_to_proper_kan(linear, n_basis=8, degree=3, grid_min=-3.0, grid_max=3.0):
+    kan = ProperBSplineKANLayer(
+        in_features=linear.in_features,
+        out_features=linear.out_features,
+        n_basis=n_basis,
+        degree=degree,
+        grid_min=grid_min,
+        grid_max=grid_max,
         use_base_linear=True,
     ).to(linear.weight.device)
 
     with torch.no_grad():
         kan.base_weight.copy_(linear.weight)
-        kan.base_bias.copy_(linear.bias if linear.bias is not None else torch.zeros_like(kan.base_bias))
-        kan.coeffs.zero_()   # start as exact linear layer + zero spline residual
+        if linear.bias is not None:
+            kan.base_bias.copy_(linear.bias)
+        else:
+            kan.base_bias.zero_()
+        kan.coeffs.zero_()
+
     return kan
 
-def transfer_kan_to_linear(kan_layer, device=None):
+
+def transfer_proper_kan_to_linear(kan_layer, device=None):
     linear = nn.Linear(kan_layer.in_features, kan_layer.out_features).to(kan_layer.coeffs.device)
+
     with torch.no_grad():
         if kan_layer.base_weight is not None:
             linear.weight.copy_(kan_layer.base_weight)
             linear.bias.copy_(kan_layer.base_bias)
         else:
+            # fallback approximation
             linear.weight.copy_(kan_layer.coeffs.mean(dim=-1))
             linear.bias.zero_()
+
     if device is not None:
         linear = linear.to(device)
     return linear
