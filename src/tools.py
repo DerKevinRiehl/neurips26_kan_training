@@ -454,39 +454,41 @@ def get_spline_basis(x, grid, k):
 
 
 class BasisKANLayer(nn.Module):
-    def __init__(self, in_features, out_features, grid_size=5, spline_order=1):
+    def __init__(self, in_features, out_features, grid_size=5, spline_order=1, use_base_linear=True):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.grid_size = grid_size
         self.spline_order = spline_order
+        self.use_base_linear = use_base_linear
 
-        # assert spline_order in 1, "Only linear B‑spline (order 1) implemented here."
-        assert spline_order in {1, 2, 3}, "spline_order must be 1, 2, or 3."
-        
-        # Number of basis functions: grid_size + 1 knots, minus k
         n_basis = grid_size + 1 - spline_order
-        assert n_basis > 0, "grid_size too small for spline_order"
+        assert n_basis > 0
 
-        self.coeffs = nn.Parameter(
-            torch.randn(out_features, in_features, n_basis) * 0.1
-        )
+        self.coeffs = nn.Parameter(torch.zeros(out_features, in_features, n_basis))
+        if use_base_linear:
+            self.base_weight = nn.Parameter(torch.empty(out_features, in_features))
+            self.base_bias = nn.Parameter(torch.zeros(out_features))
+            nn.init.kaiming_uniform_(self.base_weight, a=np.sqrt(5))
+        else:
+            self.register_parameter("base_weight", None)
+            self.register_parameter("base_bias", None)
 
-        self.register_buffer(
-            "grid", torch.linspace(0, 1, grid_size + 1)
-        )
+        self.register_buffer("grid", torch.linspace(-3, 3, grid_size + 1))
         
     def forward(self, x):
-        x = x.clamp(0, 1)
         basis_list = []
         for i in range(self.in_features):
-            xp = x[:, i]  # (batch,)
-            B = get_spline_basis(xp, self.grid, self.spline_order)  # (batch, n_basis)
-            basis_list.append(B.unsqueeze(1))  # (batch, 1, n_basis)
-        basis = torch.cat(basis_list, dim=1)  # (batch, in_features, n_basis)
-        coeffs = self.coeffs.unsqueeze(0)      # (1, out, in, basis)
-        out = (basis.unsqueeze(1) * coeffs).sum(dim=(-1, -2))  # (batch, out)
-        return out
+            xp = x[:, i]
+            B = get_spline_basis(xp, self.grid, self.spline_order)
+            basis_list.append(B.unsqueeze(1))
+        basis = torch.cat(basis_list, dim=1)
+        spline_out = (basis.unsqueeze(1) * self.coeffs.unsqueeze(0)).sum(dim=(-1, -2))
+    
+        if self.use_base_linear:
+            return x @ self.base_weight.t() + self.base_bias + spline_out
+        return spline_out
+    
     
 class KAN(nn.Module):
     def __init__(self, layer_dims, grid_size=5, spline_order=1):
@@ -512,59 +514,31 @@ class KAN(nn.Module):
 
     def forward(self, x):
         return self.net(x)
-    
-    
-
-def transfer_linear_to_kan(
-    linear: nn.Linear,
-    grid_size=5,
-    spline_order=1,
-    device=None,
-):
-    in_features = linear.in_features
-    out_features = linear.out_features
-
-    # Number of basis functions
-    n_basis = grid_size + 1 - spline_order
-    assert n_basis > 0, "grid_size too small for spline_order"
-
-    # Start with a KAN layer
+        
+def transfer_linear_to_kan(linear, grid_size=5, spline_order=1):
     kan = BasisKANLayer(
-        in_features=in_features,
-        out_features=out_features,
+        linear.in_features,
+        linear.out_features,
         grid_size=grid_size,
-        spline_order=spline_order
+        spline_order=spline_order,
+        use_base_linear=True,
     ).to(linear.weight.device)
 
-    # Use Linear weights as a “mean” transformation
-    # coeffs: (out, in, basis) ≈ (out, in, 1)
-    # Approximate: coeffs[out, :, mid_basis] ≈ weight[out, :]
-    mid_basis = n_basis // 2
     with torch.no_grad():
-        # Use mid_basis to hold the linear weight
-        kan.coeffs[:, :, mid_basis].copy_(linear.weight)
-        # Normalize the rest to small random values
-        kan.coeffs[:, :, :mid_basis] *= 0.01
-        kan.coeffs[:, :, mid_basis+1:] *= 0.01
-
+        kan.base_weight.copy_(linear.weight)
+        kan.base_bias.copy_(linear.bias if linear.bias is not None else torch.zeros_like(kan.base_bias))
+        kan.coeffs.zero_()   # start as exact linear layer + zero spline residual
     return kan
 
-
-def transfer_kan_to_linear(kan_layer: BasisKANLayer, device=None):
-    in_features = kan_layer.in_features
-    out_features = kan_layer.out_features
-    n_basis = kan_layer.coeffs.size(-1)
-    # Create a Linear layer
-    linear = nn.Linear(in_features, out_features).to(kan_layer.coeffs.device)
-    # Average coefficients over basis
-    # coeffs: (out, in, basis)
-    # Take mean over last dim → (out, in)
+def transfer_kan_to_linear(kan_layer, device=None):
+    linear = nn.Linear(kan_layer.in_features, kan_layer.out_features).to(kan_layer.coeffs.device)
     with torch.no_grad():
-        w_avg = kan_layer.coeffs.mean(dim=-1)  # approximate weight
-        # Optionally scale to match Linear initialization
-        linear.weight.copy_(w_avg)
-        linear.bias.fill_(0.0)
-
+        if kan_layer.base_weight is not None:
+            linear.weight.copy_(kan_layer.base_weight)
+            linear.bias.copy_(kan_layer.base_bias)
+        else:
+            linear.weight.copy_(kan_layer.coeffs.mean(dim=-1))
+            linear.bias.zero_()
     if device is not None:
         linear = linear.to(device)
     return linear
