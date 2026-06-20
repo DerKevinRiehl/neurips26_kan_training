@@ -1,0 +1,23 @@
+https://space.mit.edu/home/tegmark/aifeynman.html
+
+https://github.com/Jerry-Master/KAN-benchmarking
+
+
+________________________________________
+From: Riehl Kevin <kevin.riehl@ivt.baug.ethz.ch>
+Sent: Wednesday, 8 April 2026 00:24
+To: ElBaklish Shaimaa <shaimaa.elbaklish@ivt.baug.ethz.ch>; Riehl Kevin <kriehl@ethz.ch>
+Subject: [NEURIPS2026] KAN Paper
+ 
+Hi Shaimaa,
+Sorry for delay, here is the email with notes from our call.
+ 
+Shaimaa ElBaklish  to  Everyone 15:24
+https://arxiv.org/html/2505.18131v1
+https://ojs.aaai.org/index.php/AAAI/article/view/34210/36365
+https://arxiv.org/html/2501.09283v1
+https://arxiv.org/html/2409.10594.pdf
+ 
+You  to  Everyone 15:49
+(1) how to implement KANs efficiently, do an online search
+(2) create a minimum baseline, e.g. Feynman Dataset from Liu et al.
