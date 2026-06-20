@@ -36,10 +36,6 @@ class ModelTools:
     def generate_network_mlp(device, layer_dims, activation="relu"):
         return MLP(layer_dims, activation).to(device)
 
-    # @staticmethod
-    # def generate_network_kan(device, layer_dims, grid_size, spline_order):
-    #     return KAN(layer_dims, grid_size, spline_order).to(device)
-
     @staticmethod
     def generate_network_kan(
         device,
@@ -48,17 +44,21 @@ class ModelTools:
         degree=3,
         grid_min=-3.0,
         grid_max=3.0,
-        use_base_linear=True,
+        alpha_init=1.0,
+        trainable_alpha=False,
+        preserve_relu=True,
     ):
-        return ProperBSplineKAN(
+        return HomotopyBSplineKAN(
             layer_dims=layer_dims,
             n_basis=n_basis,
             degree=degree,
             grid_min=grid_min,
             grid_max=grid_max,
-            use_base_linear=use_base_linear,
+            alpha_init=alpha_init,
+            trainable_alpha=trainable_alpha,
+            preserve_relu=preserve_relu,
         ).to(device)
-    
+
     @staticmethod
     def mlp_to_kan(
         mlp,
@@ -67,47 +67,52 @@ class ModelTools:
         degree=3,
         grid_min=-3.0,
         grid_max=3.0,
+        alpha_init=1.0,
+        trainable_alpha=False,
     ):
         kan_layers = []
-    
+
         for module in mlp.net:
             if isinstance(module, nn.Flatten):
                 kan_layers.append(nn.Flatten())
-    
+
             elif isinstance(module, nn.Linear):
                 kan_layers.append(
-                    transfer_linear_to_proper_kan(
+                    transfer_linear_to_homotopy_kan(
                         module.to(device),
                         n_basis=n_basis,
                         degree=degree,
                         grid_min=grid_min,
                         grid_max=grid_max,
+                        alpha_init=alpha_init,
+                        trainable_alpha=trainable_alpha,
                     )
                 )
-    
+
             elif isinstance(module, nn.ReLU):
                 kan_layers.append(nn.ReLU())
-    
+
             else:
                 raise ValueError(f"Unsupported module in MLP->KAN conversion: {type(module)}")
-    
-        # recover dims only for constructing shell model
+
         dims = []
         for module in mlp.net:
             if isinstance(module, nn.Linear):
                 if not dims:
                     dims.append(module.in_features)
                 dims.append(module.out_features)
-    
-        kan = ProperBSplineKAN(
+
+        kan = HomotopyBSplineKAN(
             layer_dims=dims,
             n_basis=n_basis,
             degree=degree,
             grid_min=grid_min,
             grid_max=grid_max,
-            use_base_linear=True,
+            alpha_init=alpha_init,
+            trainable_alpha=trainable_alpha,
+            preserve_relu=True,
         ).to(device)
-    
+
         kan.net = nn.Sequential(*kan_layers)
         return kan
 
@@ -115,27 +120,37 @@ class ModelTools:
     def kan_to_mlp(kan, device, activation="relu"):
         mlp_layers = []
         dims = []
-    
+
         for module in kan.net:
             if isinstance(module, nn.Flatten):
                 mlp_layers.append(nn.Flatten())
-    
-            elif isinstance(module, ProperBSplineKANLayer):
+
+            elif isinstance(module, HomotopyBSplineKANLayer):
                 if not dims:
                     dims.append(module.in_features)
                 dims.append(module.out_features)
-                mlp_layers.append(transfer_proper_kan_to_linear(module, device=device))
-    
+
+                linear = nn.Linear(module.in_features, module.out_features).to(device)
+                with torch.no_grad():
+                    linear.weight.copy_(module.base_weight)
+                    linear.bias.copy_(module.base_bias)
+                mlp_layers.append(linear)
+
             elif isinstance(module, nn.ReLU):
                 mlp_layers.append(nn.ReLU())
-    
+
             else:
                 raise ValueError(f"Unsupported module in KAN->MLP conversion: {type(module)}")
-    
+
         mlp = MLP(layer_dims=dims, activation="relu").to(device)
         mlp.net = nn.Sequential(*mlp_layers)
         return mlp
 
+    @staticmethod
+    def set_alpha(model, alpha_value):
+        for module in model.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                module.set_alpha(alpha_value)
     
 
 class EvaluationTools:
@@ -549,3 +564,424 @@ def transfer_proper_kan_to_linear(kan_layer, device=None):
     if device is not None:
         linear = linear.to(device)
     return linear
+
+
+class HomotopyBSplineKANLayer(nn.Module):
+    def __init__(
+        self,
+        in_features,
+        out_features,
+        n_basis=8,
+        degree=3,
+        grid_min=-3.0,
+        grid_max=3.0,
+        alpha_init=1.0,
+        trainable_alpha=False,
+    ):
+        super().__init__()
+
+        assert degree >= 0
+        assert n_basis >= degree + 1
+
+        self.in_features = in_features
+        self.out_features = out_features
+        self.n_basis = n_basis
+        self.degree = degree
+        self.grid_min = grid_min
+        self.grid_max = grid_max
+        self.trainable_alpha = trainable_alpha
+
+        # spline residual coefficients
+        self.coeffs = nn.Parameter(torch.zeros(out_features, in_features, n_basis))
+
+        # linear path
+        self.base_weight = nn.Parameter(torch.empty(out_features, in_features))
+        self.base_bias = nn.Parameter(torch.zeros(out_features))
+        nn.init.kaiming_uniform_(self.base_weight, a=math.sqrt(5))
+        fan_in = in_features
+        bound = 1 / math.sqrt(fan_in)
+        nn.init.uniform_(self.base_bias, -bound, bound)
+
+        # alpha path coefficient
+        if trainable_alpha:
+            self.alpha = nn.Parameter(torch.tensor(float(alpha_init)))
+        else:
+            self.register_buffer("alpha", torch.tensor(float(alpha_init)))
+
+        knots = make_open_uniform_knots(
+            grid_min=grid_min,
+            grid_max=grid_max,
+            n_basis=n_basis,
+            degree=degree,
+            device=None,
+            dtype=torch.float32,
+        )
+        self.register_buffer("knots", knots)
+
+    def set_alpha(self, alpha_value: float):
+        with torch.no_grad():
+            self.alpha.fill_(float(alpha_value))
+
+    def forward(self, x):
+        dtype = x.dtype
+        device = x.device
+
+        # B-spline basis per input dimension
+        basis_list = []
+        knots = self.knots.to(device=device, dtype=dtype)
+        for i in range(self.in_features):
+            Bi = bspline_basis_1d(x[:, i], knots, self.degree)   # (batch, n_basis)
+            basis_list.append(Bi.unsqueeze(1))
+        basis_all = torch.cat(basis_list, dim=1)  # (batch, in_features, n_basis)
+
+        # spline residual
+        spline_out = (basis_all.unsqueeze(1) * self.coeffs.unsqueeze(0)).sum(dim=(-1, -2))
+
+        # linear path
+        linear_out = x @ self.base_weight.t() + self.base_bias
+
+        return self.alpha * linear_out + spline_out
+    
+class HomotopyBSplineKAN(nn.Module):
+    def __init__(
+        self,
+        layer_dims,
+        n_basis=8,
+        degree=3,
+        grid_min=-3.0,
+        grid_max=3.0,
+        alpha_init=1.0,
+        trainable_alpha=False,
+        preserve_relu=True,
+    ):
+        super().__init__()
+
+        input_dim, *hidden_dims, output_dim = layer_dims
+        dims = [input_dim] + hidden_dims + [output_dim]
+
+        layers = [nn.Flatten()]
+        for i in range(len(dims) - 1):
+            layers.append(
+                HomotopyBSplineKANLayer(
+                    in_features=dims[i],
+                    out_features=dims[i + 1],
+                    n_basis=n_basis,
+                    degree=degree,
+                    grid_min=grid_min,
+                    grid_max=grid_max,
+                    alpha_init=alpha_init,
+                    trainable_alpha=trainable_alpha,
+                )
+            )
+            if preserve_relu and i < len(dims) - 2:
+                layers.append(nn.ReLU())
+
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.net(x)
+
+    def set_alpha(self, alpha_value: float):
+        for module in self.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                module.set_alpha(alpha_value)
+                
+def transfer_linear_to_homotopy_kan(
+    linear,
+    n_basis=8,
+    degree=3,
+    grid_min=-3.0,
+    grid_max=3.0,
+    alpha_init=1.0,
+    trainable_alpha=False,
+):
+    kan = HomotopyBSplineKANLayer(
+        in_features=linear.in_features,
+        out_features=linear.out_features,
+        n_basis=n_basis,
+        degree=degree,
+        grid_min=grid_min,
+        grid_max=grid_max,
+        alpha_init=alpha_init,
+        trainable_alpha=trainable_alpha,
+    ).to(linear.weight.device)
+
+    with torch.no_grad():
+        kan.base_weight.copy_(linear.weight)
+        if linear.bias is not None:
+            kan.base_bias.copy_(linear.bias)
+        else:
+            kan.base_bias.zero_()
+        kan.coeffs.zero_()
+
+    return kan
+
+
+
+
+###############################################################################
+#### KD / HOMOTOPY / PRUNING UTILITIES ########################################
+###############################################################################
+
+class DistillationTools:
+    @staticmethod
+    def kd_loss(student_logits, teacher_logits, temperature=4.0):
+        """
+        KL-divergence based knowledge distillation loss.
+        """
+        log_p_student = torch.log_softmax(student_logits / temperature, dim=1)
+        p_teacher = torch.softmax(teacher_logits / temperature, dim=1)
+        loss = torch.nn.functional.kl_div(
+            log_p_student,
+            p_teacher,
+            reduction="batchmean"
+        ) * (temperature ** 2)
+        return loss
+
+    @staticmethod
+    def combined_classification_kd_loss(
+        student_logits,
+        teacher_logits,
+        targets,
+        alpha_task=0.5,
+        alpha_kd=0.5,
+        temperature=4.0,
+    ):
+        ce = torch.nn.functional.cross_entropy(student_logits, targets)
+        kd = DistillationTools.kd_loss(student_logits, teacher_logits, temperature=temperature)
+        return alpha_task * ce + alpha_kd * kd, ce.detach().item(), kd.detach().item()
+
+
+class HomotopyTools:
+    @staticmethod
+    def freeze_base_path(model):
+        """
+        Freeze base linear parameters, keep spline coeffs trainable.
+        """
+        for module in model.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                module.base_weight.requires_grad = False
+                module.base_bias.requires_grad = False
+                module.coeffs.requires_grad = True
+                if isinstance(module.alpha, nn.Parameter):
+                    module.alpha.requires_grad = False
+
+    @staticmethod
+    def unfreeze_all(model, train_alpha=False):
+        """
+        Unfreeze everything. Optionally also train alpha if alpha is a Parameter.
+        """
+        for module in model.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                module.base_weight.requires_grad = True
+                module.base_bias.requires_grad = True
+                module.coeffs.requires_grad = True
+                if isinstance(module.alpha, nn.Parameter):
+                    module.alpha.requires_grad = train_alpha
+
+    @staticmethod
+    def set_alpha(model, alpha_value):
+        for module in model.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                module.set_alpha(alpha_value)
+
+    @staticmethod
+    def linear_anneal(epoch, total_epochs, start_alpha=1.0, end_alpha=0.0):
+        if total_epochs <= 1:
+            return end_alpha
+        t = epoch / (total_epochs - 1)
+        return start_alpha + t * (end_alpha - start_alpha)
+
+
+class PruningTools:
+    @staticmethod
+    def prune_spline_coefficients_by_threshold(model, threshold=1e-4):
+        """
+        Zero out small spline coefficients.
+        Returns number pruned and total.
+        """
+        total = 0
+        pruned = 0
+        with torch.no_grad():
+            for module in model.modules():
+                if isinstance(module, HomotopyBSplineKANLayer):
+                    mask = module.coeffs.abs() < threshold
+                    pruned += mask.sum().item()
+                    total += mask.numel()
+                    module.coeffs[mask] = 0.0
+        return pruned, total
+
+    @staticmethod
+    def prune_spline_coefficients_by_percentile(model, percentile=20.0):
+        """
+        Global percentile pruning over all spline coeffs.
+        """
+        coeffs_all = []
+        for module in model.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                coeffs_all.append(module.coeffs.detach().abs().reshape(-1))
+        if len(coeffs_all) == 0:
+            return 0, 0, 0.0
+
+        coeffs_all = torch.cat(coeffs_all)
+        threshold = torch.quantile(coeffs_all, percentile / 100.0).item()
+
+        pruned, total = PruningTools.prune_spline_coefficients_by_threshold(model, threshold=threshold)
+        return pruned, total, threshold
+
+
+class DiagnosticsTools:
+    @staticmethod
+    def spline_coefficient_stats(model):
+        stats = {}
+        total_l1 = 0.0
+        total_l2_sq = 0.0
+        total_params = 0
+        total_nonzero = 0
+
+        layer_idx = 0
+        for module in model.modules():
+            if isinstance(module, HomotopyBSplineKANLayer):
+                coeffs = module.coeffs.detach()
+                l1 = coeffs.abs().sum().item()
+                l2 = torch.sqrt((coeffs ** 2).sum()).item()
+                nnz = (coeffs.abs() > 0).sum().item()
+                n = coeffs.numel()
+
+                stats[f"layer_{layer_idx}"] = {
+                    "l1": l1,
+                    "l2": l2,
+                    "nnz": nnz,
+                    "total": n,
+                    "sparsity": 1.0 - (nnz / n),
+                }
+
+                total_l1 += l1
+                total_l2_sq += (coeffs ** 2).sum().item()
+                total_params += n
+                total_nonzero += nnz
+                layer_idx += 1
+
+        stats["global"] = {
+            "l1": total_l1,
+            "l2": total_l2_sq ** 0.5,
+            "nnz": total_nonzero,
+            "total": total_params,
+            "sparsity": 1.0 - (total_nonzero / total_params if total_params > 0 else 0.0),
+        }
+        return stats
+
+    @staticmethod
+    def spline_vs_linear_contribution(model, loader, device, max_batches=10):
+        """
+        Estimates relative contribution magnitude:
+            ratio = ||spline_out|| / (||alpha*linear_out|| + ||spline_out||)
+        averaged over layers and batches.
+        """
+        model.eval()
+        layer_ratios = []
+        with torch.no_grad():
+            for batch_idx, (x, _) in enumerate(loader):
+                if batch_idx >= max_batches:
+                    break
+
+                x = x.to(device)
+                h = x
+
+                for module in model.net:
+                    if isinstance(module, nn.Flatten):
+                        h = module(h)
+
+                    elif isinstance(module, HomotopyBSplineKANLayer):
+                        dtype = h.dtype
+                        dev = h.device
+                        knots = module.knots.to(device=dev, dtype=dtype)
+
+                        basis_list = []
+                        for i in range(module.in_features):
+                            Bi = bspline_basis_1d(h[:, i], knots, module.degree)
+                            basis_list.append(Bi.unsqueeze(1))
+                        basis_all = torch.cat(basis_list, dim=1)
+
+                        spline_out = (basis_all.unsqueeze(1) * module.coeffs.unsqueeze(0)).sum(dim=(-1, -2))
+                        linear_out = h @ module.base_weight.t() + module.base_bias
+                        linear_out = module.alpha * linear_out
+
+                        spline_norm = spline_out.norm(p=2).item()
+                        linear_norm = linear_out.norm(p=2).item()
+                        denom = spline_norm + linear_norm + 1e-12
+                        ratio = spline_norm / denom
+                        layer_ratios.append(ratio)
+
+                        h = linear_out + spline_out
+
+                    else:
+                        h = module(h)
+
+        if len(layer_ratios) == 0:
+            return {"mean_ratio": 0.0, "ratios": []}
+
+        return {
+            "mean_ratio": float(np.mean(layer_ratios)),
+            "ratios": layer_ratios,
+        }
+
+
+class TrainingEntityToolsExtended:
+    @staticmethod
+    def train_kd_epoch(
+        student_model,
+        teacher_model,
+        optimizer,
+        loader,
+        device,
+        alpha_task=0.5,
+        alpha_kd=0.5,
+        temperature=4.0,
+        print_freq=-1,
+    ):
+        student_model.train()
+        teacher_model.eval()
+
+        total_loss = 0.0
+        total_ce = 0.0
+        total_kd = 0.0
+
+        for batch_idx, (x, y) in enumerate(loader):
+            x, y = x.to(device), y.to(device)
+
+            optimizer.zero_grad()
+
+            with torch.no_grad():
+                teacher_logits = teacher_model(x)
+
+            student_logits = student_model(x)
+
+            loss, ce_value, kd_value = DistillationTools.combined_classification_kd_loss(
+                student_logits=student_logits,
+                teacher_logits=teacher_logits,
+                targets=y,
+                alpha_task=alpha_task,
+                alpha_kd=alpha_kd,
+                temperature=temperature,
+            )
+
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+            total_ce += ce_value
+            total_kd += kd_value
+
+            if print_freq != -1 and batch_idx % print_freq == 0:
+                print(
+                    f"Batch {batch_idx}/{len(loader)} | "
+                    f"Loss={loss.item():.4f} CE={ce_value:.4f} KD={kd_value:.4f}"
+                )
+
+        n_batches = len(loader)
+        return {
+            "loss": total_loss / n_batches,
+            "ce": total_ce / n_batches,
+            "kd": total_kd / n_batches,
+        }
