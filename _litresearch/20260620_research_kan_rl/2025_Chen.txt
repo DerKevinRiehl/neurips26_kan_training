@@ -1,0 +1,839 @@
+11164
+
+IEEE ROBOTICS AND AUTOMATION LETTERS, VOL. 10, NO. 11, NOVEMBER 2025
+
+KAN Policy: Learning Efficient and Smooth Robotic
+Trajectories via Kolmogorov-Arnold Networks
+Zikang Chen , Fei Gao , Ziya Yu , and Peng Li
+
+Abstract—Modernrobotic visuomotor policy learning has witnessed significant progress through Diffusion Policy (DP) frameworks built upon Convolutional Neural Networks (CNNs) and
+Transformers. Despite their empirical success, these architectures
+remain fundamentally constrained by their relatively discrete computational nature, inherently limiting their capacity to generate
+efficient and smooth motion trajectories. To address this challenge,
+we introduce Kolmogorov-Arnold Networks (KANs) into Diffusion
+Policy learning. The proposed KAN Policy (KP) leverages KANs’
+intrinsic continuity through learnable base-parameterized activation functions, thereby producing continuous trajectories with
+shorter execution time and fewer jerks. Specifically, we design a
+novel Embedding KAN (Emb-KAN) for CNN-based models, which
+preserves structural continuity in high-dimensional latent spaces
+through adaptive spline embeddings. Besides, we apply GroupKAN to Transformer-based models for learning continuous representations. Across main simulation experiments, KP achieves
+average improvements of 6.06%, 8.03%, and 26.4% in terms of success rate, execution time, and smoothness, respectively. Similarly,
+in real-world experiments, KP achieves average improvements of
+53.8%, 7.89%, and 29.4% across the same metrics.
+Index Terms—Deep learning methods,motion and path
+planning,learning from demonstration.
+
+I. INTRODUCTION
+OLICY learning from demonstrations, typically formulated as a supervised regression problem mapping observations to actions, has shown remarkable success in diverse
+robotic applications [1], [2], [3]. Among generative approaches,
+
+P
+
+Received 31 March 2025; accepted 28 August 2025. Date of publication 4
+September 2025; date of current version 18 September 2025. This article was
+recommended for publication by Associate Editor Z. Kingston and Editor A.
+Bera upon evaluation of the reviewers’ comments. This work was supported in
+part by Nanjing Science and Technology Plan under Grant 202309018, in part
+by the Science and Technology Major Project of Jiangsu Province under Grant
+BG2024041, and in part by the National Natural Science Foundation of China
+under Grant 62571395. (Corresponding author: Peng Li.)
+Zikang Chen and Peng Li are with the Institute of Software, Chinese
+Academy of Sciences, Beijing 100190, China, also with the University of
+Chinese Academy of Sciences, Beijing 100049, China, also with the Nanjing
+Institute of Software Technology, Nanjing 211100, China, and also with the
+University of Chinese Academy of Sciences, Nanjing 211135, China (e-mail:
+chenzikang23@mails.ucas.ac.cn; lipeng@iscas.ac.cn).
+Fei Gao is with the Hangzhou Research Institute, Xidian University,
+Hangzhou 311200, China (e-mail: fgao@xidian.edu.cn).
+Ziya Yu is with the Hohai University, Nanjing 210024, China, also with the
+Nanjing Institute of Software Technology, Nanjing 211100, China, and also
+with the University of Chinese Academy of Sciences, Nanjing 211135, China
+(e-mail: yuziya24@mails.ucas.ac.cn).
+Our open-source code is available at https://github.com/Zack-C-bot/kanpolicy.
+This article has supplementary downloadable material available at
+https://doi.org/10.1109/LRA.2025.3606354, provided by the authors.
+Digital Object Identifier 10.1109/LRA.2025.3606354
+
+Fig. 1. We compare KP and DP in “Can” [2] as an example. The left curve
+diagram shows the spatial motion trajectory required to complete the task, and
+comparison demonstrates that KP-C produces smoother trajectory than DP-C,
+which has fewer jerks. Additionally, KP-C reduces execution time by 10.7%
+(middle) and achieves a 82.8% lower curvature than DP-C (right).
+
+Diffusion Policy (DP) frameworks [4], [5], [6], [7] have emerged
+as particularly powerful for robotic visuomotor policy learning, outperforming conventional methods. Current DP implementations primarily employ Convolutional Neural Networks
+(CNNs) [8] or Transformers [9], architectures that inherently
+operate on discrete data representations. This discretization
+mechanism fractures feature continuity, thereby imposing fundamental limitations. As illustrated by the yellow trajectory in
+Fig. 1, conventional CNN-based DP models (DP-C) generate
+abrupt motion transitions rather than smooth trajectory. Such
+jerks not only extend task execution time but may also pose
+safety risks in physical deployments [10].
+Recent advances in Kolmogorov-Arnold Networks
+(KANs) [11] have demonstrated remarkable potential across
+a wide range of computer vision applications, including
+medical image segmentation [12], hyperspectral image
+analysis [13], and foundational vision models [14]. Unlike
+conventional CNNs and Transformers, KANs implement a
+fundamental architectural paradigm shift, they replace fixed
+linear operations [15] with learnable connections parameterized
+by adaptive basis functions—notably spline curves [16]. This
+design proves particularly advantageous for robotic control
+systems, where spline-based trajectory optimization has long
+been established as one of the widely adopted methods for
+ensuring C 2 -continuous motions [17], [18], [19]. Besides,
+KANs also excel by breaking down complex functions into
+simpler and low-dimensional parts, which makes them efficient
+and adept at capturing detailed patterns in data [12]. Given
+these properties, KANs are increasingly recognized as a highly
+promising candidate for robotic policy learning.
+In this letter, we introduce KANs to DP models, termed KAN
+Policy (KP). Specifically, we develop a novel Embedding KAN
+(Emb-KAN) for CNN-based DP models, called KAN Policy-C
+
+2377-3766 © 2025 IEEE. All rights reserved, including rights for text and data mining, and training of artificial intelligence and similar technologies.
+Personal use is permitted, but republication/redistribution requires IEEE permission. See https://www.ieee.org/publications/rights/index.html for more information.
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+CHEN et al.: KAN POLICY: LEARNING EFFICIENT AND SMOOTH ROBOTIC TRAJECTORIES
+
+(KP-C), to feature continuously structural representations, while
+adapting Group-KAN [14] to Transformer-based counterparts,
+named KAN Policy-T (KP-T). As demonstrated by the blue
+trajectory and the two histplots comparing in Fig. 1, KP-C
+produces continuous trajectory with fewer jerks and shorter
+execution time. To validate the effectiveness of KP, we conduct
+seven simulation tasks and three real-world experiments, with
+diverse complexities. In main simulation, KP achieves average
+improvements of 6.06% in success rate, 8.03% in execution time,
+and 26.4% in trajectory smoothness. Real-world experiments
+further demonstrate 53.8% higher success rate, 7.89% faster
+execution, and 29.4% smoother motions compared to baselines.
+The ablation and generalization studies further verify the effectiveness and generalization capacity of KP in learning efficient
+and smooth robotic policies.
+In summary, our primary contributions are: (1) To the best
+of our knowledge, our work is the first to introduce KolmogorovArnold Networks into Diffusion Policy models for robotic policy
+learning, achieving simultaneous gains in trajectory effectiveness, smoothness, and overall performance. (2) Technically, we
+design a novel Emb-KAN module for CNN-based Diffusion
+Policy models, and we apply Group-KAN to Transformer-based
+Diffusion Policy models and further generalize. (3) Substantial
+experiments demonstrate the effectiveness of our KAN Policy
+in both simulated and real-world robot control tasks, validating
+its practical applicability and robustness across different environments.
+II. RELATED WORK
+A. Kolmogorov-Arnold Networks
+Kolmogorov-Arnold representation theorem [20], [21], [22]
+has showed that any continuous function of multiple variables f (x1 , . . . , xn ) can be expressed as a combination
+of
+continuous
+n functions of a single variable and addition
+2n+1
+Φ
+(
+q
+q=1
+p=1 φq,p (xp )), where φq,p and Φq are univariate functions. Inspired by the theorem, Kolmogorov-Arnold
+Networks (KANs) [11] offer a novel neural network architecture that enhances interpretability and accuracy. Unlike traditional neural networks [15], KANs feature activation functions at the network edges and replace weight parameters
+with learnable univariate functions, a Kolmogorov–Arnold
+layer with din -dimensional inputs x and dout -dimensional outputs can be simply described as f (x) = f (x1 , . . . , xdin ) =
+ in
+ in
+[ di=1
+φi,1 (xi ) · · · di=1
+φi,dout (xi )], φ(x) often parameterized
+by spline functions [16]. This design shows potential in robotics
+but has seen limited application so far. Recently, the integration
+of KANs with other neural networks has proven to be beneficial.
+In the realm of Convolutional Neural Networks (CNNs) [8], UKAN [12] has introduced a token-based module by incorporating KANs into the traditional U-Net [23] architecture, leading to
+significant improvements in segmentation accuracy, particularly
+in boundary detail processing and small target detection. When it
+comes to Transformers [24], KAT [14] has effectively extended
+the advantages of KANs to natural language processing and
+sequence modeling by utilizing rational functions [25], [26], [27]
+in place of B-splines in φ(x) and sharing the parameters of
+these functions, while also enhancing computational efficiency.
+
+11165
+
+Despite these advancements, the integration of KANs has not
+yet been fully extended to robotic control tasks. There have
+been attempts to introduce KANs into reinforcement learning
+for robotic applications [28], but such approaches remain limited
+and have not been sufficiently generalized for broader robotic
+control scenarios. Our work aims to address these gaps by building on the aforementioned integration concepts and employing
+KANs in a modular form to enhance their applicability and
+effectiveness in robotic control tasks.
+B. Diffusion Policy
+Traditional policy learning approaches [1], [2], [3] and generative models [29], [30] often exhibit limited expressiveness
+in capturing complex action distributions, particularly under
+multimodal uncertainties. To address these limitations, Diffusion
+Policy (DP) [4] introduces a novel paradigm that integrates
+Denoising Diffusion Probabilistic Models (DDPMs) [31] into
+robotic policy learning. In this framework, action sequence’s
+generation employs a conditional diffusion process comprising: (1) A forward process that incrementally adds noise to
+ground-truth actions, transforming it into Gaussian noise. (2)
+A revserse denoising process that reconstructs actions from
+noise conditioned on current observation, which is realized via
+Stochastic Langevin Dynamics, [32], which enables the model
+to approximate complex posterior distributions over actions. As
+a result, DP demonstrates superior capability in representing
+both short-horizon and long-horizon multimodal distributions.
+However, the generated motion trajectories exhibit a lack of
+efficiency and smoothness due to fundamental architectural
+constraints in its backbone design. A considerable number of
+follow-up works have been developed based on DP. For instance, UMI [33] introduces novel data collection methods to
+enhance diversity, while DATA SCALING LAWS, [34] leverages
+DINOv2 [35] fine-tuning and integration strategies to improve
+temporal coherence. Yet, they all employ a similar fundamental
+architecture, so the limitation persists. Our work seeks to address
+the issue through architecture improvements.
+III. METHODS
+To address the discrete feature processing limitations of
+CNNs and Transformers, this chapter introduces two custom
+fundamental network architectures, KP-C and KP-T. The overall
+architecture is shown in Fig. 2.
+A. Preliminaries
+DDPMs [31] implement a fixed forward diffusion process that progressively corrupts data samples x0 ∼ q(x0 ) with
+Gaussian noise through T Markov steps, governed by a predefined variance schedule {βk }Tk=1 where βk ∈ (0, 1). This
+yields the closed-form conditional distribution q(xk |x0 ) =
+
+√
+N (xk ; ᾱk x0 , (1 − ᾱk )I) with ᾱk = ki=1 αi and αk = 1 −
+βk , I is a Gaussian distribution representing the noise. The
+reverse process learns parameterized transitions pθ (xk−1 |xk ) =
+N (xk−1 ; μθ (xk , k), σk2 I), initialized from isotropic Gaussian noise xT ∼ N (0, I). Here μθ is implemented as a
+neural network that predicts the denoising direction, typically
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+11166
+
+Fig. 2.
+
+IEEE ROBOTICS AND AUTOMATION LETTERS, VOL. 10, NO. 11, NOVEMBER 2025
+
+We present the network architectures of KP, while using CNN (-C) or Transformer (-T) as the backbone network.
+
+βk
+reparameterized as μθ (xk , k) = √1αk (xk − √1−
+ (xk , k)),
+ᾱ θ
+k
+
+ᾱk−1
+while the variance σk2 is commonly fixed to 1−
+1−ᾱk βk . Train-
+
+ing employs the simplified
+noise-prediction objective Lk =
+√
+√
+Ek,x0 ,k [k − θ ( ᾱk x0 + 1 − ᾱk k , t)2 ], which directly
+optimizes the network θ to predict the Gaussian noise  added
+at each diffusion step k.
+Similarly, KP implements a conditional diffusion process
+grounded in DP [4]. At time step t, the ground truth actions
+A0t undergoes k-step Gaussian corruption to produce the noised
+counterpart Akt . Correspondingly, the single-step reverse diffusion process conditioned on the observation Ot can generate
+through the following
+the predicted noisy action sequence Âk−1
+t
+formulation:
+
+
+= α Akt − γθ (Ot , Akt , k) + N (0, σ 2 I)
+(1)
+Âk−1
+t
+Here, α, γ, σ denote diffusion scheduling parameters dependent
+on denoising step k, and N (0, σ 2 I) represents Gaussian noise.
+θ represents the learnable network parameter. Executing k denoising steps to produce a sequence of intermediate actions with
+progressively lower noise levels, culminating in the generation
+of the noise-free output Â0t . KP is optimized via a modified
+denoising diffusion objective to estimate the noise k added to
+the input actions for iteration k:
+
+
+
+L = MSE k , θ Ot , A0t + k , k
+(2)
+B. KAN Policy-C
+The framework employs a tripartite architecture comprising
+sequential feature transformation stages (Fig. 2). The Down layers hierarchically condense input signals through convolutional
+blocks while caching multiscale features via skip connections.
+At the core of our architecture lies the novel Emb-KANs. It
+uses a special mathematical approach to adjust interactions
+between different features, ensuring that the features remain
+connected. This enhances the network’s ability to grasp complex
+patterns in high-dimensional data. The subsequent Up layers
+reconstruct target outputs through mirrored convolutional blocks
+with residual gating mechanisms. They dynamically fuse cached
+skip features from the Down layers and semantically enriched
+embeddings from Emb-KAN before the final prediction. This
+combined approach ensures that features flow coherently and
+enables the network to adapt its representation to different
+noise levels. Globally, the Dynamic Feature, generated globally
+by observation and timestep, is processed by the conditioning
+
+encoder Feature wise Linear Modulation (FiLM) [36] in each
+stage and then incorporated into the current stage’s features.
+Emb-KAN In this module, Tokenization is designed to convert a one-dimensional sequence into a patch-based embedding
+representation with overlapping regions. This method effectively extracts local features from sequential data while maintaining continuity between patches. Given an input sequence
+x ∈ RB×Cin ×Lin , where B is the batch size, Cin represents
+the number of input channels, and Lin is the sequence length,
+projected into a higher-dimensional embedding space using a
+one-dimensional convolution operation:
+xpatch = LN(Conv(x, W ))
+
+(3)
+
+Cout ×Cin ×ks
+
+where W ∈ R
+acts as the learnable weights of the
+operation, ks is the kernel size, and Cout is the embedding
+dimension, LN is the Layer Norm. The convolution operation
+includes stride s and padding p = ks/2 to ensure overlapping
+patches. The output has the shape xpatch ∈ RB×Cout ×Lpatch ,
+where Lpatch is determined by:
+
+
+Lin + 2p − ks
+Lpatch =
++1
+(4)
+s
+Then we pass through a Layer Norm, which processes the
+features along the embedding dimension.
+After the patch-based embedding representation of feature is
+completed, the primary feature processing within this module is
+conducted by KAN Linear, whose output xkan , can be mathematically characterized by the following formulation:
+xkan = wb · σ(xpatch ) + ws · B(xpatch )
+
+(5)
+
+In this expression, wb and ws denote the weights generated
+by linear layers in the process. The
+functions are defined as:
+σ(x) = x/(1 + e−x ), and B(x) = i ci Bi (x) where ci are
+the trainable coefficients for the i-th basis function Bi (x).
+Particularly, when considering a univariate function B(x) defined over the interval [a, b] with B-splines of order k, the
+interval is divided into G subintervals by G + 1 grid points
+{t0 = a, t1 , . . . , tG = b}. This set of points is extended to
+{t−k , . . . , t−1 , t0 , t1 , . . . , tG , tG+1 , . . . , tG+k } to accommodate
+the spline order. Following [37], the spline-based function is then
+defined recursively as:
+x − ti
+ti+k − x
+Bi,k−1 (x) +
+Bi+1,k−1 (x)
+ti+k−1 − ti
+ti+k − ti+1
+(6)
+When k = 0, Bi,0 (x) is defined as 1 if ti ≤ x < ti+1 and 0 otherwise. This process constructs an interpolation framework within
+Bi,k (x) =
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+CHEN et al.: KAN POLICY: LEARNING EFFICIENT AND SMOOTH ROBOTIC TRAJECTORIES
+
+the input feature space, enabling the simultaneous extraction of
+both linear and nonlinear features.
+Finally, the conditioning encoder FiLM is tasked with extracting Dynamic Feature a and b from observation and
+timestep. So the output f (x) of Emb-KAN is structured
+as:
+f (x) = a · LN(xkan ) + b
+
+(7)
+
+This comprehensive process extracts and integrates features,
+collectively capturing the essential characteristics.
+C. KAN Policy-T
+Our experimental architecture, a transformer-based model for
+conditional sequence modeling, incorporates KAT Group with
+rational functions and group-wise parameters [14], differing
+from conventional spline function usage. As shown in Fig. 2, this
+versatile model has potential applications in diffusion processes
+and autoregressive generation. While its overall structure follows [3], we replaced the final linear layer with a custom GroupKAN module. Acting like a traditional activation function, this
+module introduces non-linearity at the output layer, bridging
+discrete features and enabling effective learning of continuous
+representations.
+Group-KAN This module can be regarded as a variant of [15],
+introducing KAT Group at the end of the architecture to enable
+continuous feature transformations. The formulation G(x) of
+the entire module can be described as:
+G(x) = w2 · K 2 (w1 · K 1 (x) + b1 ) + b2
+
+(8)
+
+In this formulation, similar to (5), w1 , w2 and b1 , b2 are the
+weights and bias generated by linear layers, K is the rational function, and the superscript of K indicates the different
+initialization modes of KAT Group. Assuming i is the index
+of the current input channel din , j is the index of the output
+channel dout , we divide the whole input channels into g groups
+on average, with z = i · g/din  being the group number, so that
+K can be formulated as:
+Ki,j (x) =
+
+din
+
+
+wi,j Rz (xi )
+
+(9)
+
+i=1
+
+This means that input features from the same group will share
+parameters. R(x) is the rational function is expressed as:
+m
+i
+i=0 ai x
+
+(10)
+R(x) =
+n
+1 + | j=1 bj xj |
+m and n are the orders of polynomials.
+
+11167
+
+IV. SIMULATION EXPERIMENTS
+We evaluate KP’s performance across various robotic tasks
+from two benchmarks [1], [2], using state-based policies [4].
+A. Simulation Environments and Datasets
+Push-T is based on the IBC framework [1]. This task involves
+moving a T-shaped block to a specified target using a circular
+end-effector. The initial positions of the block and end-effector
+are randomized, requiring precise control for accurate block
+placement through point contacts.
+Robomimic is a comprehensive platform for robotic manipulation [2], focusing on imitation learning and offline reinforcement learning. We select five distinct tasks from the platform,
+each with a skilled human operator’s demonstration dataset
+(Proficient-Human, ph). For four tasks inside (except “Tool
+Hang”), we have extra data from both skilled and less skilled
+operators (Multi-Human, mh), giving nine variations total. This
+dataset can test our method’s data requirements.
+Kitchen is derived from Relay Policy Learning [38], assesses
+a policy’s ability to handle multiple long-horizon tasks. It
+comprises 7 interactive objects and mandates the completion
+of 5 tasks in any order during each demonstration. The goal
+is to perform as many of the demonstrated tasks as possible,
+irrespective of their sequence.
+B. Evaluation Methodology and Baselines
+Criteria: We present the average success rate (Succ) of the
+best-performing checkpoints across three distinct seeds, selecting the top 5 checkpoints for each seed, to ensure robustness
+in the evaluation. Besides, we report the mean execution time
+(Time) measured in seconds across the intersection of the corresponding best chekpoints’ 50 test environments as the efficiency
+criterion. To assess trajectory smoothness, we adopt the mean
+curvature of trajectories (Cur) and the mean dimensionless
+squared jerk (DSJ) [39]. Assume r(t) represents the position
+vector of the trajectory at time t ∈ [0, T ], with x(t), y(t), z(t)
+denoting the position components in the respective coordinate
+axes and T is the duration of the generated trajectory. The Cur
+is determined by:
+1  ri (t) × ri (t)
+Cur =
+n i=1 ri (t)3 + γ
+n
+
+(11)
+
+Here, r (t) denotes the velocity vector at time t, r (t) represents
+the acceleration vector, γ is an infinitesimal constant. While DSJ
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+11168
+
+IEEE ROBOTICS AND AUTOMATION LETTERS, VOL. 10, NO. 11, NOVEMBER 2025
+
+TABLE I
+SIMULATION RESULTS ACROSS VARIOUS TASKS
+
+in three dimensions can be formulated as:
+
+DSJ =
+
+n
+
+
+1
+n i=1
+
+Ti
+0
+
+xi (t)2 + yi (t)2 + zi (t)2
+
+C. Key Findings
+T5
+dt i2
+Ai
+
+(12)
+
+Where parameter A is the total length of the trajectory. i refers
+to the current environment index, and n represents the number
+of environments. Additionally, we calculate standard deviations
+for our primary experimental results to enhance credibility. In
+some experiments with Push-T, we also use the coverage area
+of the target as a metric, called Coverage. Furthermore, we
+calculate the average relative improvement using the formula
+n (−1)op ×(Ki −Di )
+1
+× 100%, where Di represents the
+i=1
+n ×
+Di
+metric of worser, Ki represents the metric being compared, and
+i denotes the task index, ranging from 1 to n. op is set to 0
+if higher metric values are desirable, and 1 if lower values are
+preferred. The improvement in smoothness is the average of
+two metircs.
+Baselines: We conduct a comparison between KP and DP,
+including their CNN-based (-C) and Transformer-based (-T)
+variants, on the datasets in Section IV-A. To explore the generalization of Group-KAN and the ultimate success rate of tasks, we
+conduct two additional studies. First, we integrate Group-KAN
+into IBC [1], BET [3], and DP-C, comparing performance with
+the original models. Second, we are curious about whether the
+modules are optimal, so we swap the modules between the two
+types of networks. Notice that all the additional experiments are
+conducted on Push-T.
+
+KP is capable of generating smooth and efficient trajectories: KP demonstrates superior overall performance, achieving a higher average success rate, shorter execution time, and
+more smooth trajectory compared to DP. As summarized in
+Table I, KP outperforms across all evaluation criteria, with
+average improvements of 6.06%, 8.03%, and 26.4% in success
+rate, execution time and smoothness spanning diverse datasets.
+These results collectively validate the effectiveness of our modular design of KANs and their systematic integration into the
+framework.
+KP is robust to variations in datasets: The Multi-Human
+datasets captured from operators with heterogeneous skill
+levels—exhibit inherent heterogeneity in motion planning behaviors. Such variability introduces substantial challenges, including: divergence in trajectory geometry (e.g., path length
+discrepancies), actuation noise (e.g., positioning errors during
+grasping attempts) and inconsistent task execution patterns.
+Notably, KP demonstrates enhanced efficacy on these inferior
+datasets. As quantified in Table I, it achieves statistically significant improvements of 5.01%, 6.20%, and 34.1% in metrics
+after training in suboptimal datasets, respectively. These findings underscore KP’s resilience against dataset variability, outperforming even under suboptimal data conditions—a critical
+advantage for real-world deployment scenarios where operator
+expertise varies widely.
+While KP has excellent overall performance, KP-C underperforms in “Transport”, a dual-robotic-arm cooperation
+task. We observe that this task has double the “Degree-ofFreedom” (DoF) of other robotic tasks in our experiments with
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+CHEN et al.: KAN POLICY: LEARNING EFFICIENT AND SMOOTH ROBOTIC TRAJECTORIES
+
+11169
+
+TABLE II
+GENERALIZATION OF GROUP-KAN
+
+TABLE III
+ABLATION STUDY BETWEEN MODULES
+
+Fig. 3. Real-World experimental devices and settings. (a) Specifications of
+the robotic arm device. (b) Push Cup: The robot is required to first 1 locate
+the cup and then 2 push it entirely into the blue area. (c) Sort: The robot must
+first 1 pick up the object, then 2 identify the box holding the object of the
+same shape, and finally 3 place it inside the box. (d) Give: The robot need to
+1 grasp the object and 2 transport it to a randomly target.
+
+Robotmimic. This performance degradation of KP-C under suboptimal datasets underscores its inherent limitations in high-DoF
+manipulation tasks, revealing a critical sensitivity to data quality
+as kinematic complexity scales.
+Group-KAN can generalize to more policy learning models:
+Group-KAN emerges as a universal enhancer for policy learning
+frameworks. When integrated as the final layer across diverse
+architectures, it consistently elevates performance metrics, as
+demonstrated in Table II. Notably, baseline models with initially limited capabilities exhibit the most substantial improvements through this integration. These findings confirm GroupKAN’s dual role: 1) as a performance amplifier for advanced
+strategies like Diffusion Policy, and 2) as a corrective module
+for suboptimal policies, thereby establishing its versatility in
+robotic learning systems. The evidence from systematic evaluations supports its generalizability beyond specific architectural
+constraints.
+KP exhibits sustained superiority in complex long-horizon
+tasks: In the Kitchen task, we further evaluated the performance
+in completing the fifth task. KP significantly outperformed the
+baselines, achieving a 50.0% improvement in the success rate
+for Task 5, a 5.64% enhancement in execution time, and a
+20.1% overall increase in smoothness (Table I). This showcases
+its superior ability to handle complex operational sequences.
+Furthermore, we found that KP demonstrated superior performance in experiments with an extended action horizon, further
+validating our claim.
+We employed the most effective integration method for our
+approach: We conducted a comparative study on the two KAN
+- based modules we developed, interchanging the two network
+types combined with the modules. (Since Emb-KAN is specifically tailored for CNN-based types, we used KAN Linear for
+the combination rather than the entire module.) The results
+are presented in Table III. This architecture space exploration
+empirically validates our principled selection of the optimal
+model integration strategy.
+
+Fig. 4.
+
+For further analysis of Sort, we recorded the success count per-step.
+
+V. REAL-WORLD TASKS
+To evaluate KP’s real-world performance, we designed and
+collected three tasks, namely Push Cup, Sort and Give. The baselines and evaluation metrics for real-world tasks were consistent
+with those used in simulation experiments.
+A. Hardware Tools and Data Preparation
+As illustrated in Fig. 4, our experimental setup features
+an 6-DoF robotic arm named RM65-6F integrated with a 3Dprinted Robotic Gripper serving as the end-effector. The robotic
+system incorporates a Wrist Depth Camera directly integrated
+into the gripper assembly, capable of capturing 4K-resolution
+video streams for real-time visual feedback enabled by highbandwidth data transmission. For data acquisition, the toolkit is
+simply the Robotic Gripper with camera.
+We gather our dataset using UMI’s handheld interface [33].
+Specially, UMI employs a pre-trained vision encoder [40] to
+extract visual representations from real-world human demonstrations, which are then used to train a visuomotor policy
+that can generate implementable robot control actions. Data
+acquisition follows a structured protocol that involves recording the task-execution process. Following data acquisition, we
+processed the data across multiple environments to enhance
+the generalization capability of the policy [34]. Datasets were
+structured to include synchronized observations of such as RGB
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+11170
+
+IEEE ROBOTICS AND AUTOMATION LETTERS, VOL. 10, NO. 11, NOVEMBER 2025
+
+TABLE IV
+REAL-WORLD EXPERIMENT RESULTS
+
+images and gripper width extracted through SLAM and IMU
+data fusion. This approach ensure that the policy can learn
+from diverse environmental conditions and objects, improving
+its robustness and adaptability. Policy training and validation
+were executed on dedicated computing servers.
+B. Push Cup
+Settings: The task, corresponding to Push-T [1] in simulation
+environment but is more challenging in the real world due
+to the physical shape of the gripper, was conducted primarily
+to evaluate the trajectory planning capabilities of the relevant
+methods. The task will be deemed successful when the entire
+bottom of the cup is contained within the blue area. A failure
+occurs if the bottom of the cup either presses against or crosses
+the boundary line of the blue area.
+Implementation: In total, we collected 410 videos for training,
+covering three directions. A total of 90 tests were conducted,
+comprising 30 tests in each of the three directions.
+Result Analysis: The experimental results are presented in
+Table IV. KP improves success rates by 38.9% and 15.6%,
+and reduces average times by 1.11 and 2.56 seconds for the
+CNN-based and Transformer-based models respectively. KP-C
+maintains a stable curvature despite certain variations, while
+KP-T achieves a better smoothness metric than DP-T. Furthermore, most DP failures are due to faulty trajectory planning, with
+cups either missing the target area entirely (75% of failures) or
+not being fully pushed into it. KP failures mainly occur when
+the cup is only partially pushed into the target area. Based on
+these results, our method demonstrates superior trajectory planning capabilities through higher success rates, faster completion
+times, and stable smoothness.
+C. Sort
+
+as achieving the core manipulation objective is more critical.
+KP’s better performance indicates our method’s capability to
+handle more difficult tasks in a certain case.
+However, this task achieved a lower success rate. To investigate the reasons, we conducted further analysis to determine
+which step is most prone to failure (Fig. 4). We define three key
+steps: 1 Acquisition (pick the object), 2 Identification (find
+the box, occur independently), 3 Placement (place object inside
+box). For DP-C and KP-C, task success hinges on Placement if
+Acquisition is successful, as Identification failures are relatively
+rare but sometimes Placement don’t occur, which is manifested
+as gripping the object tightly without releasing. The probability
+of successful Acquisition is nearly 50%. Once Acquisition is
+achieved, KP’s overall task success rate approaches 70%. For
+DP-T and KP-T, task success hinges on both Acquisition and
+Placement, as Identification failures are less common. The probability of successful Acquisition here is only 25%. Similarly,
+once Acquisition is successful, the overall task success rate is
+approximately 55%. We believe that the low success rate of
+Acquisition is the primary reason for the overall low success rate
+because most failures are directly or indirectly due to Acquisition
+issues. With consistent experimental conditions, our conclusions
+still remain valid.
+D. Give
+Settings: This dynamic human-robot interaction task requires
+transferring a gripper component onto a randomly positioned
+hand embedded in a specialized glove. To simulate dynamic
+environmental conditions, additional glove-mounted receptacles
+are introduced as distractors.
+Implementation: A dataset of almost 140 demonstration
+videos was compiled for model training, supplemented by 20
+independent evaluation trials to assess system performance. The
+trials is consistent for all policies to fairly measure.
+Result Analysis: In the Give task, KP delivered an extraordinary performance, achieving an average 20% increase in success
+rate. It also maintained superior performance in terms of efficiency and smoothness. We observed that KP rapidly track and
+lock onto the correct dynamic target for successful delivery, with
+failures exclusively occurring due to the grasped object slipping
+from the hand. While DP employs improper grasping postures,
+leading to collision-induced failures. This demonstrates the
+excellent performance of our method in dynamic tasks and also
+verifies the advantages of KP in efficiency and smoothness.
+
+Settings: This task draws inspiration from the ’Can’ task in
+virtual environments, involving placing a fixed-shape object into
+a corresponding box. The challenge lies in identifying the box
+with the same-shape object, as all objects have identical colors
+and similar sizes, and their shapes may also be close from certain
+viewpoints.
+Implementation: We collected 600 videos similarly with IMU
+data from three distinct environmental scenarios, with each
+collection focusing solely on cuboid (shapes encompassing
+cuboid, cylinder, cone, and cube). Each box underwent ten tests,
+resulting in a total of 40 tests per model.
+Result Analysis: Compared to DP-C and DP-T, KP-C and
+KP-T increase success rates by 15% and 5%, respectively, E. Discussion
+and produce smoother outcomes. The success rate is a more
+During training, we found that KP-C adds about 4% paramimportant
+performance
+metric
+in
+this
+precision-dependent
+task,
+eters,
+boosting average success rate by 28.0%, while KP-T has
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+
+CHEN et al.: KAN POLICY: LEARNING EFFICIENT AND SMOOTH ROBOTIC TRAJECTORIES
+
+almost no parameter increase and improves average success rate
+by 10.2%. Considering training time, with Push Cup task, DP-C
+takes about 67.1 average wall-clock hours, KP-C about 68.0;
+DP-T takes about 63.1, and KP-T about 63.4. Thus, adding KAN
+modules doesn’t significantly increase training time, indicating
+that using KAN modules has relatively low practical costs. In
+practical deployment, our experiments typically run at 10 Hz,
+adjustable per task. For instance, the Give task employ 20 Hz
+control for real-time deployment. KP can operate within these
+frequency requirements without causing significant delays. KP
+maintains timely responses for Give task, which indicates that
+it meets the max requirements for our real-time deployment.
+VI. CONCLUSION
+In this work, we introduce the KAN Policy (KP) to address the
+limitations of existing Diffusion Policy (DP) models in generating efficient and smooth trajectories. Specifically, we designed
+a novel Embedding KAN (Emb-KAN) module for CNN-based
+DP models to provide continuous structural representations in
+high-dimensional embedding spaces. Additionally, we propose a
+novel pipeline integrating KANs to Transformer-based DP models, thereby expanding the applicability of KP across different
+architectures. Extensive experiments across diverse simulation
+and real-world tasks demonstrate significant improvements on
+success rate, execution time, and smoothness of KP over baseline
+methods.
+REFERENCES
+[1] P. Florence et al., “Implicit behavioral cloning,” in Proc. Conf. Robot.
+Learn., 2022, pp. 158–168.
+[2] A. Mandlekar et al., “What matters in learning from offline human
+demonstrations for robot manipulation,” in Proc. 5th Conf. Robot. Learn.,
+vol. 164, PMLR, 2021, pp. 1678–1690. [Online]. Available: https://
+proceedings.mlr.press/v164/mandlekar22a.html
+[3] N. M. M. Shafiullah, Z. J. Cui, A. Altanzaya, and L. Pinto, “Behavior
+transformers: Cloning k modes with one stone,” in Proc. 36th Int. Conf.
+Neural Inf. Process. Syst., 2022, pp. 22955–22968.
+[4] C. Chi et al., “Diffusion policy: Visuomotor policy learning via action
+diffusion,” in Proc. Robot., Sci. Syst., 2023 .
+[5] Y. Ze, G. Zhang, K. Zhang, C. Hu, M. Wang, and H. Xu, “3D diffusion
+policy: Generalizable visuomotor policy learning via simple 3D representations,” in Proc. 8th Conf. Robot Learn., 2024, pp. 67–76. [Online].
+Available: https://roboticsconference.org/2024/program/papers/67/
+[6] B. Kang, X. Ma, C. Du, T. Pang, and S. Yan, “Efficient diffusion policies
+for offline reinforcement learning,” in Proc. Adv. Neural Inf. Process. Syst.,
+2024, pp. 67195–67212.
+[7] X. Ma, S. Patidar, I. Haughton, and S. James, “Hierarchical diffusion policy for kinematics-aware multi-task robotic manipulation,”
+in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit., 2024,
+pp. 18081–18090.
+[8] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+recognition,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit., 2016,
+pp. 770–778.
+[9] A. Dosovitskiy et al., “An image is worth 16x16 words: Transformers
+for image recognition at scale,” in Proc. Int. Conf. Learn. Representations, 2021.
+[10] A. Gasparetto, P. Boscariol, A. Lanzutti, and R. Vidoni, “Path planning
+and trajectory planning algorithms: A general overview,” in Motion and
+Operation Planning of Robotic Systems: Background and Practical Approaches. Cham, Switzerland: Springer, 2015, pp. 3–27.
+[11] Z. Liu et al., “KAN: Kolmogorov-Arnold Networks,” in Proc. Int.
+Conf. Learn. Representations, May 2025. [Online]. Available: https://
+openreview.net/forum?id=Ozo7qJ5vZi
+[12] C. Li et al., “U-KAN makes strong backbone for medical image segmentation and generation,” in Proc. AAAI Conf. Artif. Intell., AAAI Press,
+Feb. 2025, pp. 13725–13733. [Online]. Available: https://ojs.aaai.org/
+index.php/AAAI/article/view/32491
+
+11171
+
+[13] N. Firsov et al., “HyperKAN: Kolmogorov–Arnold networks make hyperspectral image classifiers smarter,” Sensors, vol. 24, no. 23, 2024,
+Art. no. 7683.
+[14] X. Yang and X. Wang, “Kolmogorov-Arnold transformer,” in Proc. Int.
+Conf. Learn. Representations, Apr. 2025. [Online]. Available: https://
+openreview.net/forum?id=BCeock53nt
+[15] K. Hornik, M. Stinchcombe, and H. White, “Multilayer feedforward
+networks are universal approximators,” Neural Netw., vol. 2, no. 5,
+pp. 359–366, 1989.
+[16] M. Unser, A. Aldroubi, and M. Eden, “B-Spline signal processing. I. Theory,” IEEE Trans. Signal Process., vol. 41, no. 2, pp. 821–833, Feb. 1993.
+[17] W. Aribowo and K. Terashima, “Cubic spline trajectory planning and
+vibration suppression of semiconductor wafer transfer robot arm,” Int.
+J. Automat. Technol., vol. 8, no. 2, pp. 265–274, 2014.
+[18] G. Braglia, M. Tagliavini, F. Pini, and L. Biagiotti, “Online motion
+planning for safe human–robot cooperation using B-Splines and hidden
+Markov models,” Robotics, vol. 12, no. 4, 2023, Art. no. 118.
+[19] H. Lurz, T. Recker, and A. Raatz, “Spline-based path planning
+and reconfiguration for rigid multi-robot formations,” in Proc. 9th
+CIRP Conf. Assem. Technol. Syst., vol. 106, 2022, pp. 174–179,
+doi: 10.1016/j.procir.2022.02.174.
+[20] A. N. Kolmogorov, “On the representation of continuous functions of
+several variables by superposition of continuous functions of one variable
+and addition,” Doklady Akademii Nauk SSSR, vol. 114, pp. 953–956, 1957.
+[21] V. I. Arnol, “On the representation of continuous functions of three
+variables by superpositions of continuous functions of two variables,”
+Doklady Akademii Nauk SSSR, vol. 114, pp. 679–681, 1957.
+[22] J. Braun and M. Griebel, “On a constructive proof of Kolmogorov’s superposition theorem,” Constructive Approximation, vol. 30, pp. 653–675,
+2009.
+[23] O. Ronneberger, P. Fischer, and T. Brox, “U-Net: Convolutional networks
+for biomedical image segmentation,” in Proc. Int. Conf. Med. Image
+Comput. Comput.-Assist. Intervention, 2015, pp. 234–241.
+[24] A. Vaswani et al., “Attention is all you need,” in Proc. Adv. Neural Inf.
+Process. Syst., 2017, vol. 30, pp. 5998–6008.
+[25] H. Leung and S. Haykin, “Rational function neural network,” Neural
+Computation, vol. 5, no. 6, pp. 928–938, 1993.
+[26] M. Telgarsky, “Neural networks and rational functions,” in Proc. 34th Int.
+Conf. Mach. Learn., 2017, pp. 3387–3393.
+[27] N. Boullé, Y. Nakatsukasa, and A. Townsend, “Rational neural networks,”
+in Proc. Adv. Neural Inf. Process. Syst., 2020, vol. 33, pp. 14344–14353.
+[28] V. A. Kich, J. A. Bottega, R. Steinmetz, R. B. Grando, A. Yorozu, and A.
+Ohya, “Kolmogorov-Arnold networks for online reinforcement learning,”
+in Proc. 24th Int. Conf. Control, Automat. Syst., 2024, pp. 958–963.
+[29] I. J. Goodfellow et al., “Generative adversarial networks,” in Proc. Adv.
+Neural Inf. Process. Syst., 2014, vol. 27, pp. 2672–2680.
+[30] D. P. Kingma and M. Welling, “Auto-encoding variational Bayes,” in Proc.
+Int. Conf. Learn. Representations, 2014.
+[31] J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,”
+in Proc. Adv. Neural Inf. Process. Syst., 2020, vol. 33, pp. 6528–6539.
+[32] M. Welling and Y. W. Teh, “Bayesian learning via stochastic gradient
+Langevin dynamics,” in Proc. 28th Int. Conf. Mach. Learn., Bellevue,
+WA, USA, Jun. 2011, pp. 681–688. [Online]. Available: https://icml.cc/
+2011/papers/398_icmlpaper.pdf
+[33] C. Chi et al., “Universal manipulation interface: In-the-wild robot teaching
+without in-the-wild robots,” in Proc. Robot. Sci. Syst., 2024.
+[34] F. Lin, Y. Hu, P. Sheng, C. Wen, J. You, and Y. Gao, “Data scaling laws
+in imitation learning for robotic manipulation,” in Proc. Int. Conf. Learn.
+Representations, May 2025. [Online]. Available: https://openreview.net/
+forum?id=pISLZG7ktL
+[35] M. Oquab et al., “DINOv2: Learning robust visual features without supervision,” in Proc. Int. Conf. Learn. Representations, 2024.
+[36] E. Perez, F. Strub, H. de Vries, V. Dumoulin, and A. Courville, “FiLM:
+Visual reasoning with a general conditioning layer,” in Proc. 32nd
+AAAI Conf. Artif. Intell., vol. 32, no. 1, Apr. 2018, pp. 3942–3950,
+doi: 10.1609/aaai.v32i1.11671.
+[37] C. de Boor, “On calculating with B-splines,” J. Approximation Theory,
+vol. 6, no. 1, pp. 50–62, 1972.
+[38] A. Gupta, V. Kumar, C. Lynch, S. Levine, and K. Hausman, “Relay policy learning: Solving long-horizon tasks via imitation and reinforcement
+learning,” in Proc. Conf. Robot. Learn., vol. 100, PMLR, Oct./Nov. 2020,
+pp. 1025–1037.
+[39] H. Chen, W. Xu, W. Guo, and X. Sheng, “Variable admittance control using
+velocity-curvature patterns to enhance physical human-robot interaction,”
+IEEE Robot. Automat. Lett., vol. 9, no. 6, pp. 5054–5061, Jun. 2024.
+[40] A. Radford et al., “Learning transferable visual models from natural
+language supervision,” in Proc. 38th Int. Conf. Mach. Learn., 2021,
+pp. 8748–8763.
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:26:42 UTC from IEEE Xplore. Restrictions apply.
+

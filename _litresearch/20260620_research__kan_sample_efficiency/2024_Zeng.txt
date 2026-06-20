@@ -1,0 +1,979 @@
+1
+
+KAN versus MLP on Irregular or Noisy Functions
+
+arXiv:2408.07906v1 [cs.LG] 15 Aug 2024
+
+Chen Zeng, Jiahui Wang, Haoran Shen, and Qiao Wang , Senior Member, IEEE
+
+Abstract—In this paper, we compare the performance of
+Kolmogorov-Arnold Networks (KAN) and Multi-Layer Perceptron (MLP) networks on irregular or noisy functions. We control
+the number of parameters and the size of the training samples to
+ensure a fair comparison. For clarity, we categorize the functions
+into six types: regular functions, continuous functions with local
+non-differentiable points, functions with jump discontinuities,
+functions with singularities, functions with coherent oscillations,
+and noisy functions. Our experimental results indicate that KAN
+does not always perform best. For some types of functions, MLP
+outperforms or performs comparably to KAN. Furthermore,
+increasing the size of training samples can improve performance
+to some extent. When noise is added to functions, the irregular
+features are often obscured by the noise, making it challenging
+for both MLP and KAN to extract these features effectively.
+We hope these experiments provide valuable insights for future
+neural network research and encourage further investigations to
+overcome these challenges.
+Index Terms—Kolmogorov-Arnold networks, Multi-layer Perceptrons, KAN, MLP, Irregularization, Noise
+
+I. I NTRODUCTION
+The Kolmogorov-Arnold networks (KAN) have garnered
+significant attention since their appearance on arXiv [1].
+These networks utilize the Kolmogorov-Arnold representation theorem, which posits that any multivariate continuous
+function can be expressed as a combination of continuous
+single-variable functions and addition. Unlike conventional
+Multi-Layer Perceptron (MLP) networks, KANs incorporate
+learnable activation functions. According to [1], this feature
+provides KANs with enhanced interpretability and accuracy
+over MLPs.
+Numerous investigations into KAN applications have
+rapidly surfaced, covering areas such as smart energy grid
+optimization [33] [41], chemistry data analysis [36] [49],
+image classification [37] [40] [47], deep function learning
+[38], quantum architecture search [39], medical image analysis
+and processing [23] [51], disease risk predictions [50], graph
+learning tasks [25] [43] [46], asset pricing models [42],
+3D object detection (in autonomous driving) [44], sentiment
+analysis [45], and deep kernel learning [48].
+On the contrary, a growing body of research has highlighted
+the imperfections of KANs compared to MLPs. For example,
+[5] and our work [2] noted the vulnerability of KANs to
+noise, indicating that even minor noise can lead to a significant
+rise in test loss. Additionally, [34] claimed that KANs do not
+Both C. Zeng and H. Shen was with the School of Information Science and Engineering, Southeast University, Nanjing, China (email: haoranshen28@163.com, zengchen0797@163.com).
+J. Wang was with the School of Economics and Management, Southeast
+University, Nanjing, China (email: wangjh0512@qq.com).
+Q. Wang was with both the School of Information Science and Engineering
+and the School of Economics and Management, Southeast University, Nanjing,
+China (Corresponding Author, email: qiaowang@seu.edu.cn).
+
+outperform MLPs in highly complex datasets and require considerably more hardware resources. Furthermore, [35] noted
+that MLPs generally have higher accuracy than KANs across
+various standard machine learning tasks, with the exception of
+tasks involving symbolic formula representation.
+Moreover, it is widely recognized that the regularity of
+the functions being approximated significantly influences the
+efficacy of neural networks. Functions that are smooth and
+continuous, known as regular functions, are generally approximated more precisely by KANs. On the other hand, functions
+that exhibit discontinuities or abrupt variations, referred to as
+irregular functions, present a greater difficulty.
+It is essential to emphasize that the research by [35] focused
+on achieving a fair comparison between KANs and MLPs,
+yet it excluded the effect of irregularities or noise. In this
+investigation, we assess the performance of MLP and KAN
+in modeling irregular or noisy functions. To ensure fairness,
+we control the number of parameters and the amount of training data. Moreover, we investigate the influence of different
+optimizers on the accuracy of fitting specific functions. This
+research continues directly and naturally from our recent study
+on the efficacy of KANs in fitting noisy functions [2].
+The structure of this paper is organized as follows: Section II
+provides an introduction to the Kolmogorov-Arnold Theorem
+and KANs, discussing their benefits and limitations, and
+enumerates the six types of functions. Section III evaluates the
+performance of MLP and KAN in approximating regular and
+irregular functions. KAN performs better than MLP in the case
+of regular functions, whereas for certain irregular functions,
+MLP shows superior performance over KAN. Increasing the
+number of training samples can enhance performance to a
+certain degree. Moreover, the impact of different optimizers on
+specific functions is examined. Adam generally performs better than L-BFGS during extensive training on most functions.
+Section IV introduces noise to the previously utilized functions
+and continues the comparison between MLP and KAN. It is
+observed that noise can obscure the characteristics of irregular
+components of functions, making it difficult for both MLP and
+KAN to capture these features accurately. Finally, Section V
+summarizes the findings of our experiments.
+
+II. KOMOGOROV-A RNOLD T HEOREM AND KAN S
+The Kolmogorov-Arnold theorem pertains to expressing
+multivariable continuous functions. According to the theorem,
+any continuous function involving multiple variables can be
+expressed as a combination of continuous single-variable
+functions and addition [3] [7] [8]. Formally, it can be stated
+as:
+
+2
+
+TABLE I: Several Types of Functions and Their Examples
+Smooth
+f1 (x) = x2
+
+f2 (x) = ex
+
+Regular
+
+Continuous everywhere except at points of non-differentiability
+p
+f3 (x) = |x|
+f4 (x) = 1 − |x|
+
+Jump
+(
+f5 (x) =
+
+1, |x| < 0.5
+0, other
+
+(
+f6 (x) =
+
+1 − 4x2 , |x| < 0.5
+1, other
+
+Irregular
+Singular
+f7 (x) = x1
+
+1
+f8 (x) = 1−x
+2 −1
+
+Coherent oscillation
+f9 (x) = cos( x1 )
+
+2π
+f10 (x) = cos( 1−x
+2)
+
+Noisy
+y = x + n(x), where n(x) denotes additive noise.
+
+Noisy
+
+3
+
+Theorem 1. [Kolmogorov-Arnold Theorem] Let f : [0, 1]n →
+R be any multivariate continuous function, there exist continuous univariate functions ϕi and ψij such that:
+
+
+2n+1
+n
+X
+X
+f (x1 , x2 , . . . , xn ) =
+ϕi 
+ψij (xj ) .
+i=1
+
+(1)
+
+j=1
+
+Leveraging the Kolmogorov-Arnold theorem, KANs introduce a novel neural network architecture. Unlike traditional
+Multi-Layer Perceptrons (MLPs) which use fixed activation
+functions, KANs employ flexible activation functions. Each
+weight in the network is replaced by a univariate function,
+often modeled as a spline function. This methodology is
+theoretically advantageous in enhancing the adaptability of
+KANs across different datasets and applications.
+Unfortunately, Theorem 1 was proven using a nonconstructive approach, without providing a constructive proof.
+In 2009, [10] presented a constructive proof for this theorem.
+However, issues can arise when dealing with functions that
+show irregular behaviors. In mathematical analysis, it is common to classify at least five distinct types of irregularities.
+Details and examples of these types are presented in Table I.
+
+III. C OMPARISON ON IRREGULAR FUNCTIONS
+Here, we offer some explanations for the initial five types
+mentioned in Table I. We compare these functions using
+multiple sets of KAN and MLP networks that have similar
+parameter counts. The parameter numbers for each network
+are presented in Table II. We implement the L-BFGS optimizer
+for these functions as it shows better performance in smallscale training. For functions with singularities or coherent
+oscillations, which might need more training samples and
+iterations, we also investigate the Adam optimizer’s capability.
+TABLE II: The number of parameters for each KAN and
+MLP network.
+width
+[1,7,1]
+[1,39,1]
+[1,79,1]
+
+MLP
+parameter
+22
+118
+238
+
+width
+[1,1,1]
+[1,5,1]
+[1,10,1]
+
+KAN
+grid
+k
+3
+3
+3
+3
+3
+3
+
+parameter
+24
+120
+240
+
+A. Regular functions
+First, consider the functions exhibiting strong regularity.
+Such functions are continuous and differentiable at all points,
+exhibiting no discontinuities or non-differentiable regions,
+similar to f1 and f2 . We reconstruct these two functions using
+two sets of MLP and KAN networks that have comparable
+parameters but are trained with different sample sizes. The
+outcomes are displayed in Fig 1. It can be observed that for
+this category of functions, KAN outperforms MLP.
+
+B. Continuous functions with points where derivatives do not
+exist
+The functions f3 and f4 serve as prime examples of this
+category. They maintain continuity at all points except at x =
+0, where they are non-differentiable. Likewise, these functions
+are retrieved individually using independent MLP and KAN
+network sets.
+The outcomes are illustrated in Fig 2. For these particular
+functions, the KAN’s performance is worse than the MLP’s.
+Despite the MLP network’s slower convergence, it eventually
+reaches a lower test loss. Additionally, it can be noted that
+amplifying the training sample size marginally enhances the
+performance of both networks. However, in the vicinity of
+the non-differentiable point, the MLP shows more significant
+improvement than the KAN. More visually, it is evident that
+the fitting performance of MLP and KAN around x = 0 (the
+non-differentiable point) is approximately the same. Yet, with
+a larger training sample size, the MLP demonstrates superior
+fitting performance near x = 0 compared to the KAN.
+C. Functions with jump
+The examples of this category include f5 and f6 . These
+functions have jump discontinuities at x = ±0.5, where
+the function values abruptly change between 0 and 1. The
+experimental outcomes for these functions are depicted in
+Fig 3. Similar to the earlier type, the results show that the
+MLP outperforms the KAN. Moreover, expanding the training
+dataset size can enhance both networks’ performance to a
+certain extent. Nevertheless, KAN consistently fails to match
+the performance of MLP.
+D. Functions with singularities
+Functions possessing singularities display distinct behaviors, marked by a rapid change rate as they near these points,
+with the absolute value of their first derivative tending towards
+positive infinity at the singularity. Additionally, for any chosen
+continuous interval that omits these singularities, the functions
+remain continuous and differentiable across the interval.
+To avoid division by zero and guarantee clear fitting results,
+the ranges of the functions f7 and f8 are limited to [0.001, 1]
+and [−0.999, 0.999], respectively.
+Before performing specific fitting experiments, we examined the effects of the training sample size, the number of
+Epochs, and the selection of optimizer on the fitting performance. As illustrated in Fig 4, simply enlarging the sample
+size by itself does not substantially enhance the performance
+when recovering f7 and f8 .
+Pykan offers two optional optimizers: Adam and L-BFGS.
+As depicted in Fig 5, while the L-BFGS optimizer achieves
+faster convergence with fewer epochs, the Adam optimizer
+shows superior performance in test loss with an increased
+number of epochs, particularly within MLP networks. This
+suggests that using the Adam optimizer and increasing the
+number of epochs can be an effective method to improve
+fitting performance. However, it is crucial to recognize that
+with a fixed learning rate, the improvement from this strategy
+is naturally constrained.
+
+4
+
+TABLE III: Time consumption of L-BFGS and Adam
+optimizers in fitting functions f7 and f8 using MLP and
+KAN
+Function
+f7
+f7
+f7
+f7
+f8
+f8
+f8
+f8
+
+Network
+MLP
+MLP
+KAN
+KAN
+MLP
+MLP
+KAN
+KAN
+
+Optimizer
+L-BFGS
+Adam
+L-BFGS
+Adam
+L-BFGS
+Adam
+L-BFGS
+Adam
+
+Time(s)
+16.0677
+8.6278
+901.4664
+122.8072
+15.7724
+8.4364
+941.1880
+150.0152
+
+An additional limitation of the L-BFGS algorithm is its
+substantial time complexity. As illustrated in Table III, for
+an identical number of epochs, the training duration of the
+network with the L-BFGS optimizer is frequently several times
+greater than with the Adam optimizer.
+Drawing from earlier experiments and findings, the fitting
+tests will utilize the Adam optimizer set with a learning rate of
+0.01. As shown in Fig. 6, KAN outperformed MLP in terms
+of fitting functions with singularities at the same number of
+epochs. However, it is noteworthy that during our experiments,
+the computation time for KAN was frequently much longer
+compared to that of MLP (refer to the Appendix for more
+information).
+Fig 7 sheds light on a potential reason for the below-par
+performance of the two networks in such function fitting tasks.
+Notably, within a given error tolerance limit, it has been noted
+that higher absolute values of the function’s first derivative
+are associated with a greater number of epochs needed for
+convergence. Additionally, because of restrictions posed by
+the learning rate, increasing the number of epochs offers
+only marginal benefits in fitting accuracy, thus limiting the
+networks’ overall performance.
+E. Functions with coherent oscillations
+A different kind of functional singularity, referred to as an
+’coherent oscillatory singularity,’ is illustrated by functions
+f9 and f10 . These functions exhibit ’unreachable points’ (for
+example, x = 0 in the case of f9 ) where, as the function gets
+closer to these points, its values oscillate more rapidly, crossing
+the x-axis an infinite number of times. At these ’unreachable
+points’, not only does the absolute value of the first derivative
+lack a generalized limit, but the function values themselves
+cannot be represented within the extended real number system.
+In the experimental phase, taking a similar approach as
+described in section D, we initially explored the impacts of
+raising the sampling rate, the number of Epochs, and the
+selection of optimizer. As shown in Fig 8 and 9, an increase in
+the sampling rate did not markedly enhance fitting accuracy.
+Additionally, while increasing the number of Epochs was
+advantageous, its effectiveness diminished after surpassing a
+certain Epoch threshold, leading to a slower reduction in test
+loss.
+In particular, within the KAN network framework, the
+optimizer L-BFGS outperformed Adam for function f9 , while
+
+TABLE IV: Time consumption of L-BFGS and Adam
+optimizers in fitting functions f9 and f10 using MLP and
+KAN
+Function
+f9
+f9
+f9
+f9
+f10
+f10
+f10
+f10
+
+Network
+MLP
+MLP
+KAN
+KAN
+MLP
+MLP
+KAN
+KAN
+
+Optimizer
+L-BFGS
+Adam
+L-BFGS
+Adam
+L-BFGS
+Adam
+L-BFGS
+Adam
+
+Time(s)
+14.7571
+7.8956
+1365.7881
+127.7374
+14.1521
+8.5803
+557.7114
+131.8761
+
+for function f10 , Adam showed superior results. On the
+other hand, when fitting both functions with an MLP, Adam
+consistently performed better than L-BFGS.
+In a similar manner, Table IV demonstrates that employing
+the L-BFGS optimizer during the fitting process usually resulted in an additional increase in computational time. Figure
+10 demonstrates that KAN consistently surpasses MLP when
+comparing performance over the same number of epochs.
+IV. N OISY FUNCTIONS
+In the following, we discuss the roles of noise functions.
+These functions have a wide range of applications, as noise
+can be added to any function, including those previously
+discussed. Thus, we introduce noise to these functions and
+proceed to evaluate the performance of MLP and KAN.
+According to the conclusions drawn in the preceding section,
+we will classify the functions into three categories: normal
+functions, functions with localized irregularities, and functions
+with severe discontinuities.
+A. Regular functions
+We introduce noise to functions exhibiting strong regularity,
+and subsequently fit these noisy data using KAN and MLP.
+The experimental outcomes are depicted in Fig 11. Our
+observations indicate that KAN achieves a lower test loss
+with low noise levels but performs worse under high noise
+conditions. When comparing the function fitting effect, the
+conclusion remains consistent: MLP shows better performance
+with minor noise interference, but KAN rapidly outperforms
+MLP as the training sample size increases.
+B. Adding noise to functions with irregularities
+Noise is subsequently added to f3 , f4 , f5 , and f6 . The
+experimental findings are shown in Fig 13. It is clear that the
+noise nearly completely conceals the irregular characteristics
+of the functions. When compared to the original data, fitting
+noisy data is more difficult for neural networks. Although
+increasing the number of training samples greatly enhances
+the fitting performance, it still falls short of the noise-free
+level. For f3 and f4 , the network can still capture some of the
+irregular features with a larger training sample. However, for
+f5 and f6 , both KAN and MLP perform poorly. The networks
+still have difficulty identifying the jump discontinuities, even
+with an increased sample size.
+
+5
+
+C. Irregular functions adding noise
+In Fig 14, it becomes clear that the KAN fitting performance
+greatly surpasses that of MLP when noise is added to functions
+with singularities or coherent oscillation. Interestingly, in these
+extreme and unusual function scenarios, the impact of adding
+noise to the fitting process is minimal, to the point that fitting
+with noisy data produces results that are either on par with
+or better than those derived from the original, noise-free data.
+This minimal influence of noise highlights the ineffectiveness
+of strategies relying solely on increased sampling rates in such
+instances, as they fail to exploit the subtle benefits that noise
+brings.
+V. C ONCLUSION
+In this study, we evaluate the effectiveness of KAN and
+MLP in approximating irregular or noisy functions. Our analysis concentrates on two main factors: the relative performance
+of KAN and MLP in fitting functions with different types
+according to regularity, and their ability to handle noise during
+the fitting process.
+At first, in order to thoroughly evaluate the performance
+of the two networks, we designed three sets of comparative
+experiments. These focus on testing their effectiveness in
+fitting different functions under varied conditions: changing
+sampling rates, varying numbers of epochs, and, particularly
+for functions f7 − f10 , examining the effect of different
+optimizers (exclusively to identify the optimal optimizer).
+Secondly, as identified in [2] and additionally explored in
+this study, raising the sampling rate is a potent method to
+enhance the fitting performance of functions f1 − f6 . Particularly, this strategy shows greater advantages when handling
+noisy data versus clean data. Nevertheless, the improvement in
+the fitting accuracy for functions with low regularity (f7 −f10 )
+is minimal, irrespective of the presence of noise.
+Thirdly, we also compared the fitting performance under
+varying Epochs from two distinct perspectives: convergence
+speed and stabilized test loss. KAN exhibits a faster convergence rate than MLP across all tested functions. However,
+MLP outperforms KAN on test functions f3 − f6 on stabilized
+test loss.
+Fourthly, via experimental analysis (fitting f7 − f10 ), it
+was observed that Adam exceeded L-BFGS in performance
+for both networks in every instance, except for function f9 .
+Notably, when fitting function f9 with the KAN, L-BFGS
+demonstrated better results than Adam.
+At last, when dealing with noisy functions, KAN exhibits
+superior performance over MLP for regular functions or irregular functions. Conversely, for functions that with jump
+discontinuities or singularities, MLP outperforms KAN.
+ACKNOWLEDGMENT
+The authors wish to extend their sincere appreciation to
+Dr. Aijun Zhang for his enlightening discussions about the
+negative effects of noise on the KANs network and for offering
+numerous invaluable suggestions for this paper.
+
+R EFERENCES
+[1] Z. Liu, Y. Wang, S. Vaidya, F. Ruehle, J. Halverson, M. Soljačić, T. Y.
+Hou, and M. Tegmark, “Kan: Kolmogorov-arnold networks,” 2024.
+[2] H. Shen, C. Zeng, J. Wang, and Q. Wang, “Reduced effectiveness of
+kolmogorov-arnold networks on functions with noise,” 2024.
+[3] A. N. Kolmogorov, “On the representation of continuous functions of
+several variables as superpositions of continuous functions of a smaller
+number of variables,” Doklady Akademii Nauk SSSR, vol. 108, no. 2,
+pp. 179–182, 1956.
+[4] I. Daubechies, Ten Lectures on Wavelets. Society for Industrial and
+Applied Mathematics, 1992. [Online]. Available: https://epubs.siam.org/
+doi/abs/10.1137/1.9781611970104
+[5] A. Zhang, “Kans can’t deal with noise,” 2024, https:
+//github.com/SelfExplainML/PiML-Toolbox/blob/main/docs/Workshop/
+KANs Can’t Deal with Noise.ipynb.
+[6] A. A. Gomez, A. S. Neto, and J. Zubelli, “Diffusion representation for
+asymmetric kernels,” 2024.
+[7] A. N. Kolmogorov, “On the representation of continuous functions
+of several variables by superpositions of continuous functions of one
+variable and addition,” Doklady Akademii Nauk SSSR, vol. 114, pp. 953–
+956, 1957.
+[8] V. I. Arnold, “On functions of three variables,” Doklady Akademii Nauk
+SSSR, vol. 114, pp. 679–681, 1957.
+[9] A. Papoulis, “Signal analysis,” 1977. [Online]. Available: https:
+//api.semanticscholar.org/CorpusID:115354299
+[10] J. Braun and M. Griebel, “On a constructive proof of kolmogorov’s superposition theorem,” Constructive Approximation, vol. 30, pp. 653–675,
+2009. [Online]. Available: https://doi.org/10.1007/s00365-009-9054-2
+[11] S. Hein and A. Zakhor, “Reconstruction of oversampled band-limited
+signals from sigma/delta encoded binary sequences,” IEEE Transactions
+on Signal Processing, vol. 42, no. 4, pp. 799–811, 1994.
+[12] I. Maravic and M. Vetterli, “Sampling and reconstruction of signals with
+finite rate of innovation in the presence of noise,” IEEE Transactions
+on Signal Processing, vol. 53, no. 8, pp. 2788–2805, 2005.
+[13] J. Zhang, T. Wang, W. Ng, and W. Pedrycz, “Perturbation-based oversampling technique for imbalanced classification problems,” International Journal of Machine Learning and Cybernetics, vol. 14, pp. 773–
+787, 2023.
+[14] C. J. Vaca-Rubio, L. Blanco, R. Pereira, and M. Caus, “KolmogorovArnold Networks (KANs) for Time Series Analysis,” arXiv e-prints, p.
+arXiv:2405.08790, May 2024.
+[15] K. Xu, L. Chen, and S. Wang, “Kolmogorov-Arnold Networks for Time
+Series: Bridging Predictive Power and Interpretability,” arXiv e-prints,
+p. arXiv:2406.02496, Jun. 2024.
+[16] B. C. Koenig, S. Kim, and S. Deng, “KAN-ODEs: Kolmogorov-Arnold
+Network Ordinary Differential Equations for Learning Dynamical Systems and Hidden Physics,” arXiv e-prints, p. arXiv:2407.04192, Jul.
+2024.
+[17] Y. Wang, J. Sun, J. Bai, C. Anitescu, M. Sadegh Eshaghi, X. Zhuang,
+T. Rabczuk, and Y. Liu, “Kolmogorov Arnold Informed neural network:
+A physics-informed deep learning framework for solving PDEs based
+on Kolmogorov Arnold Networks,” arXiv e-prints, p. arXiv:2406.11045,
+Jun. 2024.
+[18] A. Jamali, S. K. Roy, D. Hong, B. Lu, and P. Ghamisi, “How to
+Learn More? Exploring Kolmogorov-Arnold Networks for Hyperspectral
+Image Classification,” arXiv e-prints, p. arXiv:2406.15719, Jun. 2024.
+[19] Y. Peng, M. He, F. Hu, Z. Mao, X. Huang, and J. Ding, “Predictive Modeling of Flexible EHD Pumps using Kolmogorov-Arnold Networks,”
+arXiv e-prints, p. arXiv:2405.07488, May 2024.
+[20] B. Azam and N. Akhtar, “Suitability of KANs for Computer Vision:
+A preliminary investigation,” arXiv e-prints, p. arXiv:2406.09087, Jun.
+2024.
+[21] R. Bresson, G. Nikolentzos, G. Panagopoulos, M. Chatzianastasis,
+J. Pang, and M. Vazirgiannis, “KAGNNs: Kolmogorov-Arnold Networks
+meet Graph Learning,” arXiv e-prints, p. arXiv:2406.18380, Jun. 2024.
+[22] F. Zhang and X. Zhang, “GraphKAN: Enhancing Feature Extraction with Graph Kolmogorov Arnold Networks,” arXiv e-prints, p.
+arXiv:2406.13597, Jun. 2024.
+[23] C. Li, X. Liu, W. Li, C. Wang, H. Liu, and Y. Yuan, “U-KAN Makes
+Strong Backbone for Medical Image Segmentation and Generation,”
+arXiv e-prints, p. arXiv:2406.02918, Jun. 2024.
+[24] S. Sidharth, A. Keerthana, R. Gokul, and K. Anas, “Chebyshev
+Polynomial-Based Kolmogorov-Arnold Networks: An Efficient Architecture for Nonlinear Function Approximation,” arXiv e-prints, p.
+arXiv:2405.07200, May 2024.
+
+6
+
+[25] M. Kiamari, M. Kiamari, and B. Krishnamachari, “GKAN: Graph
+Kolmogorov-Arnold Networks,” arXiv e-prints, p. arXiv:2406.06470,
+Jun. 2024.
+[26] R. Genet and H. Inzirillo, “TKAN: Temporal Kolmogorov-Arnold
+Networks,” arXiv e-prints, p. arXiv:2405.07344, May 2024.
+[27] Z. Bozorgasl and H. Chen, “Wav-KAN: Wavelet Kolmogorov-Arnold
+Networks,” arXiv e-prints, p. arXiv:2405.12832, May 2024.
+[28] A. Dylan Bodner, A. Santiago Tepsich, J. Natan Spolski, and
+S. Pourteau, “Convolutional Kolmogorov-Arnold Networks,” arXiv eprints, p. arXiv:2406.13155, Jun. 2024.
+[29] A. Afzal Aghaei, “fKAN: Fractional Kolmogorov-Arnold Networks with
+trainable Jacobi basis functions,” arXiv e-prints, p. arXiv:2406.07456,
+Jun. 2024.
+[30] Q. Qiu, T. Zhu, H. Gong, L. Chen, and H. Ning, “ReLU-KAN: New
+Kolmogorov-Arnold Networks that Only Need Matrix Addition, Dot
+Multiplication, and ReLU,” arXiv e-prints, p. arXiv:2406.02075, Jun.
+2024.
+[31] N. Thao and M. Vetterli, “Reduction of the mse in r-times oversampled
+a/d conversion o(1/r) to o(1/r2 ),” IEEE Transactions on Signal
+Processing, vol. 42, no. 1, pp. 200–203, 1994.
+[32] R. R. Coifman and S. Lafon, “Diffusion maps,” Applied and Computational Harmonic Analysis, vol. 21, no. 1, pp. 5–30, 2006.
+[33] X. Wang, Y. Li, Y. Li, and G. Kish, “From black box to clarity:
+Ai-powered smart grid optimization with kolmogorov-arnold networks,”
+2024. [Online]. Available: https://arxiv.org/abs/2408.04063
+[34] a. Tran, T. Le, D. Tran, P. Hoai Luan, D. Le Vu Trung, T. Vu, V. Nguyen,
+and Y. Nakashima, “Exploring the limitations of kolmogorov-arnold
+networks in classification: Insights to software training and hardware
+implementation,” 07 2024.
+[35] R. Yu, W. Yu, and X. Wang, “Kan or mlp: A fairer comparison,” 2024.
+[Online]. Available: https://arxiv.org/abs/2407.16674
+[36] J. Wang, P. Cai, Z. Wang, H. Zhang, and J. Huang, “CEST-KAN:
+Kolmogorov-Arnold Networks for CEST MRI Data Analysis,” arXiv
+e-prints, p. arXiv:2406.16026, Jun. 2024.
+[37] M. Cheon, “Kolmogorov-Arnold Network for Satellite Image Classification in Remote Sensing,” arXiv e-prints, p. arXiv:2406.00600, Jun.
+2024.
+[38] J. Zhang, “RPN: Reconciled Polynomial Network Towards Unifying PGMs, Kernel SVMs, MLP and KAN,” arXiv e-prints, p.
+arXiv:2407.04819, Jul. 2024.
+[39] A. Kundu, A. Sarkar, and A. Sadhu, “KANQAS: KolmogorovArnold Network for Quantum Architecture Search,” arXiv e-prints, p.
+arXiv:2406.17630, Jun. 2024.
+[40] S. Teymoor Seydi, “Unveiling the Power of Wavelets: A Wavelet-based
+Kolmogorov-Arnold Network for Hyperspectral Image Classification,”
+arXiv e-prints, p. arXiv:2406.07869, Jun. 2024.
+[41] T. Tang, Y. Chen, and H. Shu, “3D U-KAN Implementation for
+Multi-modal MRI Brain Tumor Segmentation,” arXiv e-prints, p.
+arXiv:2408.00273, Aug. 2024.
+[42] T. Wang and S. Singh, “KAN based Autoencoders for Factor Models,”
+arXiv e-prints, p. arXiv:2408.02694, Aug. 2024.
+[43] R. Li, “GNN-MolKAN: Harnessing the Power of KAN to Advance
+Molecular Representation Learning with GNNs,” arXiv e-prints, p.
+arXiv:2408.01018, Aug. 2024.
+[44] Z. Lai, C. Liu, S. Sheng, and Z. Zhang, “KAN-RCBEVDepth: A multimodal fusion algorithm in object detection for autonomous driving,”
+arXiv e-prints, p. arXiv:2408.02088, Aug. 2024.
+[45] A. Lawan, J. Pu, H. Yunusa, A. Umar, and M. Lawan, “MambaForGCN:
+Enhancing Long-Range Dependency with State Space Model and
+Kolmogorov-Arnold Networks for Aspect-Based Sentiment Analysis,”
+arXiv e-prints, p. arXiv:2407.10347, Jul. 2024.
+[46] M. Ghaith Altarabichi, “DropKAN: Regularizing KANs by masking
+post-activations,” arXiv e-prints, p. arXiv:2407.13044, Jul. 2024.
+[47] A. Igali and P. Shamoi, “Image Classification using Fuzzy Pooling
+in Convolutional Kolmogorov-Arnold Networks,” arXiv e-prints, p.
+arXiv:2407.16268, Jul. 2024.
+[48] S. Zinage, S. Mondal, and S. Sarkar, “DKL-KAN: Scalable Deep
+Kernel Learning using Kolmogorov-Arnold Networks,” arXiv e-prints,
+p. arXiv:2407.21176, Jul. 2024.
+[49] X. Li, Z. Feng, Y. Chen, W. Dai, Z. He, Y. Zhou, and S. Jiao, “COEFFKANs: A Paradigm to Address the Electrolyte Field with KANs,” arXiv
+e-prints, p. arXiv:2407.20265, Jul. 2024.
+[50] F. Dong, “TCKIN: A Novel Integrated Network Model for Predicting
+Mortality Risk in Sepsis Patients,” arXiv e-prints, p. arXiv:2407.06560,
+Jul. 2024.
+
+[51] Y. Chen, Z. Zhu, S. Zhu, L. Qiu, B. Zou, F. Jia, Y. Zhu, C. Zhang,
+Z. Fang, F. Qin, J. Fan, C. Wang, Y. Gao, and G. Yu, “SCKansformer:
+Fine-Grained Classification of Bone Marrow Cells via Kansformer
+Backbone and Hierarchical Attention Mechanisms,” arXiv e-prints, p.
+arXiv:2406.09931, Jun. 2024.
+
+A PPENDIX
+Given the considerably extended computation times for
+KAN compared to MLP when fitting functions exhibiting
+singularities or coherent oscillations, as detailed in Section
+3, we carried out further experiments to explore this matter. Nonetheless, owing to the persistent effects of codinglevel optimizations, these findings do not serve as conclusive
+evidence. Therefore, they are included in the Appendix for
+documentation and further examination.
+TABLE V: Performance of MLP and KAN in recovering f7 ,
+f8 , f9 and f10
+Function
+
+Network
+
+Epochs
+
+Time(s)
+
+f7
+f7
+f8
+f8
+f7
+f7
+f8
+f8
+f9
+f9
+f10
+f10
+f9
+f9
+f10
+f10
+
+MLP
+KAN
+MLP
+KAN
+MLP
+KAN*
+MLP
+KAN*
+MLP
+KAN
+MLP
+KAN
+MLP
+KAN*
+MLP
+KAN*
+
+2000
+2000
+2000
+2000
+25000
+2000
+25000
+2000
+2000
+2000
+2000
+2000
+220000
+2000
+22000
+2000
+
+9.4114
+124.5332
+10.2214
+128.6405
+135.06336
+149.6529
+103.8949
+121.0088
+8.6413
+993.7106
+10.0180
+134.2680
+858.6642
+1036.1291
+112.6193
+118.9079
+
+Test Loss
+(RMSE)
+22.17
+3.04
+11.20
+4.72
+0.95
+3.04
+2.71
+4.72
+0.32
+0.30
+0.42
+0.28
+0.23
+0.30
+0.37
+0.28
+
+* denotes replicated experiments. For the sake of ensuring full alignment
+
+of the data with original results, they are explicitly presented.
+
+As shown in Table V, by extending the number of epochs
+for training the MLP until its computation time matches that
+of the KAN, the MLP demonstrates better performance than
+the KAN in fitting the functions f7 and f8 . However, the KAN
+outperforms the MLP for functions f9 and f10 .
+
+7
+
+(a) f1
+
+(b) f2
+
+Fig. 1: Recover f1 and f2 independently using KAN and MLP under different training sample sizes.
+
+(a) Various epochs, f3 , training
+samples = 50
+
+(b) Various epochs, f4 , training (c) Various training samples, f3 (d) Various training samples, f4
+samples = 50
+
+(e) Real values and predictions of (f) Real values and predictions of (g) Real values and predictions of(h) Real values and predictions of
+MLP, f3 , training samples = 50 KAN, f3 , training samples = 50 MLP, f3 , training samples = 5000 KAN, f3 , training samples =
+5000
+
+(i) Real values and predictions of (j) Real values and predictions of (k) Real values and predictions of (l) Real values and predictions of
+MLP, f4 , training samples = 50 KAN, f4 , training samples = 50 MLP, f4 , training samples = 5000 KAN, f4 , training samples =
+5000
+
+Fig. 2: Recover f3 and f4 independently using KAN and MLP.
+
+8
+
+(a) Various epochs, f5 , training (b) Various training samples, f5
+samples = 50
+
+(c) Real values and predictions, (d) Real values and predictions,
+f5 , training samples = 50
+f5 , training samples = 5000
+
+(e) Various epochs, f6 , training (f) Various training samples, f6
+samples = 50
+
+(g) Real values and predictions, (h) Real values and predictions,
+f6 , training samples = 50
+f6 , training samples = 5000
+
+Fig. 3: Recover f5 and f6 independently using KAN and MLP.
+
+(a) f7
+
+(b) f8
+
+Fig. 4: Recover f7 and f8 independently using KAN and MLP with optimizer Adam, 2000 Epochs
+
+(a) MLP, f7
+
+(b) KAN, f7
+
+(c) MLP, f8
+
+(d) KAN, f8
+
+Fig. 5: The variation of test loss with the increasing number of epochs when recovering f7 and f8 independently using
+[1,10,1] KAN (grid=3,k=3) and [1,79,1] MLP with optimizer L-BFGS and Adam, learning rate=0.01
+
+9
+
+(a) f7 , MLP
+
+(b) f7 , KAN
+
+(c) f8 , MLP
+
+(d) f8 , KAN
+
+Fig. 6: Recover f7 , (x ∈ [0.001, 1]) and f8 , (x ∈ [−0.999, 0.999]) independently using [1,10,1] KAN (grid=3, k=3) and
+[1,79,1] MLP both with optimizer Adam, same or different epochs
+
+(a) KAN
+
+(b) MLP
+
+Fig. 7: Epochs minimization at error threshold < 1 versus slope k: comparison between [1,79,1] MLP and [1,10,1] KAN
+(grid=3,k=3) in fitting function f (x) = kx, x ∈ [0, 1]
+
+10
+
+(a) f9 , Adam for MLP, L-BFGS for KAN
+
+(b) f10 , Adam for MLP and KAN
+
+Fig. 8: Recover f9 and f10 independently using KAN and MLP with optimizer Adam or L-BFGS, 2000 Epochs
+
+(a) MLP, f9
+
+(b) KAN, f9
+
+(c) MLP, f10
+
+(d) KAN, f10
+
+Fig. 9: The variation of test loss with the increasing number of epochs when recovering f9 and f10 independently using
+[1,10,1] KAN (grid=3,k=3) and [1,79,1] MLP with optimizer L-BFGS and Adam, learning rate=0.01
+
+(a) f9 , MLP (Adam)
+
+(b) f9 , KAN (L-BFGS)
+
+(c) f10 , MLP (Adam)
+
+(d) f10 , KAN (Adam)
+
+Fig. 10: Recover f9 , (x ∈ [−0.999, 0.999]) and f10 , (x ∈ [−0.999, 0.999]) independently using [1,10,1] KAN (grid=3,k=3)
+and [1,79,1]MLP with same or different optimizers and epochs
+
+11
+
+(a) Various training samples, [1,1,1] KAN (grid=3, k=3) and
+[1,7,1] MLP, f1 with noise
+
+(b) Various training samples, [1,5,1] KAN (grid=3, k=3) and
+[1,39,1] MLP, f2 with noise
+
+(c) Original data, noisy data and predictions, (d) Original data, noisy data and predictions (e) Original data, noisy data and predictions
+f1 with noise, training samples = 50
+of MLP, f1 with noise, training samples =
+of KAN, f3 with noise, training samples =
+5000 (500 plotted for clarity)
+5000 (500 plotted for clarity)
+
+(f) Original data, noisy data and predictions, (g) Original data, noisy data and predictions (h) Original data, noisy data and predictions
+f2 with noise, training samples = 50
+of MLP, f2 with noise, training samples =
+of KAN, f2 with noise, training samples =
+5000 (500 plotted for clarity)
+5000 (500 plotted for clarity)
+
+Fig. 11: Recover f1 and f2 with noise independently using KAN and MLP.
+
+12
+
+(a) Various training samples, [1,1,1] KAN (grid=3, k=3) and
+[1,7,1] MLP, f3 with noise
+
+(b) Various training samples, [1,5,1] KAN (grid=3, k=3) and
+[1,39,1] MLP, f4 with noise
+
+(c) Original data, noisy data and predictions, (d) Original data, noisy data and predictions (e) Original data, noisy data and predictions
+f3 with noise, training samples = 50
+of MLP, f3 with noise, training samples =
+of KAN, f3 with noise, training samples =
+5000 (500 plotted for clarity)
+5000 (500 plotted for clarity)
+
+(f) Original data, noisy data and predictions, (g) Original data, noisy data and predictions (h) Original data, noisy data and predictions
+f4 with noise, training samples = 50
+of MLP, f4 with noise, training samples =
+of KAN, f4 with noise, training samples =
+5000 (500 plotted for clarity)
+5000 (500 plotted for clarity)
+
+Fig. 12: Recover f3 and f4 with noise independently using KAN and MLP.
+
+13
+
+(a) Various training samples, [1,5,1] KAN (grid=3, k=3) and
+[1,39,1] MLP, f5 with noise
+
+(b) Various training samples, [1,5,1] KAN (grid=3, k=3) and
+[1,39,1] MLP, f6 with noise
+
+(c) Original data, noisy data and predictions, f5 with noise,
+training samples = 50
+
+(d) Original data, noisy data and predictions, f5 with noise,
+training samples = 5000 (500 plotted for clarity)
+
+(e) Original data, noisy data and predictions, f6 with noise,
+training samples = 50
+
+(f) Original data, noisy data and predictions, f6 with noise,
+training samples = 5000 (500 plotted for clarity)
+
+Fig. 13: Recover f5 and f6 with noise independently using KAN and MLP.
+
+14
+
+(a) Various training samples, [1,10,1] KAN (b) Original data, noisy data and predictions, (c) Original data, noisy data and predictions,
+(grid=3, k=3) and [1,79,1] MLP, f7 with noise
+f7 with noise, MLP
+f7 with noise, KAN
+
+(d) Various training samples, [1,10,1] KAN (e) Original data, noisy data and predictions, (f) Original data, noisy data and predictions,
+(grid=3, k=3) and [1,79,1] MLP, f8 with noise
+f8 with noise, MLP
+f8 with noise, KAN
+
+(g) Various training samples, [1,10,1] KAN (h) Original data, noisy data and predictions, (i) Original data, noisy data and predictions,
+(grid=3, k=3, Opt=L-BFGS) and [1,79,1]
+f9 with noise, MLP
+f9 with noise, KAN
+MLP (Opt=Adam), f9 with noise
+
+(j) Various training samples, [1,10,1] KAN
+(grid=3, k=3) and [1,79,1] MLP, f10 with
+noise
+
+(k) Original data, noisy data and predictions, (l) Original data, noisy data and predictions,
+f10 with noise, MLP
+f10 with noise, KAN
+
+Fig. 14: Recover noisy functions with singularities or coherent oscillations independently using KAN and MLP.
+

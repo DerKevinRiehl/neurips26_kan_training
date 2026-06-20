@@ -1,0 +1,6 @@
+Title: Approximation Rates in Besov Norms and Sample-Complexity of Kolmogorov-Arnold Networks with Residual Connections
+Citation key used: kratsios2025besov
+Main use in paper: Theory support for KAN sample-complexity discussion.
+Summary: The paper proves approximation and sample-complexity guarantees for residual KANs on Besov-regular function classes.
+Sample-efficiency angle: It provides a theoretical basis for learning smooth functions with KANs.
+Caveat: The assumptions are smooth and noiseless compared with RL control, where targets are bootstrapped, noisy, and nonstationary.

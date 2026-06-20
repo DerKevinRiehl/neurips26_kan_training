@@ -1,0 +1,1233 @@
+Highlights
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+Allen Wang,Gavin Tao
+• State-of-the-art QuadKAN. We propose a structured cross-modal policy for quadrupedal locomotion, parameterized
+by splines and instantiated via KANs. To the best of our knowledge, this is the first vision-driven, KAN-enhanced DRL
+framework for quadruped motion control.
+
+arXiv:2508.19153v2 [cs.RO] 7 Sep 2025
+
+• Effective proprioception–vision representation. We design a compact input representation in which an MLP embeds
+proprioceptive states and a CNN patchifies depth images into tokens tailored for fusion. This provides egocentric
+stability and foresightful obstacle awareness while reducing visual sensitivity and enhancing training efficiency.
+• KAN effectiveness. We introduce KANs into both the proprioceptive encoder and the fusion head. The spline-based
+inductive bias aligns with the piecewise-smooth structure of gait dynamics, yielding improved sample efficiency, policy
+stability, and interpretability compared with unstructured regressors.
+• PPO training robustness. We introduce an MMDR protocol with end-to-end PPO optimization. A compact, statecentric reward balances task-aligned progress, energy efficiency, and safety, enabling stable learning and consistent
+performance.
+• Comprehensive evaluation. Extensive experiments across trained, static-rugged, and dynamic-obstacle terrains
+demonstrate consistent gains over state-of-the-art (SOTA) baselines in return, collision avoidance, and distance
+traveled, validating the effectiveness of the proposed framework.
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via
+End-to-End Reinforcement Learning
+Allen Wanga , Gavin Taob,∗
+ARTICLE INFO
+
+ABSTRACT
+
+Keywords:
+Quadrupedal Robots
+Vision-driven Locomotion
+Reinforcement Learning
+Multi-modal Fusion
+End-to-end Policy Learning
+
+We address vision-guided quadruped motion control with reinforcement learning (RL) and highlight
+the necessity of combining proprioception with vision for robust control. We propose QuadKAN, a
+spline-parameterized cross-modal policy instantiated with Kolmogorov–Arnold Networks (KANs).
+The framework incorporates a spline encoder for proprioception and a spline fusion head for
+proprioception–vision inputs. This structured function class aligns the state-to-action mapping with
+the piecewise-smooth nature of gait, improving sample efficiency, reducing action jitter and energy
+consumption, and providing interpretable posture–action sensitivities. We adopt Multi-Modal Delay
+Randomization (MMDR) and perform end-to-end training with Proximal Policy Optimization (PPO).
+Evaluations across diverse terrains, including both even and uneven surfaces and scenarios with
+static or dynamic obstacles, demonstrate that QuadKAN achieves consistently higher returns, greater
+distances, and fewer collisions than state-of-the-art (SOTA) baselines. These results show that splineparameterized policies offer a simple, effective, and interpretable alternative for robust vision-guided
+locomotion. A repository is hosted at https://github.com/allen-quad-robot/quadkan, to be made
+available upon acceptance.
+
+1. Introduction
+Legged robots offer mobility where wheeled platforms
+fail, such as stairs, rubble, soft substrates, and cluttered
+indoor–outdoor settings, enabling applications in inspection,
+search and rescue, agriculture, and planetary exploration
+[1]. Robust locomotion control is therefore a foundational
+capability for practical quadrupedal systems, underpinning
+safe navigation and dependable operation across diverse
+terrains and disturbances [2]. Deep reinforcement learning
+(DRL) has emerged as a compelling paradigm for such
+control because it optimizes closed-loop policies through
+interaction and can produce adaptive behaviors [3].
+A substantial body of prior work has focused on training blind controllers that rely exclusively on proprioceptive
+inputs such as inertial measurement units (IMUs) and joint
+feedback [4]. While these blind policies can traverse uneven and unknown terrains through large-scale simulation
+and domain randomization, they inherently lack foresight:
+without exteroceptive input, they respond only upon contact
+and struggle to proactively avoid obstacles or plan foot
+placement on irregular ground. Vision complements proprioception by providing anticipatory geometric information,
+enabling early detection of distant obstacles and terrain
+changes [5]. As a result, cross-modal policies that integrate
+proprioception with depth imaging have gained prominence,
+facilitating safer and more efficient locomotion through earlier trajectory adjustments.
+Most existing cross-modal pipelines adopt multilayer
+perceptrons (MLPs) for the proprioceptive encoder and for
+the decision head that fuses proprioception with vision.
+While effective, this unstructured regressor has well-known
+drawbacks in the locomotion setting [6]: it provides limited
+∗ Corresponding author
+
+(A. Wang); (G. Tao)
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+inductive bias for the piecewise-smooth nature of gait dynamics (smooth within a phase, sharp transitions at contact events), couples inputs globally rather than locally,
+and offers little interpretability about how posture variables
+influence joint commands. These properties can manifest
+as either over-smoothing or oscillatory actions near phase
+boundaries, increased sensitivity to asynchronous sensing,
+and difficulty diagnosing failure cases. Moreover, improving
+expressivity typically requires widening or deepening the
+MLP, which can inflate parameters and on-board compute
+without addressing the underlying mismatch in function
+class [7].
+This paper introduces QuadKAN, a vision-guided endto-end deep reinforcement learning (DRL) framework that
+replaces unstructured regressors with a spline-parameterized
+policy class instantiated via Kolmogorov–Arnold Networks
+(KANs) [8]. KAN layers implement mappings using spline
+bases with local support, naturally capturing the piecewisesmooth structure of gait. We employ KANs in two components: (i) a proprioceptive spline encoder that maps IMU
+and joint features to compact tokens aligned with intraphase smoothness and inter-phase transitions, and (ii) a
+spline fusion head that integrates proprioceptive tokens with
+depth features while maintaining a lightweight, attentionfree compute profile. This structured policy class promotes
+stable, locally controlled responses, reduces action jitter,
+and enables actionable interpretability through coefficient
+analysis and local-sensitivity visualizations [9].
+A practical challenge in vision-guided control is asynchrony: sensor, inference, and actuation latencies differ
+across modalities—particularly for visual processing—resulting
+in misalignment between proprioceptive and visual streams.
+To mitigate this, Multi-Modal Delay Randomization (MMDR)
+is adopted, which randomizes the temporal selection of
+both proprioceptive and visual inputs during training to
+Page 1 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+emulate real-world, modality-dependent latencies. Policies
+are trained end-to-end using Proximal Policy Optimization
+(PPO) under the same MMDR protocol and domain randomization settings as prior work, enabling fair comparisons [6].
+The primary contributions of this work are as follows:
+1) State-of-the-art QuadKAN. We propose a structured
+cross-modal policy for quadrupedal locomotion, parameterized by splines and instantiated via KANs. To the best
+of our knowledge, this is the first vision-driven, KANenhanced DRL framework for quadruped motion control.
+2) Effective proprioception–vision representation. We
+design a compact input representation in which an MLP
+embeds proprioceptive states and a CNN patchifies depth
+images into tokens tailored for fusion. This provides
+egocentric stability and foresightful obstacle awareness
+while reducing visual sensitivity and enhancing training
+efficiency.
+3) KAN effectiveness. We introduce KANs into both the
+proprioceptive encoder and the fusion head. The splinebased inductive bias aligns with the piecewise-smooth
+structure of gait dynamics, yielding improved sample
+efficiency, policy stability, and interpretability compared
+with unstructured regressors.
+4) PPO training robustness. We introduce an MMDR
+protocol with end-to-end PPO optimization. A compact,
+state-centric reward balances task-aligned progress, energy efficiency, and safety, enabling stable learning and
+consistent performance.
+5) Comprehensive evaluation. Extensive experiments across
+trained, static-rugged, and dynamic-obstacle terrains
+demonstrate consistent gains over state-of-the-art (SOTA)
+baselines in return, collision avoidance, and distance
+traveled, validating the effectiveness of the proposed
+framework.
+Section 2 reviews prior work on blind and cross-modal
+locomotion. Section 3 details the QuadKAN framework,
+including the problem formulation, proprioceptive spline
+encoder, KAN-based fusion mechanism, and the MMDR
+training strategy. Section 4 describes the system architecture,
+network configurations, and training pipeline. Section 5
+presents quantitative and qualitative evaluations across diverse terrains and perturbations, along with ablation studies,
+interpretability analyses, and efficiency profiling. Finally,
+Section 6 concludes the paper and outlines future research
+directions.
+
+2. Related Work
+2.1. Learning-Based Quadrupedal Locomotion
+Quadrupedal locomotion has been approached through
+both model-based and learning-based methods. Modelbased pipelines typically rely on template dynamics, trajectory optimization over centroidal or full-body models,
+and model predictive control with explicit contact handling [10–15]. While these methods can produce precise
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+behaviors, they require accurate modeling and extensive
+parameter tuning, which limits scalability in complex or
+unstructured environments. In contrast, model-free RL optimizes closed-loop policies directly from interaction, often
+combined with domain randomization, enabling robust gait
+generation over uneven terrain and under external disturbances [16–18]. However, much of this progress has focused
+on proprioception-only controllers that lack exteroceptive
+input, constraining their ability to anticipate obstacles and
+perform precise foothold planning [19].
+
+2.2. Vision-Driven RL for Quadrupedal
+Locomotion
+Vision provides look-ahead geometric information that
+complements proprioception, enabling early perception of
+distant obstacles and anticipation of terrain changes prior to
+contact. Recent work integrates depth or image observations
+into RL pipelines, either end-to-end or through hierarchical
+structures [20–24]. While effective, commonly used fusion
+backbones present notable trade-offs: simple concatenation
+underutilizes spatial structure and lacks inductive bias; recurrent models suffer from vanishing gradients and limited
+capacity for long-horizon dependencies; and Transformerbased policies, though expressive, incur quadratic memory
+and computational costs with respect to token count, thereby
+constraining sequence length, spatial resolution, and training efficiency [25]. These limitations motivate the design
+of lightweight, structured policy architectures that capture
+locomotion-specific regularities without incurring the overhead of attention mechanisms.
+
+2.3. Policy Function Classes and Structured Priors
+Most cross-modal locomotion pipelines encode proprioceptive input using MLPs and implement fusion or decision
+heads with additional MLP layers. Although widely adopted,
+these unstructured regressors offer limited inductive bias
+for the piecewise-smooth nature of gait, which is typically
+smooth within a phase and exhibits sharp transitions at
+contact events [6]. Their global coupling of inputs can hinder local control, reduce interpretability of posture–action
+relationships, and result in either over-smoothed outputs or
+oscillatory actions near phase boundaries. Increasing model
+width or depth inflates parameter count and on-board computational cost without resolving the underlying functionclass mismatch [25]. Spline-parameterized networks provide
+a structured alternative by composing basis functions with
+local support, thereby enabling explicit control over smoothness and curvature, and naturally aligning with phase-wise
+dynamics. KANs instantiate this principle by parameterizing
+layers with spline bases, yielding localized responses and
+interpretable sensitivity profiles [8]. To the best of our
+knowledge, this is the first work to explore quadrupedal
+locomotion using KANs for both the proprioceptive encoder
+and the proprioception-vision fusion head.
+
+Page 2 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+Figure 1: Overall architecture of QuadKAN. Proprioceptive states are mapped by a KAN into a compact token; a lightweight
+CNN patchifies depth into spatial tokens. Tokens are projected to a common width and fused by a KAN-based spline head without
+attention. Policy and value heads are trained end-to-end with PPO.
+
+2.4. Asynchrony, Delay, and Domain
+Randomization
+Latency varies across sensing, inference, and actuation,
+with visual processing introducing particularly significant
+delays. This results in asynchronous multi-modal inputs and
+misalignment between proprioception and exteroception in
+real-world systems. Domain randomization is widely used
+to bridge the sim-to-real gap by perturbing dynamics, contacts, and visual attributes [6]; however, modality-dependent
+delays require dedicated treatment. MMDR addresses this
+by randomizing the temporal selection of proprioceptive and
+visual streams during training, emulating real-world asynchrony and improving robustness to cross-modal misalignment [25]. Complementary work has explored continuoustime RL and delayed Markov decision processes (MDPs)
+for constant-latency scenarios [7, 26]. In our framework,
+MMDR is integrated into an end-to-end PPO pipeline to
+account for modality-dependent delays while maintaining a
+lightweight, attention-free fusion mechanism.
+
+3. Methodology
+Figure 1 summarizes QuadKAN. The design follows a
+standard end-to-end DRL pipeline but replaces unstructured
+regressors with a spline-parameterized policy class instantiated via KAN. The policy consumes proprioception and
+depth inputs, performs attention-free fusion, and is optimized using PPO under the MMDR protocol.
+
+3.1. Cross-Modal Observations and Tokenization
+At time 𝑡, the agent receives a composite observation
+𝑜𝑡 =
+
+{ prop depth }
+𝑠𝑡 , 𝐼𝑡
+,
+
+prop
+
+(1)
+
+where 𝑠𝑡
+denotes proprioceptive feedback (IMU, joint
+depth
+states, and optionally the previous action) and 𝐼𝑡
+is a
+first-person depth image.
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Modality-specific encoders map each input to a latent
+token space:
+( prop )
+prop
+∈ ℝ𝑑𝑝 ,
+(2)
+𝑧𝑡
+= 𝑓KAN 𝑠𝑡
+(
+)
+depth
+vis
+𝑁×𝑑𝑣
+𝑧𝑡 = 𝑓CNN 𝐼𝑡
+∈ℝ
+,
+(3)
+where 𝑧vis
+𝑡 is a sequence of 𝑁 visual tokens obtained by
+patchifying the image into 𝑃 × 𝑃 blocks (assuming 𝑃 ∣ 𝐻
+and 𝑃 ∣ 𝑊 ), so that
+( )( )
+𝑁 = 𝐻
+⋅ 𝑊
+.
+𝑃
+𝑃
+Both modalities are projected to a common width 𝑑 and
+concatenated along the token dimension to form a unified
+cross-modal stream:
+prop
+
+𝑧̃ 𝑡
+
+prop
+
+= 𝑊𝑝 𝑧𝑡
+
+(4)
+
+∈ ℝ𝑑 ,
+
+(5)
+
+𝑁×𝑑
+vis
+𝑧̃ vis
+,
+𝑡 = 𝑧𝑡 𝑊𝑣 ∈ ℝ
+[ prop vis ]
+𝑈𝑡 = 𝑧̃ 𝑡 ; 𝑧̃ 𝑡
+∈ ℝ(1+𝑁)×𝑑 .
+
+(6)
+
+We augment 𝑈𝑡 with learned spatial/positional embedspat
+dings 𝐸pos ∈ ℝ(1+𝑁)×𝑑 (a reserved index for the proprioceptive token and a 2D grid for the 𝑁 visual tokens)
+and modality tags 𝐸mod ∈ ℝ(1+𝑁)×𝑑 (distinct tags for
+proprioception vs. vision). The input to the backbone is
+(
+)
+spat
+𝑈̂ 𝑡 = LN 𝑈𝑡 + 𝐸pos + 𝐸mod ,
+(7)
+where LN denotes layer normalization applied across the
+embedding dimension.
+
+3.2. Proprioceptive Spline–KAN Encoder
+Gait control is piecewise smooth: trajectories are locally
+smooth within contact phases and exhibit sharp transitions
+at foot-strike/lift-off. We encode this inductive bias by mapping proprioception using spline bases with local support.
+Page 3 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+The KAN architecture is shown in Fig. 2. Each KAN unit
+combines a learnable scalar projection with a B-spline expansion and a pointwise nonlinearity, yielding localized and
+interpretable responses aligned with phase-wise dynamics.
+Let 𝑥 ∈ ℝ𝑑in denote the proprioceptive vector. For unit
+𝑗,
+𝑀
+(
+∑
+(
+))
+𝑤𝑗𝑚 𝐵𝑚 𝑎⊤
+𝑥+𝑐
+,
+𝜙𝑗 (𝑥) = 𝜎 𝑏𝑗 +
+𝑗
+𝑗
+
+(8)
+where {𝐵𝑚 }𝑀
+are fixed B-spline basis functions (degree 𝑞,
+𝑚=1
+knot vector ), 𝑎𝑗 ∈ ℝ𝑑in and 𝑐𝑗 ∈ ℝ define the scalar input
+
+to the basis, 𝑤𝑗𝑚 ∈ ℝ are learnable coefficients, 𝑏𝑗 ∈ ℝ is
+a bias, and 𝜎(⋅) is a smooth activation. Stacking such layers
+yields 𝑓KAN ∶ ℝ𝑑in → ℝ𝑑𝑝 with localized responses.
+To promote stable control and suppress high-frequency
+actuation, we regularize the spline coefficients via a discrete
+curvature penalty and control the sensitivity via a Jacobian
+(Lipschitz-style) term:
+𝑑
+
+𝑝 𝑀−1
+∑
+∑(
+)2
+𝑤𝑗,𝑚+1 − 2𝑤𝑗,𝑚 + 𝑤𝑗,𝑚−1 ,
+curv = 𝜆𝑐
+
+𝑗=1 𝑚=2
+2]
+
+‖
+‖
+jac = 𝜆𝐿 𝔼𝑥∼ ‖ 𝜕𝜙(𝑥)
+‖ ,
+‖ 𝜕𝑥 ‖𝐹
+spline = curv + jac ,
+where 𝜙(𝑥) = [𝜙1 (𝑥), … , 𝜙𝑑𝑝
+distribution.
+
+(9a)
+(9b)
+(9c)
+
+(𝑥)]⊤ and  is the training
+
+3.3. SplineFusion Decision KAN Head
+Cross-modal fusion is implemented with a lightweight,
+token-wise KAN head that maps the concatenated stream
+𝑈̂ 𝑡 ∈ ℝ(1+𝑁)×𝑑 to fused features without attention, preserving linear complexity in the token count and the spline prior:
+𝑌𝑡 = 𝐺KAN (𝑈̂ 𝑡 ) ∈ ℝ(1+𝑁)×𝑑 .
+
+(10)
+
+Let the first token correspond to proprioception and the
+remaining 𝑁 tokens to vision. We form a compact summary
+by averaging visual tokens and concatenating with the proprioceptive token:
+1 ∑ vis
+𝑌 ,
+𝑁 𝑖=1 𝑡,𝑖
+𝑁
+
+𝑦̄vis
+𝑡 =
+
+(12)
+(13)
+
+𝑎𝑡 = 𝑎max tanh(𝑎̃𝑡 ),
+[∑
+]
+|
+𝑉𝜙 (ℎ𝑡 ) ≈ 𝔼
+𝛾 𝑙 𝑟𝑡+𝑙 | ℎ𝑡 .
+|
+
+(14)
+
+𝑙≥0
+
+We compute advantages with GAE(𝜆):
+𝑗 = 1, … , 𝑑𝑝 ,
+
+𝑚=1
+
+[
+
+the critic is a scalar value function:
+(
+)
+𝑎̃𝑡 ∼  𝜇𝜃 (ℎ𝑡 ), diag(𝜎𝜃2 (ℎ𝑡 )) ,
+
+([
+])
+prop
+ℎ𝑡 = 𝑓head 𝑌𝑡,1 ; 𝑦̄vis
+∈ ℝ𝑑ℎ ,
+𝑡
+(11)
+
+where 𝑓head is a compact projection (KAN block). The
+representation ℎ𝑡 feeds the policy and value heads in the RL
+module.
+
+3.4. Policy Optimization
+We cast control as an MDP and optimize an end-to-end
+PPO agent [27]. The policy is a Tanh-squashed Gaussian and
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+(15)
+
+𝛿𝑡 = 𝑟𝑡 + 𝛾𝑉𝜙 (ℎ𝑡+1 ) − 𝑉𝜙 (ℎ𝑡 ),
+𝐴𝑡 =
+
+𝑇∑
+−1−𝑡
+
+(𝛾𝜆)𝑙 𝛿𝑡+𝑙 ,
+
+𝑅̂ 𝑡 = 𝐴𝑡 + 𝑉𝜙 (ℎ𝑡 ).
+
+(16)
+
+𝑙=0
+𝜋 (𝑎 ∣ℎ )
+
+Let 𝜌𝑡 (𝜃) = 𝜋 𝜃 (𝑎𝑡 ∣ℎ𝑡 ) denote the importance ratio, where
+𝜃old
+
+𝑡
+
+𝑡
+
+𝜋𝜃 (𝑎𝑡 ∣ ℎ𝑡 ) is computed with the change-of-variables correction for Tanh-squashing.1 The clipped surrogate and auxiliary terms are
+[
+(
+)]
+𝜋 (𝜃) = − 𝔼 min 𝜌𝑡 𝐴𝑡 , clip(𝜌𝑡 , 1 − 𝜖, 1 + 𝜖) 𝐴𝑡 ,
+(17)
+
+]
+[
+𝑉 (𝜙) = 𝔼 (𝑉𝜙 (ℎ𝑡 ) − 𝑅̂ 𝑡 )2 ,
+[
+]
+𝐻 (𝜃) = − 𝔼 (𝜋𝜃 (⋅ ∣ ℎ𝑡 )) .
+
+(18)
+(19)
+
+The total loss minimized during training combines policy, value, entropy, and spline regularization:
+total (𝜃, 𝜙) = 𝜋 (𝜃)+𝛽𝑉 𝑉 (𝜙)+𝛽𝐻 𝐻 (𝜃)+𝛽spline spline .
+(20)
+Advantage normalization, gradient clipping, and mini-batch
+epochs follow standard PPO practice. Reward shaping uses
+a compact, state-centric design balancing forward progress,
+energy efficiency, and safety (coefficients reported in the
+implementation section).
+
+3.5. Multi-Modal Delay Randomization (MMDR)
+Building on the observation in (1), we inject modalityspecific delays during training and then use the same encoders/fusion pipeline on the delayed inputs [6].
+
+Proprioception latency. Let the simulator step be 𝛿. For
+each episode, sample Δprop ∼  [0, Δmax ] and set
+⌊
+⌋
+𝑘 = Δprop ∕𝛿 ,
+
+(21)
+(22)
+
+𝛼 = Δprop ∕𝛿 − 𝑘 ∈ [0, 1).
+Using a FIFO buffer of past proprioceptive states,
+prop
+
+𝑠̃𝑡
+
+prop
+
+prop
+
+(23)
+
+= (1 − 𝛼) 𝑠𝑡−𝑘 + 𝛼 𝑠𝑡−𝑘−1 .
+
+Visual latency. Maintain a buffer of the most recent 4𝑘
+
+depth frames, partition it into four contiguous blocks of
+length 𝑘, and sample one index per block to compose a 4frame stack:
+𝑖𝑗 ∼  {(𝑗 − 1)𝑘, … , 𝑗𝑘 − 1},
+[
+]
+depth
+𝐼̃𝑡
+= 𝐼𝑡−𝑖1 , 𝐼𝑡−𝑖2 , 𝐼𝑡−𝑖3 , 𝐼𝑡−𝑖4 .
+
+𝑗 = 1, … , 4,
+
+(24)
+
+1 If 𝑎 = 𝑎
+𝑎̃ ) with 𝑎̃𝑡 ∼  (𝜇𝜃 , Σ𝜃 ), then log 𝜋𝜃 (𝑎𝑡 ∣ ℎ𝑡 ) =
+𝑡
+max tanh(
+)
+∑ 𝑡(
+log  (𝑎̃𝑡 ; 𝜇𝜃 , Σ𝜃 ) − 𝑖 log 𝑎max,𝑖 (1 − tanh2 (𝑎̃𝑡,𝑖 )) .
+
+Page 4 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+Policy input. We simply replace 𝑜𝑡 in (1) by the delayed
+input
+
+𝑜̃𝑡 =
+
+{ prop depth }
+,
+𝑠̃𝑡 , 𝐼̃𝑡
+
+(25)
+
+and feed 𝑜̃𝑡 through the same encoders 𝑓KAN (⋅) and 𝑓CNN (⋅)
+as in (2)–(3), followed by the unchanged projection, concatenation and the backbone.
+
+Table 1
+QuadKAN architecture settings.
+Component
+
+Setting
+
+Token width 𝑑
+Proprio encoder
+
+84
+2-layer KAN; spline bases per unit 𝑏=8;
+hidden width 256
+3-layer CNN; patchify 64×64 with size
+𝑃 ×𝑃 to 𝑁=(64∕𝑃 )2 tokens; project to 𝑑
+3-layer KAN; input (1+𝑁)×𝑑; pooled to
+a fused feature
+3-layer KAN (256, 256) for 𝜇𝜃 and log 𝜎𝜃
+3-layer KAN (256, 256) for 𝑉𝜙
+Optional spline curvature and
+Jacobian/Lipschitz penalties on KAN
+coefficients
+
+Visual encoder
+Fusion head
+
+4. Implementation
+4.1. Environment Setup
+All experiments are conducted on a workstation equipped
+with an Intel Xeon Gold 6430 CPU (128 cores, 2.1 GHz base
+clock) and an NVIDIA GeForce RTX 4090 GPU (24 GB,
+CUDA-12.6). The operating system is Ubuntu 22.04. The
+physics simulation is run with PyBullet [28] and all models
+are implemented in Python 3.8 with PyTorch 2.4.1.
+The model is evaluated in three simulated environments
+that differ in terrain difficulty and obstacle dynamics:
+• Thin Obstacle: a flat plane seeded with numerous thin
+cuboid obstacles.
+• Static Obstacle with Rugged Terrain: uneven, discontinuous ground (maximum height 5 cm), requiring
+careful foothold placement with random size cuboid
+obstacles.
+• Dynamic Obstacle with Rugged Terrain: thin obstacles that move with randomly sampled velocities/directions on uneven discontinuous ground (maximum height 5 cm).
+Figure 3 shows representative scenes. Unless otherwise
+noted, obstacle layouts are resampled at episode reset; only
+Dynamic Obstacle with Rugged Terrain updates obstacle
+positions during an episode.
+
+4.2. RL MDP Details
+Observation space. We adopt a standard multi-modal set-
+
+ting. Proprioception stacks the three most recent slices,
+yielding an 84-D vector: per slice we include 12 joint angles, a 4-D IMU (roll/pitch and angular velocities), and the
+last executed 12-D action. Vision consists of four stacked
+64×64 first-person depth images from a head-mounted sensor; depths are clipped to [0.3, 10] m.
+
+Action space. Actions are 12-D desired joint position tar-
+
+gets; a PD controller maps targets to torques at each control
+step.
+
+Reward function. We use a compact, state-centric reward
+balancing forward progress, survival, and energy:
+energy
+
+𝑅𝑡 = 𝑅f𝑡 wd + 0.1 𝑅alive
++ 0.005 𝑅𝑡
+𝑡
+
+,
+
+(26)
+
+with 𝑅f𝑡 wd = ⟨𝑣𝑡 , 𝑒𝑥 ⟩, 𝑅alive
+= 1 until termination, and
+𝑡
+energy
+𝑅𝑡
+= −‖𝜏𝑡 ‖22 , where 𝜏𝑡 are realized torques.
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Policy head
+Value head
+Regularization
+
+Table 2
+PPO hyperparameters.
+Hyperparameter
+
+Value
+
+Episode horizon (steps)
+Samples per update
+Minibatch size
+Optimization epochs
+Discount 𝛾
+GAE 𝜆
+PPO clip 𝜖
+Entropy coefficient
+Policy/Value LR
+Optimizer
+Nonlinearity
+
+999
+16,384
+1,024
+3
+0.99
+0.95
+0.2
+0.005
+1 × 10−4
+Adam
+ReLU
+
+4.3. Model Architecture Details
+Unless noted otherwise, widths follow the compact configuration in Table 1. The visual CNN is shared by policy and
+value heads. KAN modules use shallow depth and a small
+number of spline bases per unit to remain lightweight.
+
+4.4. Training Protocol
+We train with PPO using generalized advantage estimation, advantage normalization, gradient clipping, and early
+stopping based on a KL divergence threshold. Hyperparameters are shared across baselines (Table 2). All methods train
+for 10 M environment steps with batch size 1,024, split into
+16 minibatches.
+
+Obstacle-density curriculum. For obstacle scenarios,
+
+obstacle density is annealed linearly from an easy start to
+a target distribution over training iterations. The schedule is
+identical for all methods.
+
+4.5. Multi-Modal Delay Randomization (MMDR)
+Details
+Proprioception latency. Let 𝑓sim and 𝑓ctrl denote simula-
+
+tor and control rates, with steps 𝛿sim =1∕𝑓sim and 𝛿ctrl =1∕𝑓ctrl
+(e.g., 𝑓sim =400 Hz, 𝑓ctrl =25 Hz). A FIFO buffer stores
+recent proprioceptive states at the simulator rate. At episode
+Page 5 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+Table 3
+Domain randomization ranges (episode-wise i.i.d. draws unless
+noted).
+Parameter
+
+Range
+
+Evaluation Metrics We report (i) mean episode return,
+
+Units
+
+Body mass (per link)
+[0.8, 1.2]× default
+Link inertia (per principal) [0.5, 1.5]× default
+Friction coefficient 𝜇
+[0.5, 1.25]
+Motor viscous friction
+[0.0, 0.05]
+Motor strength (torque limit)[0.8, 1.2]× default
+𝐾𝑃 (joint PD)
+[40, 90]
+𝐾𝐷 (joint PD)
+[0.4, 0.8]
+Proprioception latency
+[0, 0.04]
+
+–
+–
+–
+N⋅m⋅s/rad
+–
+–
+–
+s
+
+start, sample a fixed delay Δprop ∼  [0, Δmax ] and decompose
+Δprop = 𝑘sim 𝛿sim + 𝛼 𝛿sim ,
+
+𝑘sim ∈ ℕ0 , 𝛼 ∈ [0, 1).
+
+At a control step indexed by simulator time 𝑡, the delayed
+proprioception is the linear interpolation of adjacent buffer
+entries:
+prop
+
+𝑠̃𝑡
+
+prop
+
+= (1 − 𝛼) 𝑠𝑡−𝑘
+
+sim
+
+prop
+
++ 𝛼 𝑠𝑡−𝑘
+
+sim −1
+
+.
+
+(27)
+
+The sampled Δprop remains fixed throughout the episode.
+
+Visual latency. Let 𝑓vis be the depth-camera frame rate
+(e.g., 30 Hz), with 𝛿vis =1∕𝑓vis . Maintain a rolling buffer of
+the most recent 4𝑘vis depth frames, split into four contiguous
+blocks of length 𝑘vis .
+4.6. Domain Randomization and Visual
+Perturbations
+At each episode reset, we sample physics and control
+parameters independently within the ranges in Table 3. Separately from MMDR, we inject mild depth artifacts by drawing 𝐾 ∼  {3, … , 30} pixels per frame and setting them to
+the sensor’s maximum measurable depth (10 m), mimicking
+stochastic dropouts.
+
+5. Experimental Evaluation
+5.1. Evaluation Setup
+Research Questions Our evaluation is organized around
+the following research questions (RQs):
+
+• RQ1 (Cross-modal necessity). Does combining proprioception and depth under the same delay model
+outperform either single modality on return, collisions, and distance across both seen and unseen terrains?
+• RQ2 (KAN effectiveness). At matched parameter
+count and runtime, do KAN-based proprioceptive
+and/or fusion heads improve sample efficiency and
+performance, while reducing action jitter and energy,
+compared with unstructured regressors?
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+• RQ3 (Training robustness). Does the proposed endto-end PPO training scheme improve learning stability
+and performance consistency?
+and two locomotion-specific measures: (ii) distance moved,
+the net displacement (m) along the task-aligned axis, and
+(iii) collision times, the number of robot–obstacle contacts
+accumulated during evaluation. Collisions are checked at every control step and aggregated until either three evaluation
+episodes complete or the robot falls. The collision metric is
+reported only in obstacle-containing scenarios and only for
+episodes that experience at least one obstacle interaction.
+
+Baselines and Variants To assess the effectiveness of
+
+QuadKAN, we compare against the following configurations. All agents share the same PPO/GAE setup, curriculum, domain randomization, and the same proprioceptive
+and depth encoders with a matched token width to minimize
+representation-size confounds.
+• Proprio-Only. Uses proprioception alone with an
+MLP policy/value head; no exteroceptive input.
+• MLP Vision-Only. Uses depth alone with the shared
+CNN encoder; an MLP head consumes the visual
+features.
+• KAN Vision-Only. Uses depth alone with the shared
+CNN encoder; a spline-parameterized KAN head (no
+proprioception).
+• MLP Proprio–Vision. Encodes proprioception and
+depth with the same encoders as ours, projects both
+to the same width, concatenates the vectors, and feeds
+them to an unstructured MLP fusion/policy head.
+• QuadKAN (ours). KAN-based proprioceptive encoder and KAN-based fusion head (attention-free,
+spline-parameterized cross-modal policy).
+
+5.2. Performance Results on Simulation Scenarios
+Fig. 4 shows training curves with mean and one standard
+deviation across seeds. Table 4 reports means and standard deviations over seeds for episode return, collisions per
+episode, and progress distance. The supplementary video is
+available at https://github.com/allen-quad-robot/quadkan.
+From Fig. 4, QuadKAN converges faster (steeper earlylearning slope), attains a higher asymptotic return, and exhibits lower inter-seed variance than all baselines. Relative to
+the best unstructured fusion baseline (MLP Proprio–Vision),
+QuadKAN improves return by 10.1% (874.37 vs. 794.30),
+reduces collisions by 75.9% (15.23 vs. 63.27), and attains
+a comparable distance (+1.3%; 37.50 vs. 37.03), see Table 4. Compared with Proprio-Only, QuadKan got +632.1%
+return, –96.3% collisions, and +674.8% distance. Visiononly policies traverse very short distances on average; collision counts are therefore not informative and are omitted.
+
+Page 6 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+Table 4
+Performance on trained terrain (mean ± std over 10 runs).
+Method
+Proprio-Only
+MLP Vision-Only
+KAN Vision-Only
+MLP Proprio-Vision
+QuadKAN (Ours)
+
+Return
+
+Collisions
+
+Distance (m)
+
+119.43 ± 37.26
+12.55 ± 44.37
+−11.40 ± 10.96
+794.30 ± 98.71
+𝟖𝟕𝟒.𝟑𝟕 ± 𝟑𝟒.𝟎𝟔
+
+408.67 ± 160.79
+–
+–
+63.27 ± 86.91
+𝟏𝟓.𝟐𝟑 ± 𝟐𝟎.𝟔𝟗
+
+4.84 ± 1.09
+1.27 ± 1.33
+0.58 ± 0.32
+37.03 ± 5.27
+𝟑𝟕.𝟓𝟎 ± 𝟐.𝟐𝟖
+
+These trends (i) confirm the necessity of combining proprioception and depth (RQ1); (ii) demonstrate that KANbased proprioceptive and/or fusion heads improve sample
+efficiency and performance while reducing action jitter and
+energy compared with unstructured regressors (RQ2); and
+(iii) indicate stable optimization under the proposed PPO
+training protocol (RQ3).
+
+5.3. Albation Studies
+Ablation on modalities. With identical encoders and PPO
+
+settings, MLP Proprio–Vision already outperforms ProprioOnly by +565.1% in return (794.30 vs. 119.43), reduces
+collisions by –84.5% (63.27 vs. 408.67), and extends distance by +665.1% (37.03 m vs. 4.84 m). This substantial improvement confirms that proprioception and vision provide
+complementary cues—egocentric stability from proprioception and exteroceptive awareness from depth—making their
+fusion essential for obstacle negotiation.
+Building on this fusion baseline, QuadKAN further improves performance to 874.37 return, 15.23 collisions, and
+37.50 m distance, yielding +10.1% higher return and –75.9%
+fewer collisions than MLP Proprio–Vision. These gains indicate that the spline-parameterized function class not only
+leverages cross-modal input more effectively but also enhances safety and stability. These results answer RQ1 (fusion necessity) and reinforce RQ2 (effectiveness of splinestructured policies).
+
+Ablation on the fusion function class (KAN vs. MLP).
+Table 4 contrasts spline-structured fusion against unstructured MLPs. In the proprioception–vision setting, QuadKAN achieves the highest performance across all metrics,
+improving over MLP Proprio–Vision by +10.1% in return (874.37 vs. 794.30), reducing collisions by –75.9%
+(15.23 vs. 63.27), and slightly increasing progress distance
+(+1.3%). This shows that introducing spline structure in both
+the proprioceptive encoder and fusion head yields not only
+higher reward but also substantially safer behavior. These
+results support RQ2: the spline-structured policy improves
+effectiveness over unstructured regressors under identical
+configuration/training conditions.
+
+5.4. Training Stability Analysis
+Fig. 5 reports the coefficient of variation (CoV = std/mean)
+of the episode return over the whole training epochs. A lower
+CoV indicates more stable optimization across seeds.
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+QuadKAN achieves the lowest CoV (0.094), indicating
+the most stable training dynamics. Relative to MLP Proprio–Vision, CoV decreases from 0.105 to 0.094 (a ∼ 10.5%
+reduction). Both MLP Vision-Only (0.114) and KAN VisionOnly (0.110) exhibit moderate stability but very limited
+locomotion performance, making their stability less meaningful. In contrast, Proprio-Only suffers from a much higher
+CoV (1.096), reflecting highly volatile optimization due to
+partial observability and lack of foresight.
+These results confirm that the spline-parameterized fusion in QuadKAN not only improves performance but also
+stabilizes training under PPO, supporting both the effectiveness of structured policies (RQ2) and the robustness of the
+overall training scheme (RQ3).
+
+5.5. Generalization to Unseen Conditions
+The policies trained in the Thin Obstacle environment
+are evaluated zero-shot on two previously unseen scenarios: a static random-shape obstacle terrain and a movingobstacle terrain with rugged ground. Table 5 reports mean
+and standard deviation over 10 runs. For vision-only baselines, collision counts are omitted because these agents cover
+little distance and collisions are not informative.
+
+Static Obstacles with Rugged Terrain. Cross-modal
+
+policies generalize substantially better than single-modality
+baselines. QuadKAN achieves the best overall performance,
+with the highest return (787.98 ± 191.89), the fewest collisions (35.17 ± 24.47), and near-maximal distance (36.13 ±
+4.74). Relative to Proprio-Only, it improves return more than
+sixfold, reduces collisions by over 93%, and increases distance by nearly 591%. Compared with MLP Proprio–Vision,
+QuadKAN further yields a +5.7% higher return, –44.4%
+fewer collisions, and a comparable distance (–1.2%). Visiononly models fail to generalize, producing negative or nearzero rewards and minimal displacement. These results confirm that proprioception–vision fusion is necessary for robust out-of-distribution generalization (RQ1), and that splineparameterized fusion further improves both safety and stability under unseen obstacles (RQ2).
+
+Moving Obstacles with Rugged Terrain. Generalization
+
+becomes more challenging under dynamic hazards and uneven ground. QuadKAN again outperforms all baselines,
+achieving the highest return (261.52 ± 371.47), the fewest
+collisions (395.03 ± 96.80), and the greatest progress distance (17.77 ± 8.07). Compared with Proprio-Only, this
+Page 7 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+Table 5
+Performance comparison of different model configurations on unseen terrains (mean ± std over 10 runs).
+Static Obstacle with Rugged Terrain
+
+Dynamic Obstacle with Rugged Terrain
+
+Models
+Reward
+Proprio-Only
+122.46 ± 45.02
+MLP Vision-Only
+15.93 ± 39.51
+KAN Vision-Only −11.38 ± 11.08
+MLP Proprio-Vision 745.26 ± 205.93
+QuadKAN (Ours) 𝟕𝟖𝟕.𝟗𝟖 ± 𝟏𝟗𝟏.𝟖𝟗
+
+Collision
+
+Distance (m)
+
+Reward
+
+Collision
+
+Distance (m)
+
+510.83 ± 126.38
+–
+–
+63.20 ± 50.33
+𝟑𝟓.𝟏𝟕 ± 𝟐𝟒.𝟒𝟕
+
+5.22 ± 1.65
+1.27 ± 1.21
+0.54 ± 0.34
+𝟑𝟔.𝟓𝟖 ± 𝟔.𝟕𝟕
+36.13 ± 4.74
+
+146.68 ± 66.94
+−5.80 ± 32.21
+−12.35 ± 12.37
+105.70 ± 475.62
+𝟐𝟔𝟏.𝟓𝟐 ± 𝟑𝟕𝟏.𝟒𝟕
+
+431.20 ± 207.53
+–
+–
+432.53 ± 115.01
+𝟑𝟗𝟓.𝟎𝟑 ± 𝟗𝟔.𝟖𝟎
+
+5.54 ± 2.18
+0.68 ± 1.09
+0.66 ± 0.44
+12.60 ± 9.85
+𝟏𝟕.𝟕𝟕 ± 𝟖.𝟎𝟕
+
+corresponds to a +78% increase in return, a − − 8.4%
+reduction in collisions, and a +220.7% increase in distance.
+Relative to MLP Proprio–Vision, QuadKAN delivers a dramatic +147.4% gain in return, reduces collisions by − −
+8.7%, and achieves a +41.0% longer distance (Table 5). By
+contrast, vision-only variants collapse completely, producing near-zero or negative rewards with negligible movement.
+These findings highlight that KAN-enhanced proprioception–vision fusion within PPO is critical for negotiating
+dynamic, partially observable environments, and that the
+structured spline formulation provides tangible advantages
+in both robustness and stability (RQ2, RQ3).
+
+5.6. Spline Analysis and Interpretability
+Beyond aggregate performance metrics, we investigate
+the internal behavior of KAN-based policies to understand
+how spline parameterization contributes to effectiveness
+and stability [29]. We analyze (i) weight-level patterns, (ii)
+activation-level nonlinearities, and (iii) comparative spline
+statistics across model configurations.
+
+Weight-level analysis. Figures 6–7 visualize spline weight
+distributions. In Vision-only KAN, weights are structured
+and localized rather than dense and uniform, indicating
+that bases activate only in specific input regions. Compared
+with Vision-only KAN, the QuadKAN, utilizing proprioception–vision fusion, exhibits more pronounced and concentrated magnitudes, suggesting that proprioceptive anchoring
+stabilizes the learned bases. Coefficient histograms reveal
+balanced positive and negative responses, producing interpretable localized sensitivities aligned with phase-wise
+dynamics rather than opaque global couplings.
+
+Activation-level analysis. Figure 8 compares spline ac-
+
+tivations against ReLU. While ReLU is piecewise-linear,
+spline activations exhibit richer nonlinearities with smooth
+curvature and local variations. In the Vision-only KAN,
+neuron activations are more dispersed and heterogeneous,
+reflecting instability without proprioceptive anchoring. In
+contrast, the Vision–State KAN produces more coherent
+and consistent activation patterns across neurons, indicating
+that proprioceptive input provides a stabilizing prior that
+regularizes spline responses.
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Comparative spline statistics. Figure 9 summarizes global
+spline characteristics. Although Vision-only KAN contains
+more parameters (2.63M vs. 2.22M), it does not generalize
+better, confirming that parameter count alone is insufficient. QuadKAN exhibits heavier-tailed weight distributions, larger absolute means, and greater variance across layers, indicating richer localized responses. The more uniform
+and widespread spline weight distribution further reveals
+more coherent behavior of QuadKAN, consistent with its
+observed performance and stability advantages.
+Together, these analyses show that spline parameterization yields structured and interpretable representations,
+capturing complex nonlinear responses while maintaining
+local support. This interpretability complements the quantitative evidence from Section 5.3, supporting RQ2 (structured KAN heads enhance performance and stability) and
+partially RQ3 (training robustness is tied to more coherent
+spline parameterizations).
+
+6. Conclusion
+We presented QuadKAN, a vision-guided DRL framework for quadrupedal locomotion that fuses proprioception
+with depth sensing and employs a spline-parameterized
+policy class. By aligning state–action mapping with the
+piecewise-smooth structure of gait, QuadKAN provides
+an attention-free fusion mechanism with favorable computational efficiency and exposes an interpretable structure
+through spline coefficients and localized sensitivities. Training with PPO under Multi-Modal Delay Randomization
+(MMDR) further mitigates modality-dependent latencies
+and asynchrony.
+Experiments addressed three research questions: RQ1
+(Cross-modal necessity)—proprioception–vision fusion consistently outperforms unimodal baselines across return, distance, and collisions; RQ2 (KAN effectiveness)—splinestructured policies achieve faster convergence, lower jitter
+and energy proxies, and higher final performance than
+unstructured MLP fusion; and RQ3 (Training robustness)—the proposed training scheme improves stability and
+consistency. Together, these findings demonstrate that structured policies and training improve efficiency, robustness,
+and interpretability in vision-guided legged locomotion.
+
+Page 8 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+While this work focused on simulation, future efforts will
+deploy QuadKAN on physical quadrupeds to assess sim-toreal transfer, latency handling, and safety under real-world
+conditions.
+
+References
+[1] Y. Fan, Z. Pei, C. Wang, M. Li, Z. Tang, Q. Liu, A review of
+quadruped robots: Structure, control, and autonomous motion, Advanced Intelligent Systems 6 (2024) 2300783.
+[2] J. Carpentier, P.-B. Wieber, Recent progress in legged robots locomotion control, Current Robotics Reports 2 (2021) 231–238.
+[3] H. Zhang, L. He, D. Wang, Deepreinforcementlearningforreal-world
+quadrupedal locomotion: a comprehensive review (2022).
+[4] Z. Li, F. Liu, W. Yang, S. Peng, J. Zhou, A survey of convolutional
+neural networks: analysis, applications, and prospects, IEEE transactions on neural networks and learning systems 33 (2021) 6999–7019.
+[5] A. Wang, G. Tao, Locomamba: Vision-driven locomotion via endto-end deep reinforcement learning with mamba, arXiv preprint
+arXiv:2508.11849 (2025).
+[6] C. S. Imai, M. Zhang, Y. Zhang, M. Kierebiński, R. Yang, Y. Qin,
+X. Wang, Vision-guided quadrupedal locomotion in the wild with
+multi-modal delay randomization, in: 2022 IEEE/RSJ international
+conference on intelligent robots and systems (IROS), IEEE, 2022, pp.
+5556–5563.
+[7] B. Singh, R. Kumar, V. P. Singh, Reinforcement learning in robotic
+applications: a comprehensive survey, Artificial Intelligence Review
+55 (2022) 945–990.
+[8] Z. Liu, Y. Wang, S. Vaidya, F. Ruehle, J. Halverson, M. Soljačić, T. Y.
+Hou, M. Tegmark, Kan: Kolmogorov-arnold networks, arXiv preprint
+arXiv:2404.19756 (2024).
+[9] S. Somvanshi, S. A. Javed, M. M. Islam, D. Pandit, S. Das, A survey
+on kolmogorov-arnold network, ACM Computing Surveys (2024).
+[10] H. Miura, I. Shimoyama, Dynamic walk of a biped, The International
+Journal of Robotics Research 3 (1984) 60–74.
+[11] G. Bledt, M. J. Powell, B. Katz, J. Di Carlo, P. M. Wensing, S. Kim,
+Mit cheetah 3: Design and control of a robust, dynamic quadruped
+robot, in: 2018 IEEE/RSJ International Conference on Intelligent
+Robots and Systems (IROS), IEEE, 2018, pp. 2245–2252.
+[12] R. Grandia, F. Farshidian, R. Ranftl, M. Hutter, Feedback mpc for
+torque-controlled legged robots, in: 2019 IEEE/RSJ International
+Conference on Intelligent Robots and Systems (IROS), IEEE, 2019,
+pp. 4730–4737.
+[13] J. Di Carlo, P. M. Wensing, B. Katz, G. Bledt, S. Kim, Dynamic
+locomotion in the mit cheetah 3 through convex model-predictive
+control, in: 2018 IEEE/RSJ international conference on intelligent
+robots and systems (IROS), IEEE, 2018, pp. 1–9.
+[14] Y. Ding, A. Pandala, H.-W. Park, Real-time model predictive control
+for versatile dynamic motions in quadrupedal robots, in: 2019
+International Conference on Robotics and Automation (ICRA), IEEE,
+2019, pp. 8484–8490.
+[15] J. Carius, R. Ranftl, V. Koltun, M. Hutter, Trajectory optimization for
+legged robots with slipping motions, IEEE Robotics and Automation
+Letters 4 (2019) 3013–3020.
+[16] J. Tan, T. Zhang, E. Coumans, A. Iscen, Y. Bai, D. Hafner, S. Bohez,
+V. Vanhoucke, Sim-to-real: Learning agile locomotion for quadruped
+robots, arXiv preprint arXiv:1804.10332 (2018).
+[17] J. Hwangbo, J. Lee, A. Dosovitskiy, D. Bellicoso, V. Tsounis,
+V. Koltun, M. Hutter, Learning agile and dynamic motor skills for
+legged robots, Science Robotics 4 (2019) eaau5872.
+[18] A. Kumar, Z. Fu, D. Pathak, J. Malik, Rma: Rapid motor adaptation
+for legged robots, arXiv preprint arXiv:2107.04034 (2021).
+[19] Z. Xie, X. Da, B. Babich, A. Garg, M. v. de Panne, Glide: Generalizable quadrupedal locomotion in diverse environments with a
+centroidal model, in: International workshop on the algorithmic
+foundations of robotics, Springer, 2022, pp. 523–539.
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+[20] D. Jain, A. Iscen, K. Caluwaerts, Hierarchical reinforcement learning
+for quadruped locomotion, in: 2019 IEEE/RSJ international conference on intelligent robots and systems (IROS), IEEE, 2019, pp. 7551–
+7557.
+[21] W. Yu, D. Jain, A. Escontrela, A. Iscen, P. Xu, E. Coumans, S. Ha,
+J. Tan, T. Zhang, Visual-locomotion: Learning to walk on complex
+terrains with vision, in: 5th Annual Conference on Robot Learning,
+2021.
+[22] H. Duan, B. Pandit, M. S. Gadde, B. Van Marum, J. Dao, C. Kim,
+A. Fern, Learning vision-based bipedal locomotion for challenging
+terrain, in: 2024 IEEE International Conference on Robotics and
+Automation (ICRA), IEEE, 2024, pp. 56–62.
+[23] S. Fahmi, V. Barasuol, D. Esteban, O. Villarreal, C. Semini, Vital:
+Vision-based terrain-aware locomotion for legged robots, IEEE
+Transactions on Robotics 39 (2022) 885–904.
+[24] X. Han, S. Chen, Z. Fu, Z. Feng, L. Fan, D. An, C. Wang, L. Guo,
+W. Meng, X. Zhang, et al., Multimodal fusion and vision-language
+models: A survey for robot vision, arXiv preprint arXiv:2504.02477
+(2025).
+[25] R. Yang, M. Zhang, N. Hansen, H. Xu, X. Wang, Learning visionguided quadrupedal locomotion end-to-end with cross-modal transformers, arXiv preprint arXiv:2107.03996 (2021).
+[26] X. Wang, Y. Chen, W. Zhu, A survey on curriculum learning, IEEE
+transactions on pattern analysis and machine intelligence 44 (2021)
+4555–4576.
+[27] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, O. Klimov, Proximal
+policy optimization algorithms, arXiv preprint arXiv:1707.06347
+(2017).
+[28] E. Coumans, Y. Bai, Pybullet quickstart guide, ed: PyBullet
+Quickstart Guide. https://docs. google. com/document/u/1/d (2021).
+[29] T. Ji, Y. Hou, D. Zhang, A comprehensive survey on kolmogorov
+arnold networks (kan), arXiv preprint arXiv:2407.11075 (2024).
+
+Page 9 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+Figure 2: Spline–KAN encoder. Each unit projects the input
+to a scalar, expands it over a compact bank of B-spline basis
+functions, aggregates with learnable coefficients, and applies
+a smooth nonlinearity. Stacking units produces tokens with
+localized, phase-aware sensitivities. Optional curvature and
+Jacobian regularizers promote smooth, low-jitter actuation.
+
+Figure 4: Training learning curves on Thin Obstacle. Solid lines
+denote the mean episode return across seeds; shaded regions
+indicate ± one standard deviation.
+
+(a)
+
+(b)
+
+(c)
+Figure 3: Evaluation environments: (a) Thin Obstacle; (b)
+Static Obstacle with Rugged Terrain; (c) Dynamic Obstacle
+with Rugged Terrain. Layouts are randomized at reset; only
+(c) updates obstacle positions online during an episode.
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Figure 5: Training stability measured by the coefficient of
+variation (CoV) of all episodes return. Lower values indicate
+more stable optimization.
+
+Page 10 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+Figure 6: Spline weight analysis of QuadKAN (Ours) (Including 2-layer Proprio encoder KAN and 3-layer Fusion head KAN as
+introduced in Table 1). Left: average spline weights across dimensions; Middle: spline coefficient distributions for representative
+neurons; Right: L2 norms of spline weight magnitudes with descriptive statistics. Structured, localized weight patterns emerge,
+particularly in the proprioception–vision setting.
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Page 11 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+Figure 7: Spline weight analysis of Vision-Only KAN. Without proprioceptive anchoring, learned spline weights are weaker and
+less structured. Compared with Fig. 6, the representations show reduced localization and stability.
+
+Figure 8: Spline activation functions (10 sampled neurons) vs. ReLU. Left: Vision-only KAN; Right: QuadKAN (Ours). Unlike
+ReLU, spline activations exhibit rich nonlinearities to modal complex scenarios. Proprioceptive anchoring stabilizes activations,
+producing more coherent responses across neurons.
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Page 12 of 9
+
+QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+
+Figure 9: Comparative spline statistics for Vision-only KAN and QuadKAN (Ours). The dashboard summarizes parameter counts,
+weight distributions, normalized statistics, layer-wise magnitudes, and sample activations. Despite fewer parameters, QuadKAN
+learns richer and more coherent spline structures, aligning with its stability and performance gains.
+
+Allen Wang and Gavin Tao: Preprint submitted to Elsevier
+
+Page 13 of 9
+

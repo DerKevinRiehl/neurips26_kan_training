@@ -1,0 +1,1716 @@
+KAN-Dreamer: Benchmarking Kolmogorov-Arnold
+Networks as Function Approximators in World Models
+
+arXiv:2512.07437v1 [cs.LG] 8 Dec 2025
+
+Chenwei Shi
+Shanghai Research Institute for Intelligent Autonomous Systems
+Tongji University
+Shanghai 200092, China
+2511973@tongji.edu.cn
+Xueyu Luan
+School of Electronic and Information Engineering
+Tongji University
+Shanghai 200092, China
+2531946@tongji.edu.cn
+
+Abstract
+DreamerV3 stands as a state-of-the-art online model-based reinforcement learning (MBRL) algorithm, achieving remarkable sample efficiency across diverse
+control tasks by learning behaviors within a latent world model. Concurrently,
+Kolmogorov-Arnold Networks (KANs) have emerged as a promising alternative to
+traditional Multi-Layer Perceptrons (MLPs). Rooted in the Kolmogorov-Arnold
+representation theorem, KANs demonstrate superior parameter efficiency and interpretability compared to fixed activation architectures. To mitigate the computational
+overhead of original KANs, variants such as FastKAN leverage Radial Basis Functions (RBFs) to accelerate inference while maintaining approximation capabilities.
+In this work, we investigate the feasibility and potential advantages of integrating
+KAN architectures into the DreamerV3 framework. We introduce KAN-Dreamer,
+a modified architecture where specific MLP and convolutional components of the
+original DreamerV3 are replaced by KAN and FastKAN layers. To ensure computational efficiency and compatibility within the JAX-based World Model, we
+implement a tailored, fully vectorized version of these networks with simplified grid management. Specifically, we structure our investigation into three
+functional subsystems: Visual Perception (Encoder/Decoder), Latent Prediction (Reward/Continue), and Behavior Learning (Actor/Critic). We conduct
+empirical evaluations on the walker_walk task from the DeepMind Control Suite
+(DMC). Our study analyzes the impact of these architectural changes on training
+dynamics, specifically focusing on sample efficiency, wall-clock training time, and
+asymptotic performance. Experimental results demonstrate that utilizing our
+adapted FastKAN as a drop-in replacement for the Reward and Continue
+predictors yields performance on par with the original MLP-based architecture, maintaining parity in both sample efficiency and training speed. This
+report serves as a preliminary study for future developments in KAN-based world
+models.
+
+1
+
+Introduction
+
+World models have emerged as a pivotal paradigm in the pursuit of Artificial General Intelligence
+(AGI) and Embodied AI, aiming to learn implicit representations of the external world and predict
+Preprint.
+
+future dynamics. This concept has found profound applications across various domains, ranging from
+video generation (e.g., Sora [OpenAI, 2024], Veo [Google DeepMind, 2024]) and world simulators
+(e.g., Genie series [Bruce et al., 2024]) to autonomous driving systems (e.g., FSD V12 [Elluswamy,
+2023], GAIA-1 [Hu et al., 2023a], UniAD [Hu et al., 2023b]). Particularly in the realm of Embodied
+AI and robotics, world models offer a critical solution to the challenge of sample efficiency by
+serving as the core of Model-Based Reinforcement Learning (MBRL). The Dreamer algorithm
+series [Hafner et al., 2019a, 2020, 2025a,b], along with its application to physical robots [Wu et al.,
+2023], stands as a cornerstone of modern MBRL. By leveraging real interaction data to train a world
+model and subsequently performing "imagination-based" training within latent trajectories, Dreamer
+achieves remarkable sample efficiency compared to Model-Free approaches, especially in scenarios
+where real-world interactions are costly or scarce. While DreamerV3 [Hafner et al., 2025a] has
+demonstrated state-of-the-art performance across diverse control tasks, and the recent DreamerV4
+[Hafner et al., 2025b] has introduced Diffusion Transformers to address long-horizon prediction
+errors, the exploration of efficient architectural backbones within the Dreamer framework remains an
+open avenue of research.
+Currently, DreamerV3 relies on a hybrid architecture, utilizing Multi-Layer Perceptrons (MLPs)
+for latent dynamics, latent prediction and behavior learning components (e.g., Reward Predictor,
+Dynamics Predictor, Actor, and Critic), while employing Convolutional Neural Networks (CNNs)
+for processing visual observations. Recently, Kolmogorov-Arnold Networks (KANs) [Liu et al.,
+2024b] have entered the spotlight as a promising alternative to these traditional neural building blocks.
+Grounded in the Kolmogorov-Arnold representation theorem, KANs place learnable activation functions on the edges of the network rather than the nodes. This structural innovation offers theoretical
+advantages, including superior function approximation capabilities, higher parameter efficiency, and
+enhanced interpretability. Furthermore, KANs have rapidly emerged as a powerful paradigm for ‘AI
+for Science,’ bridging the gap between connectionist learning and scientific discovery [Liu et al.,
+2024a]. Although original KAN implementations suffer from slower inference speeds, recent variants
+such as FastKAN [Li, 2024] have mitigated these computational bottlenecks by utilizing techniques
+like Radial Basis Functions (RBFs), making them viable for large-scale integration.
+In this technical report, we present an exploratory study integrating KANs and their efficient variant,
+FastKAN, into the DreamerV3 algorithm. We attempt to replace the conventional MLP and CNN
+structures within DreamerV3 to assess the feasibility and potential benefits of KAN-based world
+models. Our contributions are as follows:
+• We implement KAN and FastKAN within the DreamerV3 framework, providing the first
+empirical evidence of their viability as replacements for standard MLPs in complex latent
+dynamics models.
+• We critically analyze the trade-offs between the superior fitting capabilities of KANs and
+their inference latency, investigating their impact on the generation speed of imagination
+trajectories and the overall sample efficiency of the agent.
+The rest of this paper is structured as follows: Section 2 and Section 3 review related work and
+necessary preliminaries, respectively. Section 4 details the architecture of KAN-Dreamer and our
+implementation strategy. Section 5 presents our experimental results on standard benchmarks,
+followed by a discussion in Section 6. Finally, Section 7 concludes the work.
+
+2
+
+Related Work
+
+2.1
+
+World Models and the Dreamer Family
+
+World models aim to learn compact latent representations that capture the underlying structure and
+dynamics of an environment, enabling agents to reason, plan, and learn policies through imagination
+rather than direct interaction. The seminal work World Models [Ha and Schmidhuber, 2018] first
+demonstrated that a generative latent dynamics model can support training controllers inside a learned
+“dream,” establishing the feasibility of imagination-based reinforcement learning (RL). Later, PlaNet
+[Hafner et al., 2019b] improved multi-step latent consistency by introducing the Recurrent StateSpace Model (RSSM), which combines deterministic and stochastic latent components to enhance
+long-horizon predictive accuracy. This modeling strategy became foundational for the Dreamer
+family.
+2
+
+DreamerV1 (Dream to Control) [Hafner et al., 2019a] showed that agents can learn policies and
+value functions entirely from imagined trajectories generated by a latent world model. Building on
+this, DreamerV2 (Mastering Atari with Discrete World Models) [Hafner et al., 2020] introduced
+improved training objectives, discrete latent representations, and more stable optimization, achieving
+strong performance across a wide range of visual-control tasks. Culminating this line of research,
+DreamerV3 (Mastering diverse control tasks through world models) [Hafner et al., 2025a] further
+established world models as a general-purpose and highly stable online RL paradigm by introducing
+normalization and balanced training mechanisms that enable robust performance across over 150
+heterogeneous tasks. Notably, the most recent iteration, DreamerV4 (Training Agents Inside of
+Scalable World Models) [Hafner et al., 2025b], pivoted this paradigm towards the offline setting. It
+replaces the Recurrent State-Space Model with an efficient transformer-based architecture, enabling
+high-fidelity video prediction and solving complex long-horizon tasks purely from offline data without
+any environment interaction.
+Despite these algorithmic advancements, the underlying function approximators within the established RSSM-based Dreamer family (V1-V3) have remained predominantly based on Multi-Layer
+Perceptrons (MLPs) and Convolutional Neural Networks (CNNs). This long-standing reliance on
+traditional architectures motivates our investigation. As our work focuses on the online learning
+context, we use DreamerV3 as the foundational framework to explore whether emerging neural
+paradigms, specifically Kolmogorov-Arnold Networks, can serve as competitive alternatives.
+2.2
+
+Kolmogorov-Arnold Networks and Efficient Variants
+
+The Kolmogorov–Arnold representation theorem establishes that any multivariate continuous function
+can be represented as a finite superposition of univariate continuous functions and addition operations
+[Kolmogorov, 1957, Schmidt-Hieber, 2021]. Motivated by this theorem, Kolmogorov–Arnold
+Networks (KANs) were proposed as a new neural architecture: unlike conventional multilayer
+perceptrons (MLPs) whose “weights” are scalar linear coefficients, KAN replaces each weight with a
+learnable univariate function, typically parameterized by splines [Liu et al., 2024b].
+In the original KAN formulation, authors demonstrated that such networks — even with significantly
+fewer neurons (units) and parameters — can achieve comparable or better performance than larger
+MLPs on small-scale AI-for-science tasks, including function fitting and solving partial differential
+equations (PDEs). Moreover, KANs manifest “faster neural scaling laws” than MLPs in those
+settings. The use of edge-wise learnable functions also provides improved interpretability compared
+to black-box MLPs: one can inspect and visualize the learned univariate functions per edge.
+Nevertheless, the original KAN design faces practical challenges. Evaluating spline-based univariate
+functions on every connection incurs nontrivial computational and memory cost, leading to slower
+training and inference compared to MLPs. To address these drawbacks, EfficientKAN [Blealtan,
+2024] was proposed to accelerate computation by reformulating B-spline evaluations into matrix
+operations, significantly reducing memory overhead. Building on this momentum, FastKAN [Li,
+2024] further simplified the architecture by replacing the complex B-spline basis with Gaussian
+Radial Basis Functions (RBFs). This modification not only retains the approximation capabilities but
+also offers a remarkably simple and implementation-friendly structure. The ease of vectorization and
+reproduction makes FastKAN particularly suitable for integration into complex systems like world
+models, motivating its adoption in our work.
+Beyond the efficiency-focused optimizations of FastKAN, other research directions explore structural
+diversity, often by creating hybrid architectures that integrate MLP-style functions (e.g., KKAN
+[Toscano et al., 2025]) or use alternative bases like sinusoids [Gleyzer et al., 2025]. While promising,
+these variants often introduce greater architectural complexity and more intricate implementation
+details. Consequently, to maintain a strictly controlled experimental setting focused on the core
+efficacy of KANs without confounding factors from hybrid designs, we prioritize the structurally
+simpler FastKAN for our world model integration.
+However, despite these architectural optimizations, the capability of KANs—and particularly their
+efficient variants like FastKAN—to handle complex control tasks remains unproven. While
+KANs have begun to show promise in domains beyond toy regression, such as genomics and
+bioinformatics [Cherednichenko and Poptsova, 2025], their application as function approximators
+within the challenging context of World Models has not been comprehensively evaluated. To the best
+3
+
+of our knowledge, no existing work has benchmarked KANs for the core components of a modern
+world model, such as for high-dimensional visual reconstruction, latent-space reward prediction,
+or imagination-based policy learning. This gap motivates our present work: integrating efficient
+KAN-based architectures into a world-model framework (in the spirit of Dreamer) and systematically
+evaluating their effectiveness.
+2.3
+
+KANs in Reinforcement Learning
+
+Kolmogorov–Arnold Networks (KANs) have recently been explored as an alternative to MLPs for
+function approximation in reinforcement learning. Existing studies focus almost exclusively on
+model-free RL, inserting KANs into standard baselines such as PPO, SAC, A2C, and DQN/Rainbow
+to replace policy or value networks. These works report that KANs can match or surpass MLP agents
+with fewer parameters [Guo et al., 2025], improve optimization smoothness [Vaca-Rubio et al., 2024],
+and offer interpretable univariate edge functions [Singh et al., 2025].
+However, all prior applications remain limited to direct policy/value learning, and no existing
+work studies KANs within Model-Based RL, specifically for the distinct challenges of generative
+reconstruction or latent state interpretation. This gap is significant because world models such as
+PlaNet and Dreamer rely heavily on the fidelity of these dense prediction heads to provide accurate
+learning signals for the agent [Hafner et al., 2019b, 2025a, Ha and Schmidhuber, 2018]. Whether
+KANs’ adaptive univariate functions can yield more parameter-efficient latent predictors or better
+visual decoders compared to standard architectures remains unexplored. Our work addresses this gap
+by providing the first systematic benchmark of KANs inside a world-model architecture, integrating
+them into the DreamerV3 pipeline to evaluate their suitability for visual representation learning, latent
+prediction, and imagination-based policy optimization.
+2.4
+
+KANs in Generative Modeling and Representation Learning
+
+Kolmogorov–Arnold Networks (KANs) have recently attracted attention beyond regression, extending
+into generative modeling and representation learning. The architecture’s learnable univariate functions
+offer a potential advantage for representing complex conditional maps (e.g., latent → observation)
+with fewer parameters than traditional MLPs [Liu et al., 2024b].
+In the realm of generative modeling, KANs have been integrated into mainstream frameworks such as
+Diffusion Models and GANs. Recent works have replaced MLP or bottleneck layers in U-Nets with
+KAN blocks, showing competitive fidelity on specific tasks like medical image synthesis [Su and
+Yang, 2025], low-light enhancement [Yeh and Liou, 2025], and 3D scientific structure reconstruction
+[Wang et al., 2025a]. These studies establish that KANs possess the capacity to model complex data
+distributions, a prerequisite for any world model.
+For representation learning, the most relevant development to our work is the Kolmogorov-Arnold
+Auto-Encoder (KAE) [Yu et al., 2024]. Yu et al. demonstrated that KANs can effectively replace
+standard convolutional or MLP layers in autoencoders to reconstruct images. However, this evaluation
+was largely confined to simple, low-dimensional datasets such as MNIST. It remains an open question
+whether KAN-based encoders and decoders can scale to the high-dimensional, visually complex,
+and partially observable environments typical of modern Reinforcement Learning benchmarks (e.g.,
+DeepMind Control Suite).
+Furthermore, independent evaluations have highlighted potential scalability issues. Studies in computational mechanics and scientific computing report that while parameter-efficient, KANs can suffer
+from training instability and slower wall-clock convergence compared to highly optimized baselines
+[Wang et al., 2025b, Zhou et al., 2025]. It remains unverified whether these optimization difficulties
+persist or worsen when applied to the high-dimensional, non-stationary visual data inherent in
+World Models.
+This context sets the stage for our investigation. DreamerV3 relies heavily on a robust autoencoder
+structure (Visual Encoder and Decoder) to extract compact representations from pixels. While KAE
+provides a proof-of-concept for simple static images, our work bridges the gap by benchmarking
+KAN architectures (specifically efficient variants) as visual representation learners within the
+rigorous and computationally demanding framework of World Models.
+4
+
+3
+
+Preliminaries
+
+In this section, we provide a brief overview of the core components that underpin our proposed
+framework: the DreamerV3 algorithm, the theoretical basis of Kolmogorov-Arnold Networks (KANs),
+and the mathematical formulation of FastKAN.
+3.1
+
+DreamerV3
+
+DreamerV3 is a model-based reinforcement learning algorithm that solves control tasks by interleaving three processes: data collection, world model learning, and behavior learning. The agent
+leverages past experiences to learn a latent dynamics model, which then serves as a simulator for
+training the policy via latent imagination. The overall architecture consists of several learnable
+components parameterized by neural networks. Broadly, the architecture can be categorized into two
+parts: components for world model learning and components for behavior learning.
+World Model Learning. Following the formulation in Hafner et al. [2025a], the agent learns a
+compact latent dynamics model to represent the environment. The core is the Recurrent State-Space
+Model (RSSM), which maintains a deterministic recurrent state ht and a stochastic state zt . The
+deterministic state evolves via a recurrent unit (GRU):
+ht = fϕ (ht−1 , zt−1 , at−1 )
+
+(1)
+
+where at−1 denotes the previous action. To incorporate sensory information, an encoder maps
+observations xt to the stochastic posterior:
+zt ∼ qϕ (zt | ht , xt )
+
+(2)
+
+In standard implementations, this encoder typically employs CNNs for visual inputs.
+To enable latent imagination, the model learns a dynamics predictor to estimate the prior state
+distribution ẑt , along with predictors for the scalar reward r̂t and the episode continuation flag ĉt :
+ẑt ∼ pϕ (ẑt | ht ),
+
+r̂t ∼ pϕ (r̂t | ht , zt ),
+
+ĉt ∼ pϕ (ĉt | ht , zt )
+
+(3)
+
+Finally, a decoder reconstructs the observations to provide a learning signal:
+x̂t ∼ pϕ (x̂t | ht , zt )
+
+(4)
+
+Crucially, the predictors (pϕ ) and the decoder are traditionally parametrized using MLPs and transposed CNNs, respectively.
+Behavior Learning. The agent derives behaviors entirely within the latent imagination space. An
+actor network πθ predicts actions to maximize returns, while a critic network vψ estimates the
+expected value:
+at ∼ πθ (at | st ), vψ (Rt | st )
+(5)
+where st = (ht , zt ) represents the full latent state. Both the actor and critic are standardly instantiated
+as dense MLPs.
+3.2
+
+Kolmogorov-Arnold Networks (KANs)
+
+Architecture. Kolmogorov-Arnold Networks (KANs) represent a shift from the node-centric activation of Multi-Layer Perceptrons (MLPs) to an edge-centric paradigm. Unlike MLPs, which rely on
+fixed activation functions on nodes and linear weights matrices W , KANs place learnable univariate
+activation functions on the edges and use simple summation on the nodes [Liu et al., 2024b].
+Formally, for a layer with nin input nodes and nout output nodes, the activation value xl+1,j of the
+j-th neuron in layer l + 1 is defined as:
+xl+1,j =
+
+nin
+X
+i=1
+
+5
+
+ϕl,j,i (xl,i )
+
+(6)
+
+where ϕl,j,i is a learnable 1D function. This formulation eliminates standard linear weight matrices
+entirely.
+B-Spline Parametrization. To ensure learnability, each activation function ϕ(x) is parametrized as a
+sum of a basis function b(x) (typically SiLU) and a B-spline:
+X
+ϕ(x) = wb b(x) + ws
+ck Bk (x)
+(7)
+k
+
+where ck are trainable spline coefficients, and wb , ws are scaling factors. This structure allows KANs
+to approximate complex functions with high parameter efficiency.
+3.3
+
+FastKAN
+
+While the original KAN implementation based on B-splines offers theoretical guarantees, it suffers
+from significant computational inefficiencies. The recursive evaluation of B-splines is difficult
+to vectorize on GPUs, and the grid extension mechanism leads to a rapid increase in memory
+consumption. To mitigate these bottlenecks, Li [2024] proposed FastKAN, an efficient variant that
+approximates the learnable functions using Gaussian Radial Basis Functions (RBFs).
+Gaussian RBF Approximation. FastKAN retains the additive structure of KANs but replaces the
+B-spline component with a weighted sum of Gaussian basis functions. For a learnable activation
+function ϕ(x), the formulation becomes:
+
+2 !
+G
+X
+x − µk
+ϕ(x) = wb b(x) + ws
+ck exp −
+(8)
+h
+k=1
+
+where G is the number of Gaussian basis functions. We explicitly denote this hyperparameter as G
+(Grid Size) rather than the conventional C (Centers) to maintain terminological consistency with
+the original spline-based KANs and the official FastKAN implementation (where it is defined as
+num_grids). Furthermore, µk represent the fixed grid centers uniformly distributed over the input
+range, and h is a hyperparameter controlling the bandwidth of the Gaussian functions. Similar to the
+original KAN, ck represents the learnable coefficients, while wb and ws are scaling parameters.
+Computational Efficiency. The key advantage of this formulation is that the RBF evaluation can be
+vectorized as standard matrix multiplications, which are highly optimized in modern deep learning
+frameworks (e.g., PyTorch/CUDA). Unlike B-splines, which require conditional control flows for grid
+intervals, the RBF layer processes inputs in parallel, offering substantial improvements in training
+throughput and memory efficiency.
+
+4
+
+Method
+
+4.1
+
+Overall Architecture
+
+We introduce KAN-Dreamer, a hybrid architecture that integrates the distinct function approximation
+capabilities of Kolmogorov-Arnold Networks into the model-based reinforcement learning framework.
+While preserving the macroscopic data flow and training objectives of DreamerV3, we adopt a modular
+backbone strategy. This design conceptually decouples the architecture into two functional categories:
+recurrent dynamics modeling (which remains fixed) and feed-forward function approximation
+(the target of our investigation). By isolating these roles, KAN-Dreamer allows for the flexible
+instantiation of non-recurrent sub-networks using either KANs, FastKANs, or standard MLPs and
+CNNs. This flexibility enables a systematic benchmarking of KANs’ efficacy within a complex RL
+system, without altering the fundamental algorithmic logic. The specific architectural configurations
+for the World Model and Behavior Learning components are detailed in the following subsections.
+4.2
+
+World Model Architecture
+
+The basic structure of the world model is illustrated in Figure 1. Specifically, we redesign the World
+Model’s Encoder, Decoder, Reward Predictor, and Continue Predictor to support interchangeable
+6
+
+Next Step
+
+rt
+
+Reward Predictor
+
+ct
+
+Continue Predictor
+
+ht
+
+MLP/KAN/FastKAN
+
+Sequence Model
+GRU
+
+at
+
+zt
+
+MLP/KAN/FastKAN
+
+Encoder
+
+Decoder
+
+MLP+CNN
+
+MLP+CNN
+
+/KAN/FastKAN
+
+/KAN/FastKAN
+
+q1
+…
+qn
+
+q1
+…
+qn
+
+Figure 1: Architecture of the KAN-Dreamer World Model. (a) Variables: White boxes denote
+data tensors: zt (stochastic latent state), ht (deterministic recurrent state), rt (reward), ct (continuation
+flag), and at (action). (b) Components: Colored boxes represent learnable modules. Dashed borders
+indicate configurable modules (Encoder, Decoder, Predictors) where the backbone can be instantiated
+as standard architectures (MLP/CNN), KAN, or FastKAN. The solid-bordered Sequence Model
+(cyan) retains the fixed GRU architecture for stability. Blue arrows indicate the data flow during the
+forward pass. Note: Proprioceptive inputs q are depicted for completeness but were masked out
+in our visual-only experiments.
+
+backbones. This flexible design allows the vector-based components (Reward and Continue Predictors) to be instantiated using either standard MLPs, KANs, or FastKANs, while enabling the visual
+components (Encoder, Decoder) to switch between standard CNNs, KANs, and FastKANs.
+Visual Processing Adaptation. A notable structural modification is applied to the visual Encoder and
+Decoder. Drawing inspiration from the Kolmogorov-Arnold Auto-Encoder (KAE) [Yu et al., 2024],
+we replace the standard Convolutional Neural Networks (CNNs) with fully connected KAN layers.
+However, distinct from the polynomial basis functions originally proposed in KAE, we prioritize
+B-splines (KAN) and Gaussian RBFs (FastKAN). This choice is motivated by the superior local
+flexibility and numerical stability of splines and RBFs compared to global polynomials, which are
+prone to oscillation in deep architectures. The processing logic is adapted as follows: for encoding,
+high-dimensional image observations are flattened into 1D vectors before being fed into the KAN
+backbone; for decoding, the latent features are projected by the KAN layers into a flat vector and
+subsequently reshaped to match the original image dimensions for pixel-level reconstruction.
+Latent Prediction Adaptation. In contrast to the visual components, the Reward and Continue
+predictors operate on low-dimensional latent states (ht , zt ). Consequently, these modules require
+no structural reshaping. We implement them as direct drop-in replacements, where the standard
+MLP layers are substituted with KAN or FastKAN layers to map the latent state to scalar rewards
+and continuation probabilities.
+Crucially, we deliberately retain the original GRU-based Sequence Model (RSSM). This component
+serves as the core engine for latent imagination, imposing stringent demands on both prediction
+fidelity and computational throughput to ensure stable and efficient policy learning. We adhere to
+the GRU baseline because the efficiency and efficacy of KANs in recurrent settings remain underexplored, and no established KAN-based architecture currently exists to effectively replace the GRU
+without compromising training stability.
+7
+
+4.3
+
+Actor-Critic Architecture
+
+The basic structure of the Actor-Critic architecture is illustrated in Figure 2.In the standard DreamerV3
+formulation, both the Actor network (πθ ) and the Critic network (vψ ) are parametrized using dense
+Multi-Layer Perceptrons (MLPs).Given that these components, analogous to the Reward and
+Continue predictors discussed in Section 4.2, operate exclusively on the low-dimensional latent state
+st = (ht , zt ), they require no spatial transformations. Consequently, we adopt an identical integration
+strategy: we implement KAN and FastKAN layers as direct drop-in replacements for the MLP
+backbones. This configuration allows us to isolate and evaluate whether the learnable univariate
+functions of KANs can approximate complex policy boundaries and value landscapes more efficiently
+than traditional static activations within the imagination loop.
+Actor
+MLP/KAN/FastKAN
+
+at
+
+st
+
+Critic
+MLP/KAN/FastKAN
+
+vt
+
+Figure 2: Actor-Critic architecture
+4.4
+
+Implementation and Architectural Adaptation
+
+Implementing KAN-Dreamer presents a practical challenge due to the framework disparity: the
+original DreamerV3 is implemented in JAX [Hafner et al., 2025a], whereas current KAN and
+FastKAN libraries are predominantly PyTorch-native, making direct integration infeasible. To
+bridge this gap and ensure efficient computation within the World Model, we propose a tailored
+implementation of KAN and FastKAN, introducing specific structural modifications to align with the
+JAX-based DreamerV3 architecture.
+Furthermore, given the distinct operational objectives—shifting from symbolic regression to highdimensional latent dynamics modeling—simply inheriting the default hyperparameters (specifically
+the grid size G and spline order k) proves suboptimal. Consequently, we recalibrate these parameters
+to balance expressivity with the computational constraints of the World Model.
+Tensorized Computation via JAX. Departing from original implementations that often process
+input dimensions sequentially, our adaptation leverages JAX’s powerful vectorization capabilities.
+For KAN, we pack all spline coefficients into a monolithic 3D tensor and perform the B-spline
+aggregation using a single einsum operation. Similarly, for FastKAN, we maintain the Radial Basis
+Function (RBF) outputs in their native tensor structure [N, D, G] (where G denotes the number of
+basis functions) and apply weights via tensor contraction. This fully vectorized approach minimizes
+memory overhead and maximizes GPU utilization, contributing to the high training throughput
+observed in our experiments.
+Simplified Grid Management and Initialization. To maintain training stability within the complex
+latent dynamics of DreamerV3, we simplified the adaptive mechanisms of the original KAN. Crucially,
+we employ fixed uniform grids for spline interpolation rather than the data-dependent adaptive
+grid updates used in the original paper, which avoids non-stationary gradients during online RL.
+Specifically, we configure the KAN layers with a grid size of G = 8 and a spline order of k = 3,
+defined over a clamped input range of [−5.0, 5.0]. For FastKAN, we deploy G = 8 Gaussian
+centers (aligning with the grid size terminology) distributed over [−2.0, 2.0]. In this formulation,
+the spline order concept is effectively substituted by the RBF bandwidth, which is automatically
+derived from the uniform grid interval. While this fixed-grid approach may theoretically limit the
+approximation precision compared to adaptive grids, it significantly stabilizes the gradient flow.
+To further ensure stability, we paid close attention to initialization. For the linear transformations
+within FastKAN (the base branch), we utilize the native linear layers from the Dreamer codebase
+(embodied.jax.nets.Linear) for consistent weight and bias handling. For the activation function
+scaling parameters, we adopted distinct strategies: in our KAN implementation, the base weight
+√
+(wb ) is initialized from a normal distribution with a standard deviation of approximately 0.5/ Din ,
+8
+
+√
+while the spline weight (ws ) is fixed at a value scaled by 1/ Din . In our FastKAN implementation,
+both scaling weights (wb and ws ) are kept fixed at 1.0, relying on the standard initialization of the
+linear layers. Auxiliary features such as masking and pruning were omitted to prioritize runtime
+performance.
+A Note on Terminology. The implementations described above—featuring JAX-based vectorization,
+fixed grids, and simplified initialization—represent specific adaptations of the original architectures
+tailored for our experimental context. For clarity and brevity, we will refer to these modified versions
+simply as "KAN" and "FastKAN" throughout the rest of this paper.
+
+5
+
+Experiments
+
+5.1
+
+Experimental Setup
+
+Task and Environment. We benchmark our proposed architecture on the walker_walk task from
+the DeepMind Control Suite (DMC) [Tassa et al., 2018]. Adhering to the "learning from pixels"
+philosophy of DreamerV3, we configure the environment to provide pure image observations,
+strictly excluding any proprioceptive state vectors (e.g., joint angles). This setting rigorously tests the
+capability of KAN-based components in processing high-dimensional visual data.
+Ablation Design. To isolate the impact of KANs and FastKANs on specific subsystems, we conduct
+a systematic component-wise ablation study divided into three groups:
+• Perception Group: Comparing the Baseline against variants where the Visual Encoder and
+Decoder are replaced by KANs or FastKANs.
+• Prediction Group: Comparing the Baseline against variants with KAN-based or FastKANbased Reward and Continue predictors.
+• Behavior Group: Comparing the Baseline against variants where the Actor and Critic
+networks are instantiated as KANs or FastKANs.
+Model Configuration. To ensure a fair comparison, we adopt an iso-parameter evaluation protocol.
+We adjust the hidden dimensions (and grid parameters where applicable) of all variants to maintain
+a total parameter count of approximately 10.5M (±0.1M). Detailed architectural specifications
+(e.g., CNN depth, layer units, and grid size) are provided in Appendix A. All other training
+hyperparameters (e.g., learning rate, batch size, horizon) strictly follow the official DreamerV3
+configuration to ensure reproducibility, as detailed in Appendix B.
+Evaluation Metrics. We structure our experimental analysis into three complementary dimensions:
+• Quantitative Analysis: We focus on two key indicators: (1) Asymptotic Performance,
+measured by the final cumulative return after 1.1M environment steps, aligning with the
+standard benchmarking protocol of DreamerV3. A score threshold of ≥ 900 is established to
+validate the effectiveness of the architectural modifications. (2) Computational Efficiency,
+assessed by two distinct throughput metrics. FPS/Train measures the gradient update speed,
+isolating the computational overhead of the KAN/MLP backbones. FPS/Policy measures
+the overall training throughput (including environment interaction), which serves as a proxy
+for the total wall-clock training time.
+• Training Dynamics and Stability: Beyond point estimates, we provide a multi-faceted
+analysis of the learning process: (1) Sample Efficiency, visualized via cumulative reward
+curves against environment steps; (2) Wall-Clock Efficiency, evaluating the trade-off
+between sample complexity and physical runtime; and (3) Component Optimization,
+where we examine the training loss trajectories (e.g., reconstruction loss, prediction error) to
+diagnose convergence behaviors.
+5.2
+
+Implementation Details
+
+Computational Resources. All experiments were conducted on a server equipped with an NVIDIA
+A800 Tensor Core GPU and an AMD EPYC 9654 CPU (7 cores allocated per run).
+9
+
+Table 1: Component-wise Ablation Study. We evaluate the impact of KAN/FastKAN on specific
+subsystems. Symbols: ◦ = Original (MLP/CNN), • = KAN, ■ = FastKAN. FPS (Pol.): Environment
+steps per second. FPS (Trn.): Training throughput. Note: All model variants are controlled to have
+approximately 10.5M parameters.
+(a) Impact on Perception (Visual Encoder & Decoder)
+
+Model ID
+
+Visual
+Enc./Dec.
+
+Perf.
+Final Score
+
+FPS (Pol.)
+
+Efficiency
+FPS (Trn.)
+
+Params
+
+Baseline
+
+◦
+
+977
+
+62
+
+15.9k
+
+10.49M
+
+KAN-Vis.
+
+•
+
+940
+
+72
+
+18.5k
+
+10.40M
+
+FKAN-Vis.
+
+■
+
+950
+
+89
+
+22.8k
+
+10.51M
+
+(b) Impact on Prediction Heads (Reward & Continue)
+
+Model ID
+
+Reward/
+Cont. Pred.
+
+Perf.
+Final Score
+
+FPS (Pol.)
+
+Efficiency
+FPS (Trn.)
+
+Params
+
+Baseline
+
+◦
+
+977
+
+62
+
+15.9k
+
+10.49M
+
+KAN-Pred
+FKAN-Pred
+
+•
+■
+
+965
+951
+
+45
+61
+
+11.5k
+15.5k
+
+10.45M
+10.51M
+
+(c) Impact on Behavior Learning (Actor & Critic)
+
+Model ID
+
+Actor/
+Critic
+
+Perf.
+Final Score
+
+FPS (Pol.)
+
+Efficiency
+FPS (Trn.)
+
+Params
+
+Baseline
+
+◦
+
+977
+
+62
+
+15.9k
+
+10.49M
+
+KAN-AC
+FKAN-AC
+
+•
+■
+
+957
+964
+
+31
+57
+
+7.8k
+14.5k
+
+10.48M
+10.47M
+
+Software Stack. The implementation runs on Anolis OS 8.6 with Python 3.11. Our code is built upon
+the JAX framework (version 0.4.33, CUDA 12 support), ensuring compatibility with the official
+DreamerV3 codebase.
+5.3
+
+Quantitative Analysis
+
+Baseline Performance. We first establish the performance benchmark using the standard DreamerV3
+algorithm. As shown in the first row of Table 1(a-c), under the iso-parameter setting (∼10.5M), the
+baseline achieves a final score of 977, with an interaction speed of 62 FPS (Pol.) and a training
+throughput of 15.9k FPS (Trn.). These metrics serve as the reference for the subsequent comparisons.
+Visual Perception. Table 1a presents the results for the Perception Group. Replacing the CNN-based
+encoder and decoder with KAN or FastKAN layers (using flattened inputs) yields final scores of 940
+and 950, respectively. Regarding computational efficiency, both variants exhibit higher throughput
+metrics than the CNN baseline. Specifically, FastKAN achieves the highest speeds (89 FPS Pol. /
+22.8k FPS Trn.), followed by KAN and the Baseline (FastKAN > KAN > Baseline).
+Latent Prediction. As shown in Table 1b, substituting the MLP-based Reward and Continue
+predictors with KANs or FastKANs results in asymptotic returns exceeding 950 for both variants.
+In terms of efficiency, the standard KAN implementation shows a reduction in interaction speed to
+45 FPS. In contrast, the FastKAN variant records a speed of 61 FPS, which is comparable to the
+baseline’s 62 FPS, following the trend Baseline ≈ FastKAN > KAN.
+Policy Optimization. Table 1c reports the results for the Behavior Learning components. Both
+KAN-AC and FKAN-AC variants reach final scores of 957 and 964, respectively. The computational
+metrics show a distinct difference between the two variants: the standard KAN model operates at 31
+10
+
+FPS (interaction) and 7.8k FPS (training), whereas the FastKAN model maintains speeds of 57 FPS
+and 14.5k FPS, remaining close to the MLP baseline figures (Baseline > FastKAN > KAN).
+5.4
+5.4.1
+
+Training Dynamics
+Sample Efficiency and Convergence
+
+We analyze the learning trajectories of cumulative rewards to understand the sample efficiency and
+stability of different architectural variants. Visualization Setup: To clearly visualize the overall
+convergence trends amidst training stochasticity, all reward curves are applied with a smoothing
+factor of 0.8. As shown in Figure 3, the solid (darker) lines represent the smoothed trajectories,
+while the translucent (lighter) traces in the background depict the raw, unsmoothed data points.
+Baseline Reference. First, we examine the Baseline (orange curves) to establish a performance
+standard. Consistent with DreamerV3’s state-of-the-art capabilities, the baseline demonstrates rapid
+convergence, typically crossing the high-performance threshold (reward ≥ 900) within approximately
+250k steps. Moreover, its raw reward traces remain tightly clustered around the mean, indicating a
+highly stable learning process.
+Visual Perception. As illustrated in Figure 3a, the smoothed trend lines show a distinct difference
+in sample efficiency between the KAN-based variants and the baseline. Both variants require a
+substantially higher number of environment steps to exceed a return of 900 (approximately 930k
+steps for KAN and 750k steps for FastKAN). Furthermore, the raw data traces reveal that KAN-based
+encoders exhibit larger reward fluctuations throughout the training process compared to the CNN
+baseline, reflecting higher variance in the learned visual representation.
+Latent Prediction. In contrast to perception, the learning curves for the Prediction Group (Figure
+3b) demonstrate that KAN-based predictors achieve convergence profiles comparable to the MLP
+baseline. All models converge around 250k steps. Notably, the FastKAN variant exhibits a slight
+advantage, crossing the 900-reward threshold as early as 220k steps. Regarding stability, the raw data
+traces show that the variance of KAN and FastKAN variants remains within a range similar to that
+of the baseline, showing that low-dimensional regression heads can be replaced without affecting
+training stability.
+Policy Optimization. Figure 3c highlights a gap in convergence speed for the Behavior Group. Both
+KAN and FastKAN variants converge slower than the baseline. Specifically, FastKAN reaches the
+asymptotic performance threshold at approximately 520k steps, while the standard KAN requires
+nearly 900k steps. Despite this delay in convergence, the training stability—as evidenced by the
+raw reward fluctuations—remains controlled and comparable to the Latent Prediction experiments,
+avoiding the high variance observed in the Visual Perception task.
+5.4.2
+
+Wall-Clock Efficiency Analysis
+
+While sample efficiency focuses on data economy, the total physical training duration is equally
+critical for rapid experimental iteration and practical scalability. We plot the cumulative returns
+against wall-clock time (in hours) to evaluate this efficiency-performance trade-off. Visualization
+Setup: Similar to Section 5.4.1, the curves are smoothed with a factor of 0.8. We focus our analysis
+here exclusively on the time-to-convergence profile shown in Figure 4.
+Baseline Reference. The standard DreamerV3 (orange curves) demonstrates high time efficiency
+across all tasks. As a reference point, the baseline consistently reaches the high-performance threshold
+(reward ≥ 900) within approximately 1.1 hours of physical runtime.
+Visual Perception. As shown in Figure 4a, both KAN-based variants require longer physical time
+to converge compared to the baseline. Specifically, the FastKAN variant reaches the performance
+threshold in about 2.5 hours, while the standard KAN variant takes approximately 3.5 hours.
+Latent Prediction. Figure 4b illustrates the efficiency in the Prediction Group. The standard KAN
+variant exhibits a slight delay, requiring approximately 1.5 hours to exceed a return of 900. In
+contrast, the FastKAN variant matches the baseline’s efficiency, reaching the high-performance zone
+in just under 1 hour, slightly faster than the 1.1-hour benchmark of the baseline.
+Policy Optimization. In the Behavior Group (Figure 4c), both KAN-based architectures show a
+marked increase in time-to-convergence. The standard KAN implementation requires over 8 hours
+11
+
+1e+3
+900
+800
+
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+100k
+
+200k
+
+300k
+
+400k
+
+500k
+
+600k
+
+700k
+
+800k
+
+900k
+
+1M
+
+1.1M
+
+(a) Perception: Comparison of Baseline (orange), KAN-Vis (blue), and FKAN-Vis (red).
+1e+3
+900
+800
+
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+100k
+
+200k
+
+300k
+
+400k
+
+500k
+
+600k
+
+700k
+
+800k
+
+900k
+
+1M
+
+1.1M
+
+(b) Prediction: Comparison of Baseline (orange), KAN-Pred (light blue), and FKAN-Pred (pink).
+1e+3
+900
+800
+
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+100k
+
+200k
+
+300k
+
+400k
+
+500k
+
+600k
+
+700k
+
+800k
+
+900k
+
+1M
+
+1.1M
+
+(c) Behavior: Comparison of Baseline (orange), KAN-AC (green), and FKAN-AC (gray).
+
+Figure 3: Training Dynamics across Component Groups. Darker lines indicate smoothed curves
+(factor 0.8), while lighter traces show raw data.
+
+of training to approach convergence. The FastKAN variant improves upon the standard KAN but still
+trails the baseline, requiring approximately 2.5 hours to reach the 900-reward threshold.
+5.4.3
+
+Component Optimization Dynamics
+
+To investigate the training behavior of the replaced components, we examine the training loss curves.
+12
+
+1e+3
+900
+800
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+0.5
+
+1
+
+1.5
+
+2
+
+2.5
+
+3
+
+3.5
+
+4
+
+4.5
+
+(a) Perception: Comparison of Baseline (orange), KAN-Vis (blue), and FKAN-Vis (red).
+1e+3
+900
+800
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+(b) Prediction: Comparison of Baseline (orange), KAN-Pred (light blue), and FKAN-Pred (pink).
+1e+3
+900
+800
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+(c) Behavior: Comparison of Baseline (orange), KAN-AC (green), and FKAN-AC (gray).
+
+Figure 4: Wall-Clock Training Efficiency. Darker lines indicate smoothed curves (factor 0.8), while
+lighter traces show raw data.
+
+Visual Perception. Since the primary objective of the autoencoder is to compress and reconstruct
+visual observations, we track the image reconstruction loss to assess representation quality. As
+illustrated in Figure 5, the baseline algorithm achieves near-perfect convergence, with the loss
+approaching zero. In stark contrast, both KAN and FastKAN variants plateau at a significantly higher
+level (approximately 100) and fail to decrease further, indicating a persistent gap in reconstruction
+fidelity.
+13
+
+800
+700
+600
+500
+400
+300
+200
+100
+0
+
+0
+
+100k
+
+200k
+
+300k
+
+400k
+
+500k
+
+600k
+
+700k
+
+800k
+
+900k
+
+1M
+
+1.1M
+
+Figure 5: Image Reconstruction Loss. Comparison of Baseline (orange), KAN-Vis (blue), and
+FKAN-Vis (red).
+
+Latent Prediction. The Reward and Continue predictors aim to estimate scalar rewards and termination flags, respectively. Their optimization progress is shown in Figure 6. As seen in Figures 6a
+and 6b, all three models ultimately converge to similar low loss values (Reward ≈ 0.625, Continue
+≈ 0.020). However, the KAN and FastKAN variants exhibit a slightly slower initial convergence rate
+compared to the MLP baseline before reaching parity.
+
+0.08
+
+4.5
+
+3.5
+
+0.06
+
+2.5
+0.04
+1.5
+0.02
+
+0.5
+0
+
+200k
+
+400k
+
+600k
+
+800k
+
+1M
+
+0
+
+(a) Reward Prediction Loss
+
+200k
+
+400k
+
+600k
+
+800k
+
+1M
+
+(b) Continue Prediction Loss
+
+Figure 6: Latent Prediction Losses. Comparison of Baseline (orange), KAN-Pred (light blue), and
+FKAN-Pred (pink).
+
+Policy Optimization. We analyze the policy loss (for the Actor) and value loss (for the Critic) to
+evaluate behavior learning dynamics (Figure 7). Regarding the policy loss (Figure 7a), the KANbased variants demonstrate a slower rate of descent compared to the baseline. More critically, the
+value loss trajectories (Figure 7b) reveal a distinct performance gap: the baseline converges to a lower
+and more stable value (orange line), whereas the KAN and FastKAN variants stabilize at a higher
+loss level with visibly larger fluctuations.
+14
+
+3.5
+
+9
+
+2.5
+
+7
+
+1.5
+
+5
+
+0.5
+
+3
+
+-0.5
+
+1
+0
+
+200k
+
+400k
+
+600k
+
+800k
+
+1M
+
+0
+
+(a) Actor Policy Loss
+
+200k
+
+400k
+
+600k
+
+800k
+
+1M
+
+(b) Critic Value Loss
+
+Figure 7: Behavior Learning Losses. Comparison of Baseline (orange), KAN-AC (green), and
+FKAN-AC (gray).
+
+6
+
+Discussion
+
+In this section, we synthesize the experimental findings to evaluate the feasibility and implications
+of replacing specific DreamerV3 components with KAN-based architectures. The discussion is
+organized by functional modules, drawing evidence from the quantitative benchmarks (Table 1),
+sample efficiency curves (Figure 3), wall-clock efficiency analysis (Figure 4), and component
+optimization dynamics (Figures 5–7).
+6.1
+
+Visual Perception
+
+Sample Efficiency and Time-to-Solution. First, regarding sample efficiency, observations from
+Table 1a and Figure 3a indicate that while the agent eventually learns a successful policy, the
+replacement of the visual encoder/decoder leads to a significant degradation in sample efficiency.
+Although the training throughput (FPS/Policy, FPS/Train) of KAN and FastKAN variants exceeds that
+of the CNN-based baseline (as shown in Table 1a and Figure 4a), the wall-clock time required to reach
+the high-performance threshold (reward ≥ 900) remains considerably longer. This implies that the
+computational speedup provided by FastKAN is insufficient to offset the increased sample complexity.
+Consequently, we conclude that directly replacing the CNN backbone with fully connected KAN
+architectures is a suboptimal strategy for high-dimensional visual control tasks.
+Root Cause Analysis: The Absence of Spatial Inductive Bias. To understand the underlying cause
+of this inefficiency, we examine the component optimization dynamics in Figure 5. The reconstruction
+loss for KAN-based autoencoders plateaus at a high value (≈ 100) and fails to converge to zero,
+unlike the CNN baseline. It is well-established that visual data exhibits strong spatial locality, where
+neighboring pixels share significant dependencies. Convolutional Neural Networks (CNNs) leverage
+this property through the convolution operator, introducing a critical spatial inductive bias (e.g.,
+translation invariance and locality). This prior knowledge frees the network from learning local pixel
+correlations from scratch, drastically reducing the hypothesis space. In contrast, our implementation
+flattens the image into a 1D vector before feeding it into KANs. Despite the theoretical function
+approximation capabilities of KANs [Liu et al., 2024b] and the success of KAE [Yu et al., 2024]
+on simple datasets like MNIST, our results suggest that without structural priors, KANs struggle to
+capture the complex dependencies in high-resolution, high-dimensional observations (e.g., DMC).
+The persistent high reconstruction loss confirms that the model fails to learn an effective visual
+representation, which cascades into poor downstream policy learning.
+Throughput Trade-off. Finally, we address the seemingly counter-intuitive observation in Table
+1a that KAN-based visual modules achieve higher training FPS than the baseline. While KANs are
+generally considered computationally heavier than MLPs, the comparison here is against CNNs.
+Convolutional operations, despite hardware acceleration, involve computationally intensive sliding
+window calculations and complex memory access patterns, which can be more expensive than
+the matrix-multiplication-based operations of FastKAN (once inputs are flattened). However, this
+throughput advantage is superficial. Given the poor sample efficiency, prolonged convergence time,
+15
+
+and failure in reconstruction, the speed advantage of KANs in this context is rendered negligible. The
+lack of representation quality outweighs the benefits of faster gradient updates.
+6.2
+
+Latent Prediction
+
+Sample Efficiency and Time-to-Solution. First, regarding sample efficiency, data from Table 1b and
+Figure 3b demonstrate that both KAN and FastKAN variants achieve asymptotic returns comparable
+to the baseline. Notably, the FastKAN variant converges to the high-performance threshold with
+slightly fewer interaction steps than the baseline, suggesting a marginal improvement in sample
+efficiency. In terms of wall-clock training time (Figure 4b), the standard KAN variant is noticeably
+slower due to its computational overhead. However, the FastKAN variant, despite a slightly lower
+interaction FPS than the MLP baseline, achieves a comparable (or even slightly shorter) total time-toconvergence. This efficiency gain is attributed to its improved sample efficiency offsetting the minor
+throughput reduction. Considering experimental stochasticity, we conclude that FastKAN serves as a
+robust drop-in replacement for MLPs in latent predictors without compromising—and potentially
+enhancing—overall training efficiency.
+Optimization Dynamics and Loss Interpretation. Although Figure 6 indicates that the baseline
+MLP achieves a faster initial reduction in training loss compared to FastKAN, this metric does
+not linearly correlate with downstream policy performance. First, RL training is inherently nonstationary; as the policy improves, the agent encounters novel states with differing reward dynamics.
+A persistently non-zero loss may indicate that the KAN-based predictor is actively adapting to these
+new, high-value regions rather than overfitting to early, trivial states. Furthermore, the scalar loss
+represents an average over the batch, which can be misleading in tasks with sparse rewards or class
+imbalance (e.g., Continue flags). A trivial predictor that outputs constant zeros often yields a lower
+average loss than an informative predictor that captures sparse high-value signals with some variance.
+The fact that FastKAN supports competitive policy performance (Figure 3c) despite slightly higher
+prediction loss suggests it avoids such trivial solutions, effectively capturing the critical—albeit
+sparse—learning signals required for policy improvement.
+Structural Generalization via KA Theorem. Crucially, training loss measures performance only on
+the replay buffer distribution, whereas the efficacy of a World Model depends on its generalization to
+unseen states during latent imagination. Theoretically, MLPs rely on the Universal Approximation
+Theorem (UAT), which guarantees approximation capabilities but offers no guarantees on the
+functional form outside the training data. In contrast, KANs are grounded in the KolmogorovArnold representation theorem, which posits that multivariate functions can be represented via
+the composition of learnable univariate functions. We hypothesize that if KAN-based predictors
+successfully learn the constituent sub-functions of the reward signal, the resulting "reward landscape"
+may be topologically more accurate than that of an MLP approximation. Consequently, KANs
+could offer superior structural generalization to unseen states, providing more reliable guidance for
+long-horizon planning, even if this structural precision is not fully reflected in the scalar training loss.
+6.3
+
+Policy Optimization
+
+Sample Efficiency and Time-to-Solution. Regarding sample efficiency, observations from Table
+1c and Figure 3c mirror the findings in the Visual Perception experiments: replacing the Actor
+and Critic networks with KAN or FastKAN architectures leads to a marked degradation in sample
+efficiency. In terms of wall-clock training time (Figure 4c), both variants are significantly slower than
+the baseline, with the standard KAN suffering from severe computational delays and FastKAN failing
+to compensate for the extra sample complexity with its throughput. Based on these dual deficits in
+data and time efficiency, we conclude that a direct, drop-in replacement of MLPs with current KAN
+architectures in the Actor-Critic loop is a suboptimal strategy for this benchmark.
+Optimization Dynamics and Loss Interpretation. The component optimization curves in Figure 7
+provide proximate causes for this performance gap. The policy loss (Figure 7a) exhibits a sluggish
+rate of decay compared to the baseline, indicating inefficient policy improvement. More critically,
+the value loss (Figure 7b) converges to a significantly higher value with larger variance. This implies
+that the KAN-based Critic struggles to accurately approximate the return distribution, which in turn
+destabilizes the Actor’s learning process by providing noisy or biased advantage estimates.
+16
+
+Task Complexity: Value Estimation vs. Reward Prediction. We attribute these difficulties to
+the fundamental difference in task complexity between Reward Prediction (Section 6.2) and Value
+Estimation. While the reward function often follows a deterministic, formulaic structure relative
+to the state (which KANs fit well), the Critic in DreamerV3 must approximate the distribution of
+λ-returns. This target involves long-horizon temporal aggregation of stochastic rewards and relies
+on bootstrapping from the Critic’s own future predictions. Unlike the supervised regression of
+instantaneous rewards, value estimation is a recursive, non-stationary problem where errors compound
+over the imagination horizon. Our results suggest that standard KANs, without specific architectural
+priors, lack the optimization stability to efficiently approximate these complex, recursive value
+landscapes involving future uncertainty.
+6.4
+
+Synthesis and Conclusion
+
+Synthesizing the above analysis, we derive three primary conclusions regarding the integration of
+KANs into World Models:
+• Suboptimal for Visual Perception due to Missing Inductive Biases: Direct replacement
+of the CNN-based Autoencoder with standard KANs or FastKANs proves to be a suboptimal
+strategy. The primary constraint is not a lack of expressivity, but rather the absence of
+structural priors. By flattening the image, KANs lose the crucial spatial inductive bias
+that CNNs inherently possess, making it inefficient for them to learn the complex local
+correlations in high-dimensional visual data from scratch.
+• Suboptimal for Policy Optimization due to Task Complexity: Similarly, replacing
+the Actor-Critic MLP backbones is also suboptimal. While these components do not
+require spatial priors, they face a different challenge: approximating the complex, highdimensional, and recursive value landscapes defined by the Bellman equation. Our
+results indicate that standard KANs struggle with the optimization stability required for this
+non-stationary task, leading to poor sample efficiency.
+• Promising for Latent Prediction: Conversely, FastKAN emerges as a robust and efficient
+drop-in replacement for MLPs in the Reward and Continue predictors. These components
+require modeling deterministic, low-dimensional mappings—a task that is neither spatially
+structured nor recursively defined. This aligns perfectly with the mathematical strengths of
+KANs, allowing FastKAN to achieve competitive performance and training stability without
+the computational bottlenecks or inductive bias limitations observed elsewhere.
+
+7
+
+Conclusion
+
+Summary of Findings. In this work, we presented KAN-Dreamer, an exploratory study evaluating
+the integration of KAN and FastKAN architectures into the DreamerV3 framework. Our experiments
+demonstrate that FastKAN exhibits significant potential as a drop-in replacement for MLPs in the
+Reward and Continue Predictors. Under iso-parameter conditions, FastKAN-based predictors
+achieve performance parity with MLPs in terms of asymptotic return, sample efficiency, and wallclock training time. Furthermore, we extensively discussed the structural and optimization challenges
+that currently limit the applicability of standard KANs in high-dimensional Visual Encoders and
+complex Actor-Critic networks, providing a foundation for future architectural improvements.
+Future Work. Based on our findings, we identify some promising directions for future research:
+1. Tailored Architectures and Hyperparameter Tuning: Our preliminary results suggest
+that a one-size-fits-all configuration for KANs is suboptimal. Future work will focus on
+co-optimizing both the architecture and hyperparameters for each specific component. On
+an architectural level, this involves exploring heterogeneous designs; for example, the visual
+encoder, processing high-frequency pixel data, may benefit from a finer grid granularity
+(higher capacity), whereas the reward predictor might be more stable with a coarser grid. On
+a hyperparameter level, this entails a systematic analysis of sensitivity to parameters like the
+RBF bandwidth or the input range clamping, tailored to the non-stationary data distribution
+of each subsystem in online reinforcement learning.
+17
+
+2. Interpretability and Symbolic Discovery: Leveraging the white-box nature of KANs, we
+aim to move beyond black-box prediction. A key direction is to utilize symbolic regression
+to visualize and interpret the learned reward functions. This, however, introduces a
+non-trivial architectural challenge stemming from a mismatch with DreamerV3’s design. To
+enhance stability across diverse reward scales, DreamerV3 frames reward prediction not as
+a direct regression task, but as a classification problem over discrete bins using a two-hot
+loss formulation. To enable symbolic discovery of a reward function (e.g., r = f (st )), the
+KAN-based predictor head would likely need to be reverted to a direct regression output. A
+crucial avenue for future research is to investigate this modification, carefully balancing the
+pursuit of interpretability against a potential reduction in the training stability and generality
+that the original classification-based approach provides. Successfully navigating this tradeoff could reveal intrinsic relationships between state factors in sparse-reward tasks, offering
+a transparent view of the agent’s learned objectives.
+3. Recurrent KAN Architectures for Temporal Modeling: Our current study treats KANs
+as stateless, feed-forward function approximators. A significant future direction is to explore
+architectures that directly embed temporal reasoning into the KAN framework itself, moving
+beyond simple drop-in replacement. This could involve two primary avenues: (1) designing
+truly Recurrent KANs (KAN-RNNs), where the learnable activation functions on the edges
+are stateful or influence a recurrent hidden state, potentially offering an alternative to the
+GRU-based sequence model. (2) Investigating hybrid models where KANs are used to
+parameterize the transition functions within the existing RSSM framework. The goal is to
+determine if KANs’ superior function approximation capabilities can lead to more accurate
+and efficient long-horizon predictions in the latent space.
+4. Incorporating Spatial Priors: To address the limitations in visual perception, we propose
+integrating spatial inductive biases into the KAN framework (e.g., Convolutional KANs).
+Furthermore, we intend to investigate advanced regularization techniques to constrain the
+expressivity of KANs, preventing overfitting to high-frequency noise in visual reconstruction
+tasks.
+
+References
+Blealtan. efficient-kan: An efficient pure-pytorch implementation of kolmogorov-arnold network.
+https://github.com/Blealtan/efficient-kan, 2024. Accessed: 2024-06-16.
+Jake Bruce, Michael D Dennis, Ashley Edwards, Jack Parker-Holder, Yuge Shi, Edward Hughes,
+Matthew Lai, Aditi Mavalankar, Richie Steigerwald, Chris Apps, et al. Genie: Generative
+interactive environments. In Forty-first International Conference on Machine Learning, 2024.
+Oleksandr Cherednichenko and Maria Poptsova. Kolmogorov–arnold networks for genomic tasks.
+Briefings in Bioinformatics, 26(2):bbaf129, 03 2025. ISSN 1477-4054. doi: 10.1093/bib/bbaf129.
+URL https://doi.org/10.1093/bib/bbaf129.
+Ashok Elluswamy. Foundation models for autonomy. Keynote at the IEEE/CVF Conference on
+Computer Vision and Pattern Recognition (CVPR) Workshop on End-to-End Autonomous Driving,
+2023. Available at https://www.youtube.com/watch?v=6eGhjhx8O9M.
+Sergei Gleyzer, Hanh Nguyen, Dinesh P Ramakrishnan, and Eric AF Reinhardt. Sinusoidal approximation theorem for kolmogorov–arnold networks. Mathematics, 13(19):3157, 2025.
+Google DeepMind. Veo: Our most capable generative video model. https://deepmind.google/
+technologies/veo/, 2024. Accessed: 2025-01-01.
+Haihong Guo, Fengxin Li, Jiao Li, and Hongyan Liu. Kan vs mlp for offline reinforcement learning.
+In ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing
+(ICASSP), pages 1–5. IEEE, 2025.
+David Ha and Jürgen Schmidhuber. World models. arXiv preprint arXiv:1803.10122, 2(3), 2018.
+Danijar Hafner, Timothy Lillicrap, Jimmy Ba, and Mohammad Norouzi. Dream to control: Learning
+behaviors by latent imagination. arXiv preprint arXiv:1912.01603, 2019a.
+18
+
+Danijar Hafner, Timothy Lillicrap, Ian Fischer, Ruben Villegas, David Ha, Honglak Lee, and James
+Davidson. Learning latent dynamics for planning from pixels. In International conference on
+machine learning, pages 2555–2565. PMLR, 2019b.
+Danijar Hafner, Timothy Lillicrap, Mohammad Norouzi, and Jimmy Ba. Mastering atari with discrete
+world models. arXiv preprint arXiv:2010.02193, 2020.
+Danijar Hafner, Jurgis Pasukonis, Jimmy Ba, and Timothy Lillicrap. Mastering diverse control tasks
+through world models. Nature, pages 1–7, 2025a.
+Danijar Hafner, Wilson Yan, and Timothy Lillicrap. Training agents inside of scalable world models.
+arXiv preprint arXiv:2509.24527, 2025b.
+Anthony Hu, Lloyd Russell, Hudson Yeo, Zak Murez, George Fedoseev, Alex Kendall, Jamie Shotton,
+and Gianluca Corrado. GAIA-1: A generative world model for autonomous driving. arXiv preprint
+arXiv:2309.17080, 2023a.
+Yihan Hu, Jiazhi Yang, Li Chen, Keyu Li, Chonghao Sima, Xizhou Zhu, Siqi Chai, Senyou Du,
+Tianwei Lin, Wenhai Wang, et al. Planning-oriented autonomous driving. In Proceedings of the
+IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 17853–17862,
+2023b.
+Andrei Nikolaevich Kolmogorov. On the representations of continuous functions of many variables
+by superposition of continuous functions of one variable and addition. In Dokl. Akad. Nauk USSR,
+volume 114, pages 953–956, 1957.
+Ziyao Li. Kolmogorov-arnold networks are radial basis function networks.
+arXiv:2405.06721, 2024.
+
+arXiv preprint
+
+Ziming Liu, Pingchuan Ma, Yixuan Wang, Wojciech Matusik, and Max Tegmark. Kan 2.0:
+Kolmogorov-arnold networks meet science. arXiv preprint arXiv:2408.10205, 2024a.
+Ziming Liu, Yixuan Wang, Sachin Vaidya, Fabian Ruehle, James Halverson, Marin Soljačić,
+Thomas Y Hou, and Max Tegmark. Kan: Kolmogorov-arnold networks. arXiv preprint
+arXiv:2404.19756, 2024b.
+OpenAI. Video generation models as world simulators. https://openai.com/index/
+video-generation-models-as-world-simulators/, 2024. Accessed: 2025-01-01.
+Johannes Schmidt-Hieber. The kolmogorov–arnold representation theorem revisited. Neural networks,
+137:119–126, 2021.
+Kamal Singh, Sami Marouani, Ahmad Al Sheikh, Pham Tran Anh Quang, and Amaury Habrard.
+Interpretable reinforcement learning for load balancing using kolmogorov-arnold networks. arXiv
+preprint arXiv:2505.14459, 2025.
+Vanessa Su and Xiaofeng Yang. Kan-ddpm: Kolmogorov-arnold networks with diffusion denoising
+probabilistic models for mri-to-ct synthesis. In Medical Imaging 2025: Imaging Informatics,
+volume 13411, pages 227–233. SPIE, 2025.
+Yuval Tassa, Yotam Doron, Alistair Muldal, Tom Erez, Yazhe Li, Diego de Las Casas, David Budden,
+Abbas Abdolmaleki, Josh Merel, Andrew Lefrancq, et al. Deepmind control suite. arXiv preprint
+arXiv:1801.00690, 2018.
+Juan Diego Toscano, Li-Lian Wang, and George Em Karniadakis. Kkans: Kurkova-kolmogorovarnold networks and their learning dynamics. Neural Networks, 191:107831, 2025.
+Cristian J Vaca-Rubio, Luis Blanco, Roberto Pereira, and Màrius Caus. Kolmogorov-arnold networks
+(kans) for time series analysis. arXiv preprint arXiv:2405.08790, 2024.
+Chengyang Wang, Jun Jiang, and Renlei Yang. Ka-gan: Kolmogorov-arnold generative adversarial
+networks for reconstruction of 3d porous media. SPE Journal, 30(10):5932–5955, 2025a.
+19
+
+Yizheng Wang, Jia Sun, Jinshuai Bai, Cosmin Anitescu, Mohammad Sadegh Eshaghi, Xiaoying
+Zhuang, Timon Rabczuk, and Yinghua Liu. Kolmogorov–arnold-informed neural network: A
+physics-informed deep learning framework for solving forward and inverse problems based on
+kolmogorov–arnold networks. Computer Methods in Applied Mechanics and Engineering, 433:
+117518, 2025b.
+Philipp Wu, Alejandro Escontrela, Danijar Hafner, Pieter Abbeel, and Ken Goldberg. Daydreamer:
+World models for physical robot learning. In Conference on robot learning, pages 2226–2240.
+PMLR, 2023.
+Chia-Hung Yeh and Cheng-Yue Liou. Diffusion-based low-light image enhancement with
+kolmogorov-arnold networks (kans). Array, page 100431, 2025.
+Fangchen Yu, Ruilizhen Hu, Yidong Lin, Yuqi Ma, Zhenghao Huang, and Wenye Li. Kae:
+Kolmogorov-arnold auto-encoder for representation learning. arXiv preprint arXiv:2501.00420,
+2024.
+Zhiteng Zhou, Zhaoyue Xu, Yi Liu, and Shizhao Wang. askan: Active subspace embedded
+kolmogorov-arnold network. arXiv preprint arXiv:2504.04669, 2025.
+
+20
+
+Appendix A
+
+Detailed Architectural Specifications
+
+To ensure a fair comparison under the iso-parameter constraint (≈ 10.5M total parameters), we
+adjusted the scaling hyperparameters for each component. Table A1 details the specific configurations.
+For the Baseline (DreamerV3), the visual encoder/decoder size is controlled by the depth parameter
+(which scales the channel multipliers), while vector-based components are controlled by units. For
+KAN and FastKAN variants, we adjust the number of units (hidden width) to match the parameter
+count. Notably, for FastKAN, we align the number of RBF centers with the grid size (G) of standard
+KANs to maintain architectural consistency.
+Table A1: Detailed architectural configurations. Scale Config: Denotes the primary hyperparameter used to scale the model size (depth for CNNs, units for MLPs/KANs). G: Grid size (for KAN)
+or Number of RBF Centers (for FastKAN). k: Spline order (specific to KAN).
+Model ID
+
+Backbone
+
+Component Configuration
+Scale Config (Depth/Units) Grid Size (G)
+
+Order (k)
+
+Total Model
+Params
+
+–
+8
+8
+
+–
+3
+–
+
+10.49M
+10.40M
+10.51M
+
+–
+8
+8
+
+–
+3
+–
+
+10.49M
+10.45M
+10.51M
+
+–
+8
+8
+
+–
+3
+–
+
+10.49M
+10.48M
+10.47M
+
+1. Perception Group (Encoder & Decoder)
+Baseline
+KAN-Vis.
+FKAN-Vis.
+
+CNN
+KAN
+FastKAN
+
+depth: 16
+units: 8
+units: 12
+
+2. Prediction Group (Reward & Continue Heads)
+Baseline
+KAN-Pred
+FKAN-Pred
+
+MLP
+KAN
+FastKAN
+
+units: 256
+units: 20
+units: 30
+
+3. Behavior Group (Actor & Critic)
+Baseline
+KAN-AC
+FKAN-AC
+
+MLP
+KAN
+FastKAN
+
+units: 256
+units: 24
+units: 34
+
+21
+
+Appendix B
+
+Training Hyperparameters
+
+We adopt the standard hyperparameter settings from the official DreamerV3 implementation [Hafner
+et al., 2025a] across all experiments. Table B1 summarizes the configuration used for the baseline
+and all KAN-based variants.
+Table B1: DreamerV3 Hyperparameters. These settings are kept consistent across all experiments to
+ensure a fair comparison. The notation Per(R, p) denotes the p-th percentile of the return distribution.
+Name
+
+Symbol
+
+Value
+
+—
+B
+T
+—
+—
+—
+—
+
+5 × 106
+16
+64
+RMSNorm + SiLU
+4 × 10−5
+AGC(0.3)
+LaProp(ϵ = 10−20 )
+
+βpred
+βdyn
+βrep
+—
+—
+
+1
+1
+0.1
+1%
+1
+
+H
+1/(1 − γ)
+λ
+βval
+βrepval
+—
+—
+βpol
+η
+—
+S
+L
+—
+
+15
+333
+0.95
+1
+0.3
+1
+0.98
+1
+3 × 10−4
+1%
+Per(R, 95) − Per(R, 5)
+1
+0.99
+
+General
+Replay capacity
+Batch size
+Batch length
+Activation
+Learning rate
+Gradient clipping
+Optimizer
+World Model
+Reconstruction loss scale
+Dynamics loss scale
+Representation loss scale
+Latent unimix
+Free nats
+Actor Critic
+Imagination horizon
+Discount horizon
+Return lambda
+Critic loss scale
+Critic replay loss scale
+Critic EMA regularizer
+Critic EMA decay
+Actor loss scale
+Actor entropy regularizer
+Actor unimix
+Actor RetNorm scale
+Actor RetNorm limit
+Actor RetNorm decay
+
+22
+
+Appendix C
+
+Additional Preliminary Results on Manipulation Tasks
+
+To assess the generality of FastKAN-based predictors, which emerged as the most promising variant
+in our main experiments, we conducted preliminary experiments on the MetaWorld suite, specifically
+the Reach task.
+Figure C1 illustrates the training trajectories of the FastKAN-based predictor compared to the MLP
+baseline. For this specific domain, we observe that the FastKAN backbone maintains numerical
+stability and exhibits competitive convergence properties. To achieve this, we performed a light
+hyperparameter sweep over the number of RBF centers (G) for the FastKAN model, while adjusting
+its hidden units to adhere to the iso-parameter constraint against the MLP baseline. However,
+extensive multi-seed evaluations were not the primary focus of this specific ablation study.
+
+5e+3
+4.5e+3
+4e+3
+3.5e+3
+3e+3
+2.5e+3
+2e+3
+1.5e+3
+1e+3
+
+0
+
+20k
+
+40k
+
+60k
+
+80k
+
+100k
+
+120k
+
+140k
+
+160k
+
+180k
+
+Figure C1: Episode return on the MetaWorld Reach task. Comparison of the FastKAN-based
+predictor (blue) against the MLP baseline (orange). The curves represent smoothed episode returns
+over environment steps.
+
+23
+

@@ -1,0 +1,6 @@
+Title: KAN: Kolmogorov-Arnold Networks
+Citation key used: liu2024kan
+Main use in paper: Foundational KAN architecture and motivation for parameter/scaling efficiency.
+Summary: The paper introduces KANs as networks with learnable univariate edge functions instead of fixed node activations.
+Sample-efficiency angle: It reports strong performance with smaller models and favorable scaling behavior in data fitting and scientific examples.
+Caveat: The evidence is closer to parameter efficiency and neural scaling than to a clean fixed-budget sample-efficiency comparison.

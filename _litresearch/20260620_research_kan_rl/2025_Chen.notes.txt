@@ -1,0 +1,6 @@
+Title: KAN Policy: Learning Efficient and Smooth Robotic Trajectories via Kolmogorov-Arnold Networks
+Citation key used: chen2025kanpolicy
+Main use in paper: KANs for smooth robotic policy learning.
+Summary: The paper inserts KAN modules into diffusion-policy architectures for visuomotor policy learning.
+Sample-efficiency angle: It reports better success rate, shorter execution time, and smoother trajectories.
+Caveat: This is learning from demonstrations and trajectory generation rather than standard online RL sample efficiency.

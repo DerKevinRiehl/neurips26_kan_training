@@ -1,0 +1,6 @@
+Title: Kolmogorov-Arnold Networks in Low-Data Regimes: A Comparative Study with Multilayer Perceptrons
+Citation key used: pourkamali2025lowdata
+Main use in paper: Strong cautionary citation for low-data KAN claims.
+Summary: The paper compares KANs with MLPs that use individualized learnable activation functions.
+Sample-efficiency angle: In small-data classification settings, the individualized-activation MLPs outperform KANs while using fewer parameters.
+Caveat: This suggests KANs should not be assumed to be sample-efficient without careful baselines and matched budgets.

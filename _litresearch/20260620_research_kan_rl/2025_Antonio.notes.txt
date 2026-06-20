@@ -1,0 +1,6 @@
+Title: Kolmogorov-Arnold Networks for Explainable Reinforcement Learning
+Citation key used: dalto2025explainable
+Main use in paper: Explainable RL and symbolic-policy citation.
+Summary: The thesis integrates KANs as actor and critic networks in PPO for CartPole and a radio-access-network control setting.
+Sample-efficiency angle: KAN agents can match MLP performance with far fewer parameters, but the main contribution is interpretability through pruning and symbolic regression.
+Caveat: Training can be slower, so parameter efficiency and wall-clock efficiency should be separated.

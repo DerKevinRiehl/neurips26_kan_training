@@ -1,0 +1,6 @@
+Title: KAN versus MLP on Irregular or Noisy Functions
+Citation key used: zeng2024irregular
+Main use in paper: Cautionary evidence against a broad claim that KANs always outperform MLPs.
+Summary: The paper compares KANs and MLPs across regular, irregular, discontinuous, singular, oscillatory, and noisy functions while controlling parameters and training samples.
+Sample-efficiency angle: Increasing the sample size can help both models, but KANs do not uniformly dominate MLPs.
+Caveat: The tasks are function-fitting benchmarks rather than RL control tasks.

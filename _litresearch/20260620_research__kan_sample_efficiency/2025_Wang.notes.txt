@@ -1,0 +1,6 @@
+Title: QuadKAN: KAN-Enhanced Quadruped Motion Control via End-to-End Reinforcement Learning
+Citation key used: wang2025quadkan
+Main use in paper: Positive domain-specific RL control evidence.
+Summary: The paper introduces a spline-parameterized cross-modal policy for quadruped locomotion using KAN components in proprioception and fusion modules.
+Sample-efficiency angle: It reports faster convergence, improved returns, lower action jitter, and better robustness in gait-control settings.
+Caveat: The result is specific to structured quadruped locomotion and should not be read as a general KAN-over-MLP theorem.

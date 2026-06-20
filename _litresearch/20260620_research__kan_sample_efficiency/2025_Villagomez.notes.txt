@@ -1,0 +1,6 @@
+Title: Comparative Evaluation of Kolmogorov-Arnold Autoencoders and Orthogonal Autoencoders for Fault Detection with Varying Training Set Sizes
+Citation key used: villagomez2025kanae
+Main use in paper: Positive low-data evidence in industrial process monitoring.
+Summary: The paper evaluates KAN autoencoder variants against an MLP-based orthogonal autoencoder on fault detection with varying training-set sizes.
+Sample-efficiency angle: WavKAN-AE and EfficientKAN-AE reach strong fault-detection performance with much less data than the baseline.
+Caveat: This is unsupervised fault detection, not online RL control.

@@ -1,0 +1,6 @@
+Title: Kolmogorov-Arnold Networks for Online Reinforcement Learning
+Citation key used: kich2024online
+Main use in paper: Early KAN-as-PPO-function-approximator citation.
+Summary: The paper replaces MLP-based PPO actor/critic approximators with KANs on DeepMind Control Proprio robotics benchmarks.
+Sample-efficiency angle: It reports comparable performance, often with fewer parameters.
+Caveat: The paper emphasizes parameter efficiency and comparable reward more than a systematic sample-efficiency protocol.

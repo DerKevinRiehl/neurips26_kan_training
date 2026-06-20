@@ -1,0 +1,6 @@
+Title: KAN-Based On-Policy PPO Method for Continuous Reinforcement Learning
+Citation key used: bayeh2026kanppo
+Main use in paper: KAN-PPO and MultKAN-PPO citation for continuous control.
+Summary: The relevant chapter in this proceedings volume integrates KAN and MultKAN into PPO actor and critic networks for MuJoCo HalfCheetah.
+Sample-efficiency angle: KAN-based models show robust performance and often higher returns across configurations.
+Caveat: Dropout behavior is sensitive, and the study is not primarily framed as a fixed-budget sample-efficiency benchmark.

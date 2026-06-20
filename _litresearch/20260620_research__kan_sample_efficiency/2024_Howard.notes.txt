@@ -1,0 +1,6 @@
+Title: Multifidelity Kolmogorov-Arnold Networks
+Citation key used: howard2024multifidelity
+Main use in paper: Positive evidence for KANs in expensive-data scientific learning.
+Summary: The paper proposes multifidelity KANs, which combine abundant low-fidelity data with limited high-fidelity data to model high-fidelity outputs.
+Sample-efficiency angle: It is highly relevant when samples are expensive, because the method reduces reliance on large high-fidelity datasets.
+Caveat: This is not an RL study and does not directly compare KAN and MLP sample efficiency under environment-interaction budgets.

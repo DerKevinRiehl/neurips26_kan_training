@@ -1,0 +1,6 @@
+Title: KAN-Dreamer: Benchmarking Kolmogorov-Arnold Networks as Function Approximators in World Models
+Citation key used: shi2025kandreamer
+Main use in paper: Component-level RL evidence for and against KAN replacements.
+Summary: The paper replaces selected DreamerV3 modules with KAN or FastKAN layers and evaluates sample efficiency, wall-clock time, and asymptotic performance.
+Sample-efficiency angle: FastKAN works well for reward and continue predictors, reaching parity with MLPs, but visual encoders and actor-critic replacements can hurt sample efficiency.
+Caveat: The results argue for targeted KAN use rather than blanket MLP replacement.

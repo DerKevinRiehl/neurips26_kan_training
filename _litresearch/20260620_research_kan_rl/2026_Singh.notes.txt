@@ -1,0 +1,6 @@
+Title: Interpretable Reinforcement Learning for Load Balancing using Kolmogorov-Arnold Networks
+Citation key used: singh2026loadbalancing
+Main use in paper: KANs for interpretable RL-based network control.
+Summary: The paper uses a PPO agent with a KAN actor and MLP critic to learn load-balancing policies.
+Sample-efficiency angle: The paper is more about extracting controller equations and interpretable policies than about sample efficiency.
+Caveat: Useful as evidence that KANs are being adopted in RL control, but not a direct KAN-vs-MLP sample-efficiency study.

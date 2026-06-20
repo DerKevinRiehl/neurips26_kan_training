@@ -1,0 +1,462 @@
+2026 IEEE 23rd Consumer Communications & Networking Conference (CCNC)
+
+2026 IEEE 23rd Consumer Communications & Networking Conference (CCNC) | 979-8-3315-9673-6/26/$31.00 ©2026 IEEE | DOI: 10.1109/CCNC65079.2026.11366542
+
+Interpretable Reinforcement Learning for Load
+Balancing using Kolmogorov-Arnold Networks
+Kamal Singh1 , Sami Marouani1 , Ahmad Al Sheikh2 , Pham Tran Anh Quang3 , Amaury Habrard1,4,5
+1
+
+Université Jean Monnet Saint-Étienne, CNRS, Inst. d’Optique Graduate School, Lab. Hubert Curien, F-42023 Saint-Étienne, France
+2
+QoS Design, Toulouse, France
+3
+Huawei Technologies Ltd., Paris Research Center, France
+4
+Institut Universitaire de France (IUF) 5 Inria
+1
+Email: {firstname.surname}@univ-st-etienne.fr, 2 alsheikh@qosdesign.com, 3 phamt.quang@huawei.com
+
+Abstract—Reinforcement learning (RL) has been increasingly
+applied to network control problems, such as load balancing.
+However, existing RL approaches often suffer from lack of interpretability and difficulty in extracting controller equations. In
+this paper, we propose the use of Kolmogorov-Arnold Networks
+(KAN) for interpretable RL in network control. We employ
+a PPO agent with a 1-layer actor KAN model and an MLP
+Critic network to learn load balancing policies that maximise
+throughput utility, minimize loss as well as delay. Our approach
+allows us to extract controller equations from the learned neural
+networks, providing insights into the decision-making process.
+We evaluate our approach using different reward functions
+demonstrating its capability in improving network performance
+while providing interpretable policies.
+
+I. I NTRODUCTION
+Network providers face increasing complexity and must
+support diverse traffic, necessitating agile, autonomous networks to manage tasks like routing and QoS while controlling
+costs. This requires new algorithms for decision-making and
+control. Existing methods relying on optimization or control
+theory require full system knowledge, which is challenging.
+Meanwhile, ML approaches, though effective, often lack interpretability—a critical barrier for deployment in sensitive
+environments where failures can be costly.
+We focus on load balancing over Software-Defined Wide
+Area Network (SD-WAN) where traffic flows between origindestination pairs can be distributed across multiple logical paths. We propose an interpretable Deep Reinforcement
+Learning approach integrating a Kolmogorov Arnold Network
+(KAN) [1] within a Proximal Policy Optimization framework
+to obtain load balancing policies which enhance throughput
+and reduce packet loss. Our method extracts symbolic policies,
+offering both performance and interpretability essential for
+network operators. Our source code is available online1 .
+A. Related work
+Traffic Engineering (TE) optimizes network resource utilization while meeting performance requirements like throughput
+and reliability. Traditional mechanisms, such as MPLS-TE [2],
+rely heavily on signaling protocols like RSVP-TE [3], which
+limits flexibility in dynamic environments. Segment Routing
+over IPv6 (SRv6) [4] enhances modern TE by leveraging the
+IPv6 stack for flexible, stateless packet forwarding. It uses
+1 https://github.com/safeml/sdwan
+
+the Segment Routing Header (SRH) to guide packets along
+predetermined paths without requiring complex control protocols like RSVP or LDP, reducing core overhead. Oblivious TE
+methods like shortest-path routing often lead to congestion.
+Semi-oblivious approaches such as COPE [5] improve link
+utilization but face computational overhead and sensitivity to
+traffic changes.
+Deep Reinforcement Learning (DRL) has shown promise in
+optimizing network QoS metrics, with works including [6] for
+delay minimization. Most DRL-based TE methods lack interpretability and overlook safety during training and inference,
+risking link capacity violations. Constrained approaches like
+RCPO [7] offer soft guarantees through Lagrangian methods,
+while Control Barrier Functions (CBFs) [8], [9] provide hard
+safety assurances. Interpretability is crucial for understanding
+model functionality and failures. Methods to achieve interpretability include using intrinsically interpretable models like
+decision trees or techniques like model distillation [10]. Recent
+work by [11] uses symbolic AI for explanations, while [12]
+applied distillation to convert DRL into decision trees.
+In contrast, our KAN-based actor maintains interpretability
+by design and learns to improve performance by load balancing flows across paths with varying network conditions.
+This paper is organized as follows: Section I introduces the
+paper and reviews related work, Section II details our approach
+of KAN based DRL, Section III presents results, and Section
+IV concludes the paper.
+II. I NTERPRETABLE R EINFORCEMENT L EARNING
+We propose replacing the traditional black-box actor in an
+actor-critic agent with a single-layer KAN, as shown in Fig. 1.
+This approach leverages the Kolmogorov-Arnold representation theorem, which states that any continuous function can
+be expressed using univariate splines. In our implementation,
+each state feature feeds into these splines, whose outputs are
+summed and passed through another function to produce an
+action. This decomposition allows for clear interpretability by
+tracing how each input contributes to the decision. Despite its
+simplicity, our 1-layer KAN actor matches the performance
+of deeper multilayer perceptrons (MLPs). The critic remains
+a standard MLP, estimating the state value V (s), and both
+components are trained end-to-end using Proximal Policy
+Optimization (PPO) [13], [14].
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:27:04 UTC from IEEE Xplore. Restrictions apply.
+
+979-8-3315-9673-6/26/$31.00 ©2026 IEEE
+
+2026 IEEE 23rd Consumer Communications & Networking Conference (CCNC)
+
+Fig. 2: PPO-KAN trained activations using loss reward
+
+Fig. 1: KAN Actor and MLP Critic Architecture
+
+Environment: The load balancing environment uses detailed packet-level simulations in NS3, connected to DRL
+scripts via ns3gym [15]. Every step, the DRL agent selects
+a target traffic ratio for the Internet or MPLS link. Observable parameters include: normalized total demand λ, demand
+change ∆λ, and metrics for both links (MPLS and Internet),
+such as demand (λm , λi ), delay (dm , di ), loss (lm , li ), and
+utilization (um , ui ). The number of flows on each link (nm , ni )
+is also tracked, though background Internet traffic isn’t directly
+observable—only its effects on delay and loss are measurable.
+State: The State corresponds to the observed link conditions
+during the last step. State ∈ {λ, ∆λ, λm , 10dm , 10lm , um ,
+λi , 10di , 10li , ui } (see Table I for definitions). Note that the
+delay and loss values are scaled by 10 to have values ranging
+from 0 to around 1 for DRL input.
+Action: The action a is normalized ratio between -1 and 1,
+where values closer to 1 indicate proportionally more flows
+on MPLS, and closer to -1 indicate more on Internet:
+nm
+
+acurrent = 2 nmCm ni − 1
+Cm + Ci
+Without normalization by capacity, the ratio could shift
+to extremes, hindering learning as some DRL libraries clip
+actions between ±1. We also use clamp(-1, 1) as the
+final activation. The DRL provides a target ratio and controller
+assigns flows to steer the current ratio toward the target,
+placing them on MPLS if below target, otherwise on Internet;
+ties are broken randomly.
+
+Parameter
+Capacities MPLS, Internet, Total
+Flow index
+Number of flows placed on MPLS, Internet
+Target normalised flow ratio
+Average main demand load, background
+Demand load: overall, MPLS, Internet during last step
+Delta load during last step
+Average delay: overall, MPLS, Internet
+Average loss: overall, MPLS, Internet
+Link utilisation: MPLS, Internet
+
+TABLE I: Notation Table
+
+desired and achieved bitrates of flow k. The reward is then
+calculated as:
+!
+1X
+bk
+−S 1 −
+max(1, k )
+n
+brate
+k
+For loss minimization, we use −10 · S · l, which is simpler
+and effective, leveraging the fact that TCP-based traffic adjusts
+throughput based on loss signals.
+B. Extracting Interpretable Policies
+To extract interpretable policies, we propose 2 methods
+shown in Figure 3. We limit our symbolic space search to using
+monotonous functions: x, x2 , x3 , sqrt,exp,log,tanh.
+KAN-symbolic: This method trains a 1-layer KAN-based
+DRL actor using PPO (PPO-KAN). Fig. 2 shows an example
+of trained activation functions using packet loss as reward. The
+line intensity indicates the importance of the features. Thus, in
+case of 1-layer KAN, the model itself is highly interpretable.
+For more interpretability, the activation functions are extracted
+via regression and we call it KAN-symbolic. For throughput
+utility maximization, the policy is: a ≈
+
+1.3 −
+
+A. Reward Design
+We found reward design as tricky due to the variability in
+network metrics: reward volatility makes it difficult to assess
+learning progress. To address this, we normalize the reward
+using a scaling factor S = λ̂βα , i.e., we normalize by average
+demand—observable unlike background load.
+We primarily employ negative rewards to discourage detrimental actions leading to congestion. Two key approaches
+were considered: throughput utility maximization and loss
+minimization. Throughput alone is insufficient due to varying
+demand, leading us to develop a utility function capturing each
+k
+flow’s satisfaction as max(1, bkb ), where bkrate and bk are
+
+Notation
+Cm , Ci , C
+k
+nm , ni
+a
+λ̂, λ̂b
+λ, λm , λi
+∆λ
+d, dm , di
+l, lm , li
+um , ui
+
+λ (0.9∆λ + 1)2 2λi 3(10di + 0.6)2 30li
+−
+−
++
+−
+(1)
+5
+3
+5
+32
+32
+
+The policy prioritizes MPLS initially or during high delays,
+but shifts traffic to the Internet link as load increases. Loss
+impacts are minimal due to low magnitude of its term.
+For loss minimization, the policy is:
+
+a ≈ 1.9 − 1.1
+
+2∆λ
++1
+3
+
+2
+−
+
+2λi
+10di
+ui
++
++
+5
+3
+10
+
+(2)
+
+This policy favors MPLS initially but increases Internet
+usage with higher load and its delta. Increasing Internet delay
+and utilisation shifts some traffic to MPLS.
+
+rate
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:27:04 UTC from IEEE Xplore. Restrictions apply.
+
+2026 IEEE 23rd Consumer Communications & Networking Conference (CCNC)
+
+Fig. 3: Two methods for extracting symbolic policies
+
+Distillation of Symbolic Equations (PPO-DS): This
+method uses PPO to train policies, then generates symbolic
+equations via auto-regressive models [16]. For throughput
+utility max., we have (action is clipped between [-1, 1]):
+a≈
+
+2.0 − 8∆λ − 20dm − 10li
+exp(λi − ui )
+
+(3)
+
+This policy initially favors MPLS but shifts traffic to Internet
+as delta load and MPLS delay increase. When the gap between
+the placed load and link utilisation on Internet increases then
+a decreases, resulting in more load on Internet.
+For loss minimization:
+
+
+(11∆λ + 10li )2
+(4)
+a ≈ exp −
+4
+This policy prioritizes MPLS initially but increases Internet
+usage with higher delta load. Note a ≥ 0 always, i.e., MPLS
+has relatively more normalised proportion of traffic.
+Counter-intuitively, some policies put more load on Internet
+when Internet loss increases. It is likely because after packet
+losses too many TCP flows backoff and sending new flows
+can capture the available capacity. Otherwise it will be taken
+by the background flows.
+III. E VALUATION
+We evaluated our approach using detailed NS-3 packet-level
+simulations. The simulation environment and DRL training
+parameters are summarized in Table II. CleanRL library for
+DRL was used after modifications to implement a KAN-based
+actor instead of the default MLP-based one. Our traffic model
+employed TCP ON-OFF flows as non-homogeneous Poisson
+processes with time-varying arrival rates following a sine-wave
+pattern within episodes. The average rate for each episode λ̂
+was randomly varied for both inter-episode and intra-episode
+variations to simulate dynamic load conditions. Depending on
+the episode’s average λ̂, traffic resulted in a sine-like pattern
+with randomly chosen phase, troughs between 7–12 Mbps,
+and peaks between 17–27 Mbps. Traffic demands resulted in
+approx. 0.3 to 1.3 times the combined network capacity, with
+background traffic generated via a Poisson process resulting
+in 5–8 Mbps. This setup captured realistic network behavior,
+where elastic traffic responded to congestion by experiencing
+delays and packet losses, prompting TCP flows to back off
+until sufficient bandwidth was available.
+We compared reward signals of various policies after training and extracting their symbolic forms over 100 episodes
+
+Parameter
+Capacity MPLS, Internet
+Episode, step
+Main traffic
+Background traffic
+Router Queue Size
+PPO Hyper-parameters
+Training steps
+Learning rate
+α, β, bkrate
+Steps per rollout
+gamma, gae lambda
+update epochs, clip coeff.
+
+Value
+6, 15 Mbps
+2s steps, 50 steps per episode
+wave of 7-17 Mbps to 12-27 Mbps
+5 to 8 Mbps, Poisson
+100 packets
+[13], Actor, Critic, 2 layers of 64 units
+100000
+3e-3 with annealing
+1.0, 0.2, 150 kbps
+50
+0.99, 0.95
+16, 0.2
+
+TABLE II: Simulation and Training Parameters
+Method
+PPO
+PPO-KAN
+KAN-symbolic
+PPO-DS
+
+Interpret-score
+(terms, nesting)
+low
+high (visual)
+high (6,1)
+high (4,2)
+
+Thr-utility
+Reward
+-6.28 ± 1.79
+-6.27 ± 1.66
+-6.313 ± 1.65
+-6.29 ± 1.80
+
+Loss
+Reward
+-13.13 ± 3.49
+-13.28 ± 3.13
+-13.56 ± 3.37
+-13.35 ± 3.28
+
+TABLE III: Evaluation of policies on 100 episodes. Reward results
+are presented as Mean ± Standard Deviation.
+
+(5,000 steps). Table III presents the mean ± SD for throughpututility and loss objectives, along with an interpretability score
+(number of terms and nesting in equation) assessing policy
+transparency. PPO-KAN, utilizing a single-layer KAN actor,
+performed similarly to regular PPO with less than 1% variation
+on both metrics. This demonstrates that KAN’s functional
+decomposition is sufficiently expressive for two-path load
+balancing without performance compromise. Symbolic policies also achieved comparable rewards and offered direct
+inspection of decision logic through closed-form equations.
+Fig. 4 and Fig. 5 show evaluation of network metrics using
+DRL for load balancing, comparing trained policies against
+Unequal-Cost Multi-Path (UCMP) [17] and a baseline Flow
+Count Balancing (FCB). UCMP distributes traffic per flow
+using a hash function on flow identifiers (e.g., 5-tuple). FCB
+places flow in proportion to MPLS and Internet link capacities,
+while counting active flows on each link to maintain this ratio.
+CCDFs for throughput utility, packet loss, and delay show that
+PPO and PPO-KAN outperformed baselines in most aspects.
+PPO with loss minimization reward performed better in 8090% of cases but slightly worse elsewhere due to its focus on
+minimizing losses. Packet losses were reduced, with 20% more
+cases achieving similar or better throughput utility compared
+to baselines and an improvement from 22% to around 30%
+in cases when there was no-loss. Extracted symbolic policies
+(KAN-symbolic, PPO-DS) performed similarly to their parent
+policies, surpassing FCB and UCMP, demonstrating effective
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:27:04 UTC from IEEE Xplore. Restrictions apply.
+
+2026 IEEE 23rd Consumer Communications & Networking Conference (CCNC)
+
+Fig. 4: CCDF of network metrics for PPO and PPO-KAN
+
+Fig. 5: CCDF of network metrics for extracted symbolic policies
+
+load balancing while maintaining interpretability. Thus, extracted policies behave very near to their PPO or PPO-KAN
+parents, from whom they were extracted, and they surpass the
+baselines.
+
+[6] G. Stampa, M. Arias, D. Sánchez-Charles, V. Muntés-Mulero, and
+A. Cabellos, “A deep-reinforcement learning approach for softwaredefined networking routing optimization,” arXiv preprint:1709.07080,
+2017.
+[7] C. Tessler, D. J. Mankowitz, and S. Mannor, “Reward constrained policy
+optimization,” arXiv preprint:1805.11074, 2018.
+[8] L. Dinh, P. T. A. Quang, and J. Leguay, “Towards safe load balancing
+based on control barrier functions and deep reinforcement learning,” in
+IEEE NOMS, 2024, pp. 1–9.
+[9] ——, “Safe load balancing in software-defined-networking,” Computer
+Communications, vol. 229, p. 107985, 2025.
+[10] G. Hinton, O. Vinyals, and J. Dean, “Distilling the knowledge in a neural
+network,” arXiv preprint:1503.02531, 2015.
+[11] A. Duttagupta, M. Jabbari, C. Fiandrino, M. Fiore, J. Widmer et al.,
+“SYMBXRL: Symbolic Explainable Deep Reinforcement Learning for
+Mobile Networks,” in IEEE INFOCOM, 2025.
+[12] Z. Meng, M. Wang, J. Bai, M. Xu, H. Mao, and H. Hu, “Interpreting
+deep learning-based networking systems,” in ACM SIGCOMM, 2020,
+pp. 154–171.
+[13] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+“Proximal policy optimization algorithms,” arXiv preprint:1707.06347,
+2017.
+[14] V. A. Kich, J. A. Bottega, R. Steinmetz, R. B. Grando, A. Yorozu,
+and A. Ohya, “Kolmogorov-arnold network for online reinforcement
+learning,” arXiv preprint arXiv:2408.04841, 2024.
+[15] P. Gawłowicz and A. Zubow, “ns-3 meets OpenAI Gym: The Playground
+for Machine Learning in Networking Research,” in ACM MSWiM,
+November 2019.
+[16] B. K. Petersen, M. Landajuela, T. N. Mundhenk, C. P. Santiago, S. Kim,
+and J. T. Kim, “Deep symbolic regression: Recovering mathematical
+expressions from data via risk-seeking policy gradients,” in ICLR.
+OpenReview.net.
+[17] Huawei Technologies Co., Ltd., “UCMP Description –
+Unequal Cost Multi-Path (UCMP),” 2024, [Online]. Available:
+https://support.huawei.com/enterprise/en/doc/EDOC1100367113/
+8bce14f6/\allowbreakucmp-description [Accessed: Sep. 1, 2025].
+
+IV. C ONCLUSION
+We proposed the use of KAN for interpretable RL in load
+balancing problems. We showed the advantage of combining
+KAN with PPO to learn policies that maximize throughput
+utility and minimize loss while being interpretable. We also
+showed that for load balancing, we could extract well performing symbolic policies. We believe that our approach can
+be applied to other networking problems. Future work includes
+evaluating our approach on more complex problems.
+ACKNOWLEDGMENT
+This work has been supported by grant ANR-21-CE25-0005
+from the Agence Nationale de la Recherche, France for the
+SAFE project.
+R EFERENCES
+[1] Z. Liu, Y. Wang, S. Vaidya, F. Ruehle, J. Halverson, M. Soljačić, T. Y.
+Hou, and M. Tegmark, “KAN: Kolmogorov-arnold networks,” arXiv
+preprint:2404.19756, 2024.
+[2] S. Yasukawa, A. Farrel, and O. Komolafe, “An analysis of scaling issues
+in MPLS-TE core networks,” Tech. Rep., 2009.
+[3] D. Awduche, L. Berger, D. Gan, T. Li, V. Srinivasan, and G. Swallow,
+“RSVP-TE: extensions to RSVP for LSP tunnels,” Tech. Rep., 2001.
+[4] C. Filsfils, P. Camarillo, J. Leddy, D. Voyer, S. Matsushima, and Z. Li,
+“RFC 8986: Segment Routing over IPv6 (SRv6) Network Programming,” USA, 2021.
+[5] H. Wang, H. Xie, L. Qiu, Y. R. Yang, Y. Zhang, and A. Greenberg,
+“COPE: Traffic engineering in dynamic networks,” in ACM SIGCOMM,
+2006, pp. 99–110.
+
+Authorized licensed use limited to: ETH BIBLIOTHEK ZURICH. Downloaded on June 20,2026 at 12:27:04 UTC from IEEE Xplore. Restrictions apply.
+

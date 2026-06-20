@@ -1,0 +1,1772 @@
+Comparative Evaluation of Kolmogorov–Arnold Autoencoders and Orthogonal
+Autoencoders for Fault Detection with Varying Training Set Sizes
+Enrique Luna Villagómeza , Vladimir Mahaleca,∗
+a McMaster University, Department of Chemical Engineering, 1280 Main St W, Hamilton, L8S 4L8, Ontario, Canada
+
+arXiv:2508.02860v1 [cs.LG] 4 Aug 2025
+
+Abstract
+Kolmogorov–Arnold Networks (KANs) have recently emerged as a flexible and parameter-efficient alternative to conventional
+neural networks. Unlike standard architectures that use fixed node-based activations, KANs place learnable functions on edges,
+parameterized by different function families. While they have shown promise in supervised settings, their utility in unsupervised
+fault detection remains largely unexplored. This study presents a comparative evaluation of KAN-based autoencoders (KAN-AEs)
+for unsupervised fault detection in chemical processes. We investigate four KAN-AE variants, each based on a different KAN
+implementation (EfficientKAN, FastKAN, FourierKAN, and WavKAN), and benchmark them against an Orthogonal Autoencoder
+(OAE) on the Tennessee Eastman Process. Models are trained on normal operating data across 13 training set sizes and evaluated on
+21 fault types, using Fault Detection Rate (FDR) as the performance metric. WavKAN-AE achieves the highest overall FDR (≥92%)
+using just 4,000 training samples and remains the top performer, even as other variants are trained on larger datasets. EfficientKANAE reaches ≥90% FDR with only 500 samples, demonstrating robustness in low-data settings. FastKAN-AE becomes competitive
+at larger scales (≥50,000 samples), while FourierKAN-AE consistently underperforms. The OAE baseline improves gradually but
+requires substantially more data to match top KAN-AE performance. These results highlight the ability of KAN-AEs to combine
+data efficiency with strong fault detection performance. Their use of structured basis functions suggests potential for improved
+model transparency, making them promising candidates for deployment in data-constrained industrial settings.
+Keywords: Kolmogorov-Arnold Networks, Process Monitoring, Fault Detection, Unsupervised Learning, Autoencoders,
+Tennessee Eastman Process
+1. Introduction
+Fault detection and diagnosis (FDD) remains a critical task in
+modern industrial systems. Faults such as equipment malfunctions, sensor degradation, and control system anomalies can
+compromise operational safety, reduce productivity, and lead
+to environmental harm. Although faults cannot always be prevented, process monitoring systems can detect deviations from
+normal operation and enable timely intervention [1, 2]. Designing FDD methods that perform reliably under multivariate,
+dynamic, and drifting conditions constitutes a central challenge
+in industrial process monitoring [3]. The rise of Industry 4.0
+has led to the widespread deployment of sensors across process
+units, significantly increasing the availability of high-resolution
+multivariate data [4]. As a result, there has been a shift from
+model-based techniques to data-driven frameworks, which use
+statistical or machine learning methods to infer system behavior directly from process measurements [5]. Data-driven frameworks span a wide range of approaches, from classical methods
+such as Principal Component Analysis (PCA) [6, 7, 8] to more
+flexible models based on artificial neural networks (ANNs), including multilayer perceptrons (MLPs) [9, 10], convolutional
+
+∗ Corresponding author
+
+Email address: mahalec@mcmaster.ca (Vladimir Mahalec)
+
+neural networks (CNNs) [11, 12], and recurrent neural networks (RNNs) [13, 5].
+Despite their empirical success, ANN-based methods are often criticized for their lack of interpretability, as the internal
+mechanisms governing their predictions are difficult to analyze.
+Even with post hoc techniques such as saliency mapping [14],
+Layer-wise Relevance Propagation (LRP) [15], or SHAP [16],
+understanding the contribution of individual features remains
+challenging. Furthermore, these models often require access to
+large volumes of labeled or representative data to achieve reliable performance, which may not be feasible in practice. In
+response to these limitations, Liu et al. [17] introduced Kolmogorov–Arnold Networks (KANs) as a more interpretable and
+parameter-efficient alternative to traditional MLPs. In a KAN,
+each connection is modeled by a learnable univariate function,
+and each node computes its output as the sum of its transformed
+inputs [18]. The explicit definition of each univariate function
+promotes both interpretability and parameter efficiency. These
+characteristics make KANs especially suitable for fault detection tasks that demand transparent decision-making under limited data availability.
+KANs have recently been applied to a range of supervised
+FDD tasks. For instance, Rigas et al. [19] developed shallow KAN-based classifiers for diagnosing rotating machinery
+faults, achieving high F1 scores while using significantly fewer
+parameters than standard deep networks. Similarly, Cabral
+
+2. Preliminaries
+
+et al. [20] introduced KANDiag for diagnosing faults in oilimmersed power transformers under imbalanced conditions,
+showing improved robustness over established diagnostic standards and machine learning baselines. Other works have proposed hybrid frameworks that integrate deep feature extraction
+with KAN-based decision layers. He and Mo [21] presented
+WCNN-KAN, which extracts wavelet-based time-frequency
+representations of vibration signals before classification using
+a KAN. Zhang et al. [22] proposed Conv-KAN for refrigerant
+fault diagnosis in variable refrigerant flow (VRF) air conditioning systems, demonstrating improved accuracy and faster convergence relative to MLP and CNN baselines.
+
+In this section, the modeling approaches considered in
+the present comparative study, including autoencoders and
+Kolmogorov-Arnold Networks, are briefly reviewed.
+2.1. Autoencoders
+Autoencoders (AEs) are neural networks that learn lowdimensional representations of high-dimensional data by reconstructing inputs from compressed latent variables. Unlike linear
+techniques such as Principal Component Analysis (PCA), Independent Component Analysis (ICA), or Partial Least Squares
+(PLS), AEs can model nonlinear transformations, making them
+particularly suitable for capturing the complex variable interactions typical of chemical processes [23]. An AE consists of
+an encoder–decoder pair trained to minimize a reconstruction
+loss, defined as the mean squared error between the input samples and their reconstructions:
+
+Although recent applications of KANs to fault detection have
+shown promising results, existing work is limited in scope.
+First, most studies rely on the original KAN formulation, which
+uses B-spline basis functions to parameterize the learnable activation functions. The effect of alternative basis function
+choices on detection performance has not been systematically
+assessed. Since basis functions impose distinct inductive biases
+(e.g., smoothness, locality, frequency resolution), they may significantly impact detection performance across different fault
+types. Second, nearly all current studies assume access to labeled fault data. This excludes unsupervised scenarios where
+only normal operating data are available, despite the practical
+relevance of such scenarios in industrial settings. Third, it remains unclear whether the parameter efficiency of KANs is preserved when training data are scarce, or how sensitive their performance is to the amount of training data. The robustness of
+KANs under varying training data availability has yet to be fully
+characterized.
+
+N
+
+L(x, x̂) =
+
+1 X
+∥xi − g( f (xi ))∥22 .
+N i=1
+
+(1)
+
+where f (·) and g(·) denote the encoder and decoder functions,
+respectively. Despite their representational flexibility, standard
+AEs often learn correlated latent features, which degrades fault
+detection performance due to poor covariance modeling. To address this, the Orthogonal Autoencoder (OAE) [9] introduces a
+regularization term that encourages decorrelation among latent
+dimensions:
+
+To address these limitations, this study presents a comprehensive evaluation of Kolmogorov-Arnold Autoencoders
+(KAN-AE) for unsupervised fault detection in chemical process systems. We investigate four KAN variants (EfficientKAN,
+FastKAN, FourierKAN, and WavKAN), each employing a distinct basis function family (e.g., B-splines, wavelets, Fourier
+series) to construct the univariate edge functions that define the
+network’s nonlinear transformations. Our contributions are as
+follows: (1) we assess the data efficiency of KAN-AEs by analyzing how fault detection performance scales with training
+set size; (2) we evaluate the influence of functional parameterization on fault sensitivity across diverse fault categories; and
+(3) we perform statistically grounded model comparisons using
+Bayesian signed-rank tests, estimating posterior probabilities of
+model superiority and practical equivalence across fault scenarios.
+
+N
+
+LOAE (x, x̂) =
+
+1 X
+2
+∥xi − g( f (xi ))∥22 + λ Z ⊤ Z − I F ,
+N i=1
+
+(2)
+
+where Z ∈ RN×k is the matrix of latent representations for a
+mini-batch of N samples and k latent features, I ∈ Rk×k is the
+identity matrix, and λ controls the strength of the regularization.
+The OAE serves as a baseline in this study for evaluating the
+advantages and limitations of KAN-AE architectures.
+2.2. Kolmogorov-Arnold Networks
+Kolmogorov–Arnold Networks (KANs) are a recent neural architecture designed to offer a more expressive and interpretable alternative to traditional multilayer perceptrons [17].
+They are inspired by the Kolmogorov–Arnold representation
+theorem, which states that any continuous multivariate function defined on a bounded domain can be expressed as a finite composition of continuous univariate functions and additions [24]. This theoretical result motivates the core design of
+KANs: rather than using fixed scalar weights as in conventional
+neural networks, each edge in a KAN is parameterized by a
+learnable univariate function, enabling the model to approximate complex nonlinear relationships with enhanced adaptability and transparency.
+In a KAN, each layer transforms its input by applying a set
+of learnable univariate functions to individual input features and
+
+The remainder of this paper is organized as follows: Section 2 introduces the theoretical background on autoencoders
+and Kolmogorov–Arnold Networks, including architectural
+variants and mathematical foundations. Section 3 details the
+experimental setup, including the Tennessee Eastman Process
+benchmark, model training procedures, fault detection strategy,
+and performance evaluation. Section 4 presents and analyzes
+the experimental results. Finally, Section 5 summarizes the key
+findings and outlines implications for industrial fault detection
+and future research directions.
+2
+
+then summing their outputs. Specifically, each edge from neuron j in layer ℓ − 1 to neuron i in layer ℓ is associated with a
+function ϕ(ℓ)
+i j : R → R. The output of neuron i is computed as:
+xi(ℓ) =
+
+nℓ−1
+X
+
+(ℓ−1)
+ϕ(ℓ)
+).
+i j (x j
+
+Θ̄(ℓ) =
+
+The entropy penalty is then computed as:
+ (ℓ) 
+ θ̄i j 
+
+
+log
+S (Φ ) = −
+ Θ̄(ℓ)  .
+(ℓ)
+Θ̄
+i=1 j=1
+
+where ϕ(ℓ)
+i j : R → R is parameterized using a smooth basis expansion. This edge-wise functional form offers two benefits
+critical for process monitoring: high representational capacity
+and greater transparency in how input variables influence outputs. Several architectural variants of KANs have been proposed, differing primarily in the basis family used to parameterize the univariate functions. We review four representative
+variants below.
+
+The functions ϕ(ℓ)
+i j in a KAN can be parameterized using different basis families, such as B-splines, Gaussian RBFs, Fourier
+modes, and wavelets. In this study, we evaluate how these basis
+choices influence the performance of KAN-AE variants in fault
+detection tasks.
+
+(ℓ)
+ϕ(ℓ)
+i j (x) = wi j · b(x) +
+
+(4)
+
+ϕ(ℓ)
+i j (x) =
+
+ x − µ 2 !
+k
+
+σ
+
+,
+
+(8)
+
+g
+X
+ (ℓ)
+
+(ℓ)
+αi jk cos(kx) + β(ℓ)
+i jk sin(kx) + bi j ,
+
+(9)
+
+k=1
+(ℓ)
+(ℓ)
+where g denotes the number of Fourier modes, α(ℓ)
+i jk , βi jk , and bi j
+are learnable parameters. The globally supported Fourier basis
+simplifies implementation by eliminating knot management and
+promotes stable training through smoother gradients.
+
+(ℓ)
+s(ℓ)
+i j , and θi jk are learnable parameters. Although this per-edge
+B-spline formulation enables the network to flexibly capture localized nonlinearities, it requires evaluating a distinct transformation for every input–output edge. This results in large intermediate tensors and high memory usage, particularly in deep
+networks or large mini-batches. EfficientKAN mitigates this issue by applying the B-spline basis once per input feature and
+reusing the resulting activations across all outputs via matrix
+multiplication, significantly improving memory and computational efficiency.
+In EfficientKAN, the L1 and entropy regularization terms
+proposed by Liu et al. [17] are approximated using the average absolute value of the spline coefficients, which serves as a
+proxy for the activity of each edge. Specifically, for edge (i, j)
+in layer ℓ, activity is estimated as:
+
+θi(ℓ)jk ,
+
+θi(ℓ)jk exp −
+
+2.3.3. FourierKAN
+FourierKAN replaces localized basis expansions with globally supported, periodic functions by parameterizing each learnable function ϕ(ℓ)
+i j : R → R using a truncated Fourier series [27]:
+
+where b(x) is included to stabilize training and improve conver(ℓ)
+gence, B(ℓ)
+k (x) are B-spline basis functions of order r, and wi j ,
+
+g k=1
+
+(7)
+
+(ℓ)
+where w(ℓ)
+i j and θi jk are trainable parameters. Unlike B-splinebased KANs, the basis is fixed and not adapted during training.
+This reduces computational complexity and supports scalability, while retaining per-edge functional flexibility. To keep inputs within the RBF support region, a layer normalization step
+is often applied before the RBF transformation.
+
+k=1
+
+g
+X
+
+g
+X
+k=1
+
+2.3.1. EfficientKAN
+EfficientKAN is a memory-efficient KAN variant designed
+to address the scalability bottlenecks of the original formulation [25]. In the original implementation [17], each function
+ϕ(ℓ)
+i j is parameterized as a weighted combination of a fixed base
+activation and a B-spline expansion:
+
+1
+θ̄i(ℓ)j =
+
+nℓ X
+nℓ−1 θ̄(ℓ)
+X
+ij
+
+2.3.2. FastKAN
+FastKAN is a computationally streamlined KAN variant that
+improves forward-pass efficiency by replacing the adaptive Bspline basis with a fixed set of Gaussian radial basis functions
+(RBFs) [26]. Each function ϕ(ℓ)
+i j : R → R is expressed as a combination of a base activation b(x) and a linear combination of g
+Gaussian RBFs centered at fixed locations µk , with common
+width σ:
+
+2.3. KAN Variants
+
+θi(ℓ)jk B(ℓ)
+k (x),
+
+(6)
+
+(3)
+(ℓ)
+
+g
+X
+
+θ̄i(ℓ)j .
+
+i=1 j=1
+
+j=1
+
+(ℓ)
+(ℓ)
+ϕ(ℓ)
+i j (x) = wi j b(x) + si j
+
+nℓ X
+nℓ−1
+X
+
+2.3.4. WavKAN
+WavKAN is a KAN variant proposed by Bozorgasl and Chen
+[28], in which each learnable function ϕ(ℓ)
+i j : R → R is parameterized as a scaled and shifted instance of a single wavelet:
+
+
+ x − ti(ℓ)j 
+ ,
+
+s(ℓ)
+ij
+
+
+(ℓ) 
+ϕ(ℓ)
+i j (x) = wi j ψ 
+
+
+(10)
+
+(ℓ)
+(ℓ)
+where w(ℓ)
+i j , ti j , and si j are trainable parameters controlling amplitude, translation, and scale, respectively. This direct parameterization eliminates the need for explicit basis expansions or
+adaptive knot placement, as required in B-spline-based KANs.
+By assigning one wavelet per edge, WavKAN supports localized adaptation to both low- and high-frequency patterns. This
+design enables multiresolution representations, allowing the
+
+(5)
+
+and the total activity in the layer is given by:
+3
+
+activation
+function
+
+input
+
+𝑥𝑥1
+
+𝑥𝑥2
+
+𝑥𝑥3
+
+𝑥𝑥4
+
+activation
+function
+
+hidden
+units
+activation
+function
+
+∑
+
+∑
+
+∑
+
+hidden
+units
+
+𝑥𝑥�1
+
+𝑥𝑥�2
+
+∑
+
+𝑥𝑥�3
+
+∑
+
+∑
+
+𝑥𝑥�4
+
+∑
+
+(a) MLP-based autoencoder.
+learnable
+function
+
+output
+
+∑
+
+∑
+∑
+
+∑
+
+∑
+
+hidden
+units
+
+learnable
+function
+
+input
+
+output
+
+𝑥𝑥1
+hidden
+units
+
+∑
+
+𝑥𝑥�1
+
+𝑥𝑥2
+
+∑
+
+∑
+
+𝑥𝑥�2
+
+𝑥𝑥3
+
+∑
+
+∑
+
+𝑥𝑥�3
+
+∑
+
+𝑥𝑥�4
+
+𝑥𝑥4
+
+Figure 2: Tennessee Eastman Process flowsheet.
+
+under matched conditions. To this end, we systematically investigate three core aspects: (1) how detection performance scales
+with training set size; (2) how functional basis choices in KANs
+affect generalization across fault types; and (3) the robustness
+of model comparisons, quantified by the posterior probability
+that one model consistently outperforms another across fault
+scenarios. All experiments are conducted using the Tennessee
+Eastman Process benchmark, which, in the absence of real plant
+data, provides a diverse and widely adopted suite of fault scenarios.
+
+(b) KAN-based autoencoder.
+
+Figure 1: Comparison of (a) MLP-based and (b) KAN-based autoencoders.
+KAN-based models replace fixed activation functions with learnable univariate
+transformations along each edge.
+
+model to capture sharp variations and broader trends simultaneously, which is advantageous for modeling structured signals
+in industrial process data.
+
+3.1. Case Study: The Tennessee Eastman Process
+The Tennessee Eastman Process (TEP), introduced by
+Downs and Vogel [31], represents a chemical production system involving eight components and five process units as shown
+in Fig. 2. The process involves two primary exothermic reactions (A + C + D → G and A + C + E → H) and two secondary
+byproduct reactions (A + E → F and 3D → 2F), all occurring
+in the presence of an inert component (B).
+Several implementations of the TEP have been developed
+based on different control strategies [32, 33, 34] and modeling approaches [35, 36], resulting in multiple publicly available
+datasets for research. In this work, we adopt the dataset generated by Rieth et al. [37], which includes a large number of
+simulation runs, enabling a systematic evaluation of KAN-AEs
+for fault detection across varying amounts of training data.
+The training set consists of 500 simulation runs under normal
+operating conditions, each containing 500 samples. The testing set includes 500 runs for each of the 21 faults introduced
+by Russell et al. [35], with measurements recorded every three
+minutes over a 48-hour period (960 samples per run). The first
+160 samples correspond to normal operation, and the remaining 800 samples to abnormal operation. Each dataset contains
+11 manipulated variables, XMV(1)–XMV(11), and 41 process
+measurements, XMEAS(1)–XMEAS(41).
+Understanding the nature of the faults is critical for evaluating detection performance, as a high FDR does not necessarily
+imply effective monitoring. Sun et al. [5] proposed classifying
+
+2.4. Kolmogorov-Arnold Autoencoder
+KAN-based autoencoders (KAN-AEs) extend standard autoencoder architectures (see Fig. 1a) by replacing the MLP
+components in the encoder-decoder pair with KAN layers. Unlike MLPs, which apply linear transformations followed by
+fixed activations at each node, KANs assign a learnable univariate function to each edge. This edge-wise functional parameterization allows KAN-AEs to model sharp local nonlinearities
+without resorting to deep or wide MLP stacks. Furthermore, it
+facilitates the interpretation of variable interactions, which may
+support fault diagnosis in process monitoring tasks.
+KAN-AEs can be constructed entirely from KAN layers [29],
+or using hybrid architectures that combine KAN and MLP layers [30]. In this work, all KAN-AEs are implemented using
+only KAN layers (see Fig. 1b). This configuration isolates the
+effect of functional parameterization, enabling direct attribution
+of any performance or interpretability gains to the KAN architecture.
+3. Methodology
+This section details the end-to-end pipeline used to configure, train, and evaluate the autoencoder models considered in
+this study. The primary goal is to compare conventional and
+KAN-based parameterizations for unsupervised fault detection
+4
+
+Table 3: Overview of monitoring model settings.
+
+Table 1: Summary of fault scenarios in the TEP benchmark.
+Fault
+
+Type
+
+Disturbed Value
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+
+Step
+Step
+Step
+Step
+Step
+Step
+Step
+Random
+Random
+Random
+Random
+Random
+Drift
+Stiction
+Stiction
+Random
+Random
+Random
+Stiction
+
+A/C-ratio of stream 4, B composition constant
+B composition of stream 4, A/C-ratio constant
+D feed (stream 2) temperature
+Cooling water inlet temperature of reactor
+Cooling water inlet temperature of separator
+A feed loss (stream 1)
+C header pressure loss (stream 4)
+A/B/C composition of stream 4
+D feed (stream 2) temperature
+C feed (stream 4) temperature
+Cooling water inlet temperature of reactor
+Cooling water inlet temperature of separator
+Reaction kinetics
+Cooling water outlet valve of reactor
+Cooling water outlet valve of separator
+Deviations in heat transfer within stripper
+Deviations in heat transfer within reactor
+Deviations in heat transfer within condenser
+Recycle valve of compressor, underflow separator
+(stream 10), underflow stripper (stream 11), and steam
+valve stripper
+Deviations in flow rate (stream 7)
+Valve (Stream 4)
+
+20
+21
+
+Random
+Constant position
+
+Model
+
+Subset Sizes
+
+Number of samples
+
+625, 1250, 1875, 3125, 5000, 8125, 13750,
+23125, 38125, 64375, 107500, 180000, 250000
+
+Value
+
+Layer sizes
+Function parameterization
+Activation function
+Regularization
+No. of Parameters
+
+[33, 85, 25, 85, 33]
+Multilayer perceptron
+ReLU
+Orthogonality and weight decay
+10,088
+
+EfficientKAN-AE
+
+Layer sizes
+Function parameterization
+No. of basis functions
+Regularization
+No. of parameters
+
+[33, 25, 33]
+SiLU + B-spline expansion
+6
+L1, entropy-based and weight decay
+11,550
+
+FastKAN-AE
+
+Layer sizes
+Function parameterization
+No. of basis functions
+Regularization
+No. of parameters
+
+[33, 25, 33]
+SiLU + Gaussian RBF expansion
+5
+Weight decay
+10,074
+
+FourierKAN-AE
+
+Layer sizes
+Function parameterization
+No. of basis functions
+Regularization
+No. of parameters
+
+[33, 25, 33]
+Fourier expansion
+7
+Weight decay
+9,958
+
+WavKAN-AE
+
+Layer sizes
+Function parameterization
+Regularization
+No. of parameters
+
+[33, 25, 33]
+Single DoG wavelet
+Weight decay
+6,716
+
+OAE
+
+Table 2: Subset sizes (prior to train/validation split) for training AE variants.
+Description
+
+Attribute
+
+ing from 625 to 250,000 samples (see Table 2). Each subset
+was split into 80% training and 20% validation sets. To preserve temporal structure, the data was split at the simulation
+level: full simulation runs were randomly selected for training
+and validation, with the final simulation sliced if necessary to
+achieve the desired number of samples.
+A z-score normalization scaler was fitted to the training set
+and applied consistently to both partitions. The scaler was
+saved and reused during inference to ensure consistent preprocessing. For reproducibility, fixed random seeds were used
+when generating data splits. These seeds were shared across
+model variants during training runs to ensure matched conditions. Further implementation details are provided in Section 3.4.
+
+TEP faults into three categories: controllable, back-to-control,
+and uncontrollable. In controllable faults, all measured and manipulated variables remain within their normal operating limits
+despite the presence of disturbances. In back-to-control faults,
+the measured variables are restored to their normal ranges, but
+at least one manipulated variable deviates from its allowable
+range. In uncontrollable faults, neither the measured nor the
+manipulated variables can be maintained within their normal
+operating boundaries despite the actions of the control system.
+The benchmark dataset includes 21 faults covering diverse
+disturbance types, including step changes, random noise, drift,
+and stiction effects. Table 1 lists each fault along with its identifier, disturbance type, and the affected variable or mechanism.
+Faults 16-20 were originally labeled as unknown in the TEP
+benchmark. Bathelt et al. [38] later disclosed the mechanisms
+for Faults 16-19 as part of their benchmark revision. Fault 20,
+however, remained undocumented. We addressed it in our previous work [8], providing an explanation of the disturbance and
+its impact on process behavior.
+
+3.3. Process Monitoring Models
+All models follow a common autoencoder structure, differing
+only in how the encoder and decoder mappings are parameterized. As in the benchmarking protocol of Cacciarelli and Kulahci [9], each model processes input samples with 33 features
+(see Section 3.1) and compresses them to a 25-dimensional latent space. Models are trained to minimize the mean squared
+reconstruction error (Eq. 1), with additional regularization
+terms applied as dictated by each architecture. Specifically,
+the OAE employs orthogonality regularization (Eq. 2), while
+EfficientKAN-AE introduces both L1 and entropy-based penalties (Eqs. 6, 7). In addition, decoupled weight decay [39] is
+applied across all models as a shared regularization strategy.
+Table 3 summarizes key architectural and regularization attributes of the evaluated models.
+
+3.2. Data Preprocessing
+We selected a subset of 33 variables from the TEP benchmark
+by excluding XMEAS(23) to XMEAS(41), which correspond
+to analyzer measurements in the reactor feed, purge stream,
+and final product stream. This exclusion, consistent with the
+methodology proposed by Cacciarelli et al. [9], reflects the limited availability of analyzer data in real-time industrial operations. As in prior work, each sample represents a single time
+step, with no temporal context or windowing applied.
+To evaluate how detection performance scales with training data availability, we constructed 13 fault-free subsets rang-
+
+3.4. Training Procedure
+Each AE variant was trained independently on each subset
+of fault-free data (see Section 3.2), with 30 random seeds per
+5
+
+Table 4: Optimized training hyperparameters per AE variant (via TPE).
+
+setting to account for stochastic variability from weight initialization and mini-batch sampling. This setup yields 390 independent training runs per model type.
+Training was performed using the AdamW optimizer with
+a mini-batch size B = 256 and a maximum of Emax = 600
+epochs. Mixed-precision training was enabled via PyTorch AMP
+module to accelerate training and reduce memory usage. A
+ReduceLROnPlateau schedule reduced the learning rate after
+5 validation epochs without improvement, and training was terminated early if no improvement was observed for 15 consecutive epochs. These settings were held constant across all AE
+variants.
+The initial learning rate η0 , weight decay, and scheduler reduction factor were optimized for each AE variant using the
+Tree-structured Parzen Estimator (TPE) algorithm [40], implemented via the Optuna framework [41]. For the OAE and
+EfficientKAN-AE models, additional tuning was performed for
+the orthogonality and sparsity regularization coefficients, respectively. Hyperparameter tuning was conducted on a fixed
+subset of 625 fault-free samples, split 80/20 into training and
+validation sets. Since fault labels are not used during training,
+the reconstruction loss on the validation set was used as an unsupervised proxy for detection performance. The final hyperparameter values for each model are listed in Table 4.
+
+Attribute
+
+Value
+
+OAE
+
+Initial learning rate
+Weight decay
+Scheduler factor
+Orthogonality coefficient
+
+1.00 × 10−3
+1.00 × 10−2
+0.20
+1.00
+
+EfficientKAN-AE
+
+Initial learning rate
+Weight decay
+Scheduler factor
+L1 coefficient
+Entropy coefficient
+
+4.38 × 10−3
+2.00 × 10−2
+0.96
+1.93 × 10−4
+7.73 × 10−4
+
+FastKAN-AE
+
+Initial learning rate
+Weight decay
+Scheduler factor
+
+1.92 × 10−3
+9.60 × 10−3
+0.93
+
+FourierKAN-AE
+
+Initial learning rate
+Weight decay
+Scheduler factor
+
+3.63 × 10−3
+5.38 × 10−3
+0.98
+
+WavKAN-AE
+
+Initial learning rate
+Weight decay
+Scheduler factor
+
+4.99 × 10−3
+7.60 × 10−3
+0.95
+
+n
+
+P̂(Q) =
+
+1 X  Q − Qi 
+K
+,
+nh i=1
+h
+
+(12)
+
+where Qi represents the observed SPE values under normal conditions, K(·) is the Gaussian kernel function, and h is the bandwidth parameter. The bandwidth is determined via Scott’s Rule
+[42]:
+
+3.5. Fault Detection
+
+h = σn−1/5 ,
+
+Autoencoders are widely used for fault detection in industrial systems, particularly in settings where labeled fault data
+are scarce or unavailable. Trained solely on normal process
+data, autoencoders learn compact latent representations that allow accurate reconstruction of fault-free observations. Faults
+typically disrupt these patterns, leading to elevated reconstruction errors that indicate abnormal behavior.
+Two monitoring statistics are commonly used in AE-based
+fault detection: the squared prediction error (SPE), also known
+as the Q-statistic, and Hotelling’s T 2 statistic. The former measures the difference between an input and its reconstruction,
+while the latter measures the deviation of a sample’s latent representation from the center of the fault-free data distribution in
+the latent space. Although both statistics can be used jointly to
+improve detection sensitivity and robustness, this study focuses
+exclusively on the SPE.
+For a given input sample xi , the SPE is defined as:
+Qi = ∥xi − x̂i ∥22 ,
+
+Model
+
+(13)
+
+where σ is the standard deviation of Qi values and n is the number of training samples.
+The detection threshold Qlim is set to the (1 − α)-quantile of
+the estimated density:
+( Z x
+)
+Qlim = inf x |
+P̂(Q) dQ ≥ 1 − α ,
+(14)
+−∞
+
+where α is a specified significance level. In this study, we set
+α = 0.05, corresponding to an expected false alarm rate of approximately 5% under normal operating conditions.
+3.6. Performance Evaluation
+Each trained model is evaluated on a fixed test dataset
+containing both fault-free and faulty samples. To determine
+whether a test sample is normal or faulty, we use the previously
+defined threshold Qlim . Samples with Qi > Qlim are flagged as
+faulty.
+Fault detection performance is quantified using two standard
+metrics: Fault Detection Rate (FDR) and False Alarm Rate
+(FAR), defined as:
+
+(11)
+
+where x̂i denotes the reconstruction of xi . Elevated values of
+Qi indicate that the model is unable to reconstruct the input,
+suggesting faulty behavior.
+To determine whether a given Qi indicates a fault, a detection threshold Qlim is estimated using kernel density estimation
+(KDE). This nonparametric method avoids assumptions about
+the underlying distribution of SPE values, offering flexibility
+in modeling nonlinear reconstruction behavior. The estimated
+probability density function P̂(Q) is given by:
+
+FDR =
+
+TP
+,
+TP + FN
+
+(15)
+
+FP
+,
+(16)
+FP + TN
+where TP, FP, FN, and TN denote the number of true positives,
+false positives, false negatives, and true negatives, respectively.
+FAR =
+
+6
+
+FDR measures the proportion of actual faults correctly detected,
+while FAR captures the frequency of erroneous alarms. Together, these metrics characterize the trade-off between sensitivity and specificity. Therefore, robust fault detection requires
+models that consistently achieve high FDR while maintaining a
+low FAR.
+
+θl =
+θe =
+
+Pleft =
+
+X
+
+wi w j · I(zi + z j > 2r),
+
+(23)
+
+N
+
+1 X  (i)
+I θl > max{θe(i) , θr(i) } ,
+N i=1
+
+(24)
+
+4. Results and Discussion
+4.1. Performance Scaling with Training Set Size
+To evaluate model performance across fault types, we adopt
+the classification proposed by Sun et al. [5], which groups faults
+into three categories: controllable, back-to-control, and uncontrollable (see Section 3.1). High FDRs are desirable for backto-control and uncontrollable faults, as they reflect timely and
+effective detection. Conversely, elevated FDRs for controllable
+faults may reflect excessive model sensitivity and lead to unnecessary process interventions. An effective monitoring system should therefore achieve high FDRs for back-to-control and
+uncontrollable faults while keeping the FDR near the nominal
+false alarm level (i.e., FDR ≈ 0.05) for controllable ones.
+Training set sizes (denoted as ntrain ) are grouped into three
+regimes: data-scarce (ntrain < 104 ), data-sufficient (104 ≤
+ntrain ≤ 105 ), and data-rich (ntrain > 105 ). For each model,
+FDRs are first averaged across faults within each category, then
+across training runs. Figures 3–5 show these results with 95%
+confidence intervals to reflect training variability.
+
+(18)
+
+where s is the concentration parameter and δ0 is a Dirac measure centered at zero. This prior reflects a conservative belief
+that the models are practically equivalent unless strong evidence suggests otherwise.
+The posterior predictive distribution over future performance
+differences takes the form:
+(19)
+
+i=1
+
+(w0 , w1 , . . . , wq ) ∼ Dir(s, 1, . . . , 1).
+
+(22)
+
+with analogous definitions for Prope and Pright . These quantities
+summarize how often each outcome dominates in the posterior,
+offering a probabilistic account of relative model performance.
+
+where µA,i and µB,i denote the average FDRs for models A and
+B, respectively. The set {∆1 , . . . , ∆q } is treated as an i.i.d. sample from an unknown distribution over model performance differences. To capture this uncertainty, we place a nonparametric
+Dirichlet Process (DP) prior over the distribution:
+
+wi δ∆i (z),
+
+wi w j · I(|zi + z j | ≤ 2r),
+
+where I(·) is the indicator function. The quantities θl , θe , θr
+represent the probability mass in each outcome region for a single posterior sample.
+Repeating this process N times yields a collection of triplets
+(θl(1) , θe(1) , θr(1) ), . . . , (θl(N) , θe(N) , θr(N) ), which define an empirical
+approximation of the posterior distribution over region probabilities. Following Benavoli et al. [44], we summarize the
+overall belief in each outcome by computing the proportion of
+samples in which that region has the highest probability.
+For example, the probability that model A is practically superior to model B is given by:
+
+(17)
+
+q
+X
+
+X
+
+i, j
+
+While FDR summarizes average detection performance, it
+does not indicate whether observed differences in performance
+between models are statistically significant. We adopt the
+Bayesian signed-rank test introduced by Benavoli et al. [43]
+to assess whether one model consistently outperforms another
+across multiple faults. This method estimates the posterior
+probability that one model is practically superior to another, explicitly accounting for sampling uncertainty and defining a region of practical equivalence (ROPE) where small differences
+are considered negligible. In this study, we set the ROPE radius
+to r = 0.01, corresponding to a ±1% change in absolute FDR.
+For each fault i ∈ {1, . . . , q}, we calculate the difference in
+mean FDR across 30 training seeds:
+
+p(z) = w0 δ0 (z) +
+
+(21)
+
+i, j
+
+3.7. Bayesian Signed-Rank Test for Model Comparison
+
+G ∼ DP(s, δ0 ),
+
+wi w j · I(zi + z j < −2r),
+
+i, j
+
+θr =
+
+∆i = µB,i − µA,i ,
+
+X
+
+(20)
+
+To determine which model is favored, we estimate posterior probabilities via Monte Carlo sampling. Let z0 = 0 denote the prior pseudo-observation and z1 , . . . , zq the observed
+differences across faults. At each iteration, a weight vector
+(w0 , w1 , . . . , wq ) is drawn from a Dirichlet distribution with parameters (s, 1, . . . , 1). These weights define a posterior sample
+over the discrete distribution of differences.
+For each sampled belief, we compute the probabilities that
+the sum of two independent draws falls into one of three regions:
+
+4.1.1. Controllable Faults
+Across all training set sizes, the average FDR on controllable faults remains within a narrow range of 6–7% for most
+models (Figure 3). This stability suggests that increasing the
+amount of fault-free data has minimal impact on detection sensitivity in this category, likely due to the low-amplitude and
+self-correcting nature of these faults. OAE exhibits nearly
+7
+
+Figure 3: Fault Detection Rate (FDR) across different training sample sizes for controllable faults.
+
+Figure 4: Fault Detection Rate (FDR) across different training sample sizes for back-to-control faults.
+
+Figure 5: Fault Detection Rate (FDR) across different training sample sizes for uncontrollable faults.
+
+8
+
+(a) A = OAE, B = EfficientKAN-AE
+
+(b) A = OAE, B = FastKAN-AE
+
+(c) A = OAE, B = WavKAN-AE
+
+(d) A = EfficientKAN-AE, B = FastKAN-AE
+
+(e) A = EfficientKAN-AE, B = WavKAN-AE
+
+(f) A = FastKAN-AE, B = WavKAN-AE
+
+Figure 6: Evolution of Bayesian signed-rank probabilities across training regimes. Each subfigure compares two autoencoder variants. The three shaded zones
+denote data-scarce, data-sufficient, and data-rich training regimes, respectively.
+
+effects. In contrast, WavKAN-AE began with lower FDR but
+improved rapidly, remarkably achieving over 92% FDR with
+only 2,500 training samples. This rapid convergence suggests
+that its wavelet-based parameterization is particularly effective
+for detecting persistent, uncorrected deviations even under limited data. FastKAN-AE displayed a delayed performance response, with higher variability across seeds and only exhibiting
+strong performance in the data-rich regime. OAE followed a
+more gradual improvement curve, eventually achieving competitive performance in the data-sufficient regime, although it
+did not surpass WavKAN-AE even at larger training set sizes.
+FourierKAN-AE consistently lagged behind, reinforcing the
+limitations of its global basis representation in capturing faultspecific deviations.
+
+constant performance, while EfficientKAN shows a slight decrease in FDR with larger datasets. FastKAN-AE demonstrates
+the most notable improvement, reaching an average FDR of
+4.6% as ntrain increases. In contrast, both WavKAN-AE and
+FourierKAN-AE display a marginal rise in FDR, suggesting a
+mild over-sensitivity to normal fluctuations that may be misinterpreted as fault signatures.
+4.1.2. Back-to-Control Faults
+For back-to-control faults, most models’ detection performance improved as ntrain increased (Figure 4). EfficientKANAE and WavKAN-AE achieved near-perfect FDRs with as few
+as 1,000 samples and maintained this performance at larger
+scales. Their early saturation underscores strong data efficiency in capturing persistent deviations in manipulated variables. FastKAN-AE followed a similar trajectory but required
+more data to reach peak performance, indicating reduced data
+efficiency. OAE also improved steadily, eventually achieving
+high FDRs in the data-sufficient regime, though its improvement was slower compared to the KAN-based models. This
+indicates that even though OAE eventually reaches high FDR,
+KAN variants achieve comparable detection with far fewer
+samples. In contrast, FourierKAN-AE consistently underperformed, with FDR plateauing well below the levels achieved
+by other models. This behavior likely reflects the limited expressiveness of its low-order global basis functions, which may
+struggle to capture the systematic deviations characteristic of
+this fault category.
+
+4.2. Bayesian Comparison across Training Set Sizes
+To determine whether observed differences in detection performance are statistically meaningful, we apply the Bayesian
+signed-rank test described in Section 3.7. This analysis focuses
+on a subset of challenging faults, as these cases are more likely
+to reveal performance differences among models. Specifically,
+we exclude faults where PCA achieves near-perfect detection
+(FDR > 95%, as reported in [5]), as well as controllable faults,
+where elevated FDRs may indicate over-sensitivity rather than
+genuine detection capability. The resulting evaluation set comprises nine faults: Fault 5, 10, 11, 16–21, each treated as an
+independent comparison unit.
+For each model pair, we compute the posterior probabilities
+Pleft , Prope , and Pright , which quantify the belief that model A is
+practically superior to model B, that their performance is equivalent within a ROPE, or that model B is better. These probabilities are tracked across training set sizes to capture how relative
+performance evolves as more data become available. The resulting trends complement the mean FDR profiles discussed in
+Section 4.1, providing a probabilistic basis for model selection
+as a function of ntrain .
+
+4.1.3. Uncontrollable Faults
+In the case of uncontrollable faults, detection performance
+improved with ntrain across all models, though the rate and
+extent of improvement varied (Figure 5). EfficientKAN-AE
+started with the highest FDR at ntrain = 500 and maintained stable performance throughout, with only a slight dip observed in
+the data-sufficient regime, potentially due to over-regularization
+9
+
+FourierKAN-AE is omitted from this analysis due to its consistently poor performance across fault types and training set
+sizes. Including it in pairwise tests would not yield informative distinctions, since posterior comparisons involving clearly
+dominated models tend to collapse onto the extremes (e.g.,
+Pright ≈ 1), offering little inferential value.
+
+increases. These findings underscore the importance of aligning model choice with data availability: EfficientKAN-AE is
+preferable when training data are scarce, WavKAN-AE offers
+strong and stable performance across regimes, and OAE remains a competitive option in data-rich scenarios.
+4.2.2. Pairwise Comparisons among KAN-based Autoencoders
+In the data-scarce regime, EfficientKAN-AE consistently
+outperforms the other KAN-based variants by a substantial margin. Posterior probability mass favoring EfficientKAN-AE exceeds 0.85 in all pairwise comparisons, with Pright reaching
+0.996 versus FastKAN-AE and 0.999 versus WavKAN-AE,
+strongly supporting EfficientKAN-AE’s superiority (Fig. 6d6e). Within the same regime, WavKAN-AE maintains a moderate but consistent advantage over FastKAN-AE, with posterior
+mass exceeding 0.74 (Fig. 6f), though this margin is notably
+smaller than that of EfficientKAN-AE.
+As the training set enters the data-sufficient regime,
+WavKAN-AE emerges as the most robust model. It decisively outperforms FastKAN-AE throughout this range, with
+Pright > 0.90 across all relevant comparisons. In comparisons
+with EfficientKAN-AE, the posterior distribution shifts more
+gradually. Initially, a broad region of practical equivalence
+dominates, but belief in WavKAN-AE’s superiority strengthens
+with additional data and eventually overtakes EfficientKAN-AE
+midway through the regime.
+In the data-rich regime, both WavKAN-AE and FastKANAE surpass EfficientKAN-AE. Posterior mass favoring
+FastKAN-AE over EfficientKAN-AE increases steadily,
+reaching 0.80 at the upper end of the regime. WavKAN-AE
+also continues to outperform EfficientKAN-AE, reaching
+Pright = 0.78. However, FastKAN-AE never overtakes
+WavKAN-AE at any point, as its posterior advantage, though
+growing marginally with scale, remains below 0.40 throughout. In large-data comparisons between WavKAN-AE and
+FastKAN-AE, posterior mass is concentrated within the ROPE,
+suggesting practical equivalence.
+
+4.2.1. Orthogonal Autoencoder vs. KAN-based Autoencoders
+As shown in Fig. 6a EfficientKAN demonstrates a clear
+advantage in the data-scarce regime. For ntrain ≤ 6, 500, the
+posterior mass lies overwhelmingly in Pright (> 0.90), peaking at 0.992 for ntrain = 500. This provides strong evidence
+that EfficientKAN-AE outperforms OAE when data are limited. However, this advantage diminishes steadily as ntrain increases. Between 11,000 and 30,000 training samples, the posterior probability begins to shift toward the ROPE, and eventually to Pleft , suggesting a reversal in relative performance. At
+ntrain = 51, 500, OAE is favored with Pleft = 0.72, and this belief
+strengthens to Pleft = 0.93 by 144,000 training samples. These
+results highlight EfficientKAN-AE’s strong data efficiency, but
+also its declining competitiveness as more training data become
+available.
+FastKAN-AE exhibits a more ambiguous performance profile. At small ntrain (e.g., 4,000-6,500), it holds a slight advantage, with Pright peaking at 0.64. However, this advantage is
+never decisive, and the posterior mass rapidly shifts toward the
+ROPE as the ntrain increases. Beyond ntrain = 18, 500, practical
+equivalence dominates the posterior (Prope > 0.70), reaching
+as high as 0.90 at ntrain = 51, 500. Notably, FastKAN is never
+overtaken by OAE, as Pleft remains consistently low. However,
+it also fails to establish a clear advantage, with Pright never surpassing 0.70 (see Fig. 6b). This pattern suggests that FastKANAE approaches a level of performance similar to OAE across
+most data regimes, providing only marginal gains in fault detection performance over the baseline.
+WavKAN-AE delivers the most robust early-stage performance. For ntrain ≤ 6, 500, Pright consistently exceeds 0.94,
+peaking at 0.993 for ntrain = 4, 000. As the ntrain becomes
+larger, the posterior mass gradually shifts toward the ROPE region, indicating a tendency toward practical equivalence rather
+than a reversal in relative performance (see Fig. 6c). By
+ntrain = 30, 500, ROPE accounts for 74% of the posterior mass,
+rising to 92% by ntrain = 200, 000. Importantly, Pleft remains
+near zero throughout, meaning OAE never overtakes WavKANAE. This underscores WavKAN-AE’s robustness in data-scarce
+regimes and its ability to maintain competitive performance as
+more training data become available, without the degradation
+observed in EfficientKAN-AE.
+Collectively, these results reveal distinct generalization behaviors across KAN-based architectures. EfficientKAN-AE
+exhibits strong performance in low-data regimes but is ultimately outperformed as training set size increases. FastKANAE yields modest gains early on and tends toward practical
+equivalence, without establishing dominance. WavKAN-AE
+delivers the strongest performance gains in low-data regimes
+and continues to perform competitively as the training set size
+
+4.3. Model Behavior in the Data-Scarce Limit (500 Samples)
+In many process monitoring applications, access to extensive
+fault-free historical data may be limited due to operational variability, economic constraints, or short observation windows.
+As such, evaluating model performance under extreme data
+scarcity is critical for assessing robustness and real-world applicability. This section focuses on the training done with 500
+samples, which represents the most constrained setting considered in this study, to examine how well each model generalizes
+from minimal input data. Detection behavior in this limit offers
+insight into architectural biases and data efficiency, particularly
+the role of edge function parameterization. A detailed per-fault
+comparison is used to assess each model’s early-stage detection
+capability.
+4.3.1. Fault Detection Rates
+All models exhibit relatively low FDRs on controllable faults
+(3, 9, and 15), suggesting limited response to self-correcting
+10
+
+Table 5: Fault Detection Rate (FDR) per fault for each model (500 training
+samples). Values are reported as mean ± 95% confidence interval, expressed as
+percentages.
+
+Table 6: False Alarm Rate (FAR) per fault for each model (500 training samples). Values are reported as mean ± 95% confidence interval, expressed as
+percentages.
+
+Fault
+
+OAE
+
+EfficientKAN-AE
+
+FastKAN-AE
+
+FourierKAN-AE
+
+WavKAN-AE
+
+Fault
+
+OAE
+
+EfficientKAN-AE
+
+FastKAN-AE
+
+FourierKAN-AE
+
+WavKAN-AE
+
+3
+9
+15
+
+6.25 ± 0.61
+5.90 ± 0.58
+8.72 ± 0.89
+
+5.98 ± 0.55
+6.96 ± 0.89
+8.99 ± 0.83
+
+5.64 ± 0.85
+5.24 ± 0.82
+7.24 ± 0.76
+
+5.57 ± 0.80
+4.74 ± 0.79
+9.25 ± 0.69
+
+4.69 ± 0.83
+3.76 ± 0.90
+9.22 ± 0.81
+
+3
+9
+15
+
+3.08 ± 0.95
+9.21 ± 1.13
+2.04 ± 0.64
+
+6.02 ± 1.52
+8.54 ± 1.33
+2.77 ± 0.60
+
+3.31 ± 1.82
+6.13 ± 1.36
+1.46 ± 0.53
+
+2.67 ± 1.48
+8.19 ± 1.28
+1.10 ± 0.35
+
+3.46 ± 1.74
+8.17 ± 1.62
+0.44 ± 0.20
+
+4
+5
+7
+
+99.91 ± 0.10
+36.62 ± 1.32
+99.99 ± 0.02
+
+99.56 ± 0.20
+100.00 ± 0.00
+100.00 ± 0.00
+
+95.58 ± 2.91
+96.51 ± 3.82
+100.00 ± 0.00
+
+75.68 ± 9.64
+30.41 ± 1.20
+100.00 ± 0.00
+
+99.78 ± 0.29
+87.87 ± 6.58
+100.00 ± 0.00
+
+4
+5
+7
+
+2.00 ± 0.40
+2.00 ± 0.40
+1.90 ± 0.52
+
+1.60 ± 0.57
+1.60 ± 0.57
+2.00 ± 0.68
+
+1.56 ± 0.44
+1.56 ± 0.44
+1.15 ± 0.55
+
+1.62 ± 0.48
+1.62 ± 0.48
+1.27 ± 0.39
+
+1.60 ± 0.45
+1.60 ± 0.45
+1.04 ± 0.40
+
+1
+2
+6
+8
+10
+11
+12
+13
+14
+16
+17
+18
+19
+20
+21
+
+99.86 ± 0.03
+98.59 ± 0.10
+100.00 ± 0.00
+98.10 ± 0.11
+59.89 ± 2.37
+78.18 ± 1.16
+98.86 ± 0.08
+95.38 ± 0.08
+99.99 ± 0.01
+55.26 ± 2.55
+96.15 ± 0.29
+90.57 ± 0.17
+33.30 ± 2.43
+62.27 ± 1.19
+46.81 ± 1.82
+
+99.66 ± 0.03
+98.60 ± 0.07
+100.00 ± 0.00
+98.07 ± 0.14
+83.66 ± 1.24
+74.83 ± 1.46
+99.34 ± 0.06
+95.12 ± 0.13
+100.00 ± 0.00
+85.57 ± 1.66
+96.67 ± 0.28
+90.24 ± 0.17
+77.40 ± 3.36
+71.68 ± 1.07
+49.17 ± 2.53
+
+99.53 ± 0.03
+98.11 ± 0.09
+100.00 ± 0.00
+98.19 ± 0.09
+66.57 ± 1.49
+72.98 ± 1.65
+99.03 ± 0.04
+94.83 ± 0.08
+99.98 ± 0.02
+63.28 ± 1.66
+95.22 ± 0.36
+90.00 ± 0.21
+32.07 ± 4.52
+58.32 ± 1.51
+47.46 ± 1.49
+
+99.57 ± 0.05
+98.50 ± 0.06
+100.00 ± 0.00
+98.00 ± 0.13
+47.48 ± 1.20
+67.03 ± 3.63
+98.74 ± 0.12
+94.58 ± 0.11
+99.98 ± 0.02
+36.00 ± 1.35
+89.66 ± 1.34
+90.11 ± 0.27
+14.71 ± 2.57
+50.85 ± 1.76
+43.85 ± 1.35
+
+99.65 ± 0.05
+98.47 ± 0.03
+100.00 ± 0.00
+98.00 ± 0.17
+70.15 ± 2.10
+77.56 ± 2.18
+99.00 ± 0.09
+94.50 ± 0.07
+100.00 ± 0.00
+67.53 ± 1.94
+93.55 ± 0.79
+90.13 ± 0.22
+43.79 ± 8.25
+59.37 ± 2.40
+44.23 ± 1.39
+
+1
+2
+6
+8
+10
+11
+12
+13
+14
+16
+17
+18
+19
+20
+21
+
+2.19 ± 0.40
+1.13 ± 0.35
+1.00 ± 0.29
+2.96 ± 0.55
+1.77 ± 0.44
+2.67 ± 0.55
+3.35 ± 0.77
+1.29 ± 0.40
+2.06 ± 0.54
+9.65 ± 1.43
+3.81 ± 0.89
+2.50 ± 0.68
+1.35 ± 0.45
+0.96 ± 0.39
+5.17 ± 1.21
+
+2.48 ± 0.55
+1.31 ± 0.54
+1.29 ± 0.42
+3.75 ± 0.91
+1.04 ± 0.30
+2.04 ± 0.52
+3.75 ± 0.99
+1.04 ± 0.39
+1.00 ± 0.32
+7.60 ± 1.38
+3.73 ± 1.06
+2.31 ± 0.58
+2.52 ± 0.63
+0.65 ± 0.25
+5.35 ± 1.22
+
+1.12 ± 0.63
+1.69 ± 0.58
+1.54 ± 0.67
+4.29 ± 1.48
+1.46 ± 0.42
+2.71 ± 0.69
+4.12 ± 1.34
+1.35 ± 0.63
+1.54 ± 0.52
+20.02 ± 2.20
+1.90 ± 0.64
+1.73 ± 0.65
+2.73 ± 0.85
+1.00 ± 0.50
+2.92 ± 1.07
+
+0.92 ± 0.37
+1.21 ± 0.38
+1.31 ± 0.31
+3.35 ± 1.62
+1.00 ± 0.31
+1.52 ± 0.51
+3.35 ± 1.13
+0.85 ± 0.33
+0.88 ± 0.31
+14.75 ± 2.37
+2.02 ± 0.56
+1.33 ± 0.49
+0.75 ± 0.32
+0.44 ± 0.23
+2.92 ± 1.08
+
+1.06 ± 0.35
+1.65 ± 0.48
+1.15 ± 0.34
+2.27 ± 1.50
+0.81 ± 0.34
+0.63 ± 0.37
+2.90 ± 1.38
+0.65 ± 0.26
+0.48 ± 0.25
+12.90 ± 2.83
+1.71 ± 0.53
+0.65 ± 0.30
+0.42 ± 0.31
+0.48 ± 0.24
+2.42 ± 1.06
+
+4.3.2. False Alarm Rates
+To assess whether high detection rates reflect true fault sensitivity rather than excessive triggering, we examine the false
+alarm rates (FARs) in Table 6. Most models remain below the
+5% threshold for the majority of faults, indicating that detection
+is not driven by over-sensitivity, despite training with limited
+data. However, Fault 16 stands out across models, with all variants exhibiting pre-fault rises in reconstruction error (Fig. 7c),
+likely contributing to the elevated false alarm rates. Among
+them, EfficientKAN-AE contains this response more tightly,
+while others produce prolonged or irregular spikes.
+
+process variations. WavKAN-AE achieves the lowest values
+on Faults 3 and 9, reflecting a stronger tendency to suppress
+false positives, likely due to its localized wavelet basis. However, FDRs on Fault 15 are slightly elevated across all models
+(7–9%), exceeding the nominal false alarm rate. As shown in
+Fig. 7a, residuals remain near the detection threshold throughout most of the time window, with several models exhibiting
+small oscillatory spikes near the end, which gradually diminish
+in amplitude.
+Back-to-control faults (Faults 4, 5, and 7) are reliably detected by all models except in the case of Fault 5, where performance varies sharply. EfficientKAN-AE achieves perfect
+detection, followed closely by FastKAN-AE, while OAE and
+FourierKAN-AE detect fewer than 40% of fault occurrences.
+As shown in Fig. 7b, only the EfficientKAN-AE and FastKANAE models maintain SPE values above the detection threshold
+after the control system restores the process variables to nominal conditions. This suggests that the adaptive basis functions
+in KAN-AEs help them capture subtle deviations affecting only
+one or a few process variables, even when trained with limited
+data.
+
+5. Conclusions
+This work conducted a comparative evaluation of Kolmogorov–Arnold autoencoders (KAN-AEs) for unsupervised
+fault detection using an MLP-based orthogonal autoencoder as
+the baseline, examining how different edge function parameterizations (e.g., B-splines, wavelets) affect detection performance across different training set sizes. Performance differences were validated through the Bayesian signed-rank test,
+offering more robust statistical inference than traditional frequentist approaches. Results show that KAN-AEs can match
+or surpass the MLP-based baseline (OAE) while requiring substantially less training data. WavKAN-AE achieved top performance with only 13% of the data needed by the OAE (4,000
+compared to 30,500 samples), demonstrating both scalability
+and data efficiency. EfficientKAN-AE reached peak performance with just 3% of the OAE’s training requirement (1,000
+compared to 30,500 samples), dominating in the data-scarce
+regime. FastKAN-AE required approximately 69% more training data than the OAE (51,500 compared to 30,500 samples)
+to reach comparable performance. In contrast, FourierKANAE consistently underperformed, highlighting the limitations
+of global basis functions in capturing the underlying data features that enable fault detection.
+These findings suggest that the choice of edge function plays
+a central role in model generalization and data efficiency. The
+
+Uncontrollable faults exhibit greater variation in model performance. While all methods detect clearly separable faults
+such as 6 and 14, performance deteriorates on faults like 10, 16,
+and 19, particularly when the fault signature is intermittent. In
+these cases, SPE values often dip below the detection threshold
+during the fault window, leading to missed detections (see Fig.
+7c). This pattern reflects the inability of static autoencoders to
+capture temporal dependencies or respond consistently to delayed or fluctuating fault signatures. The limitation is not specific to KAN-AEs and applies broadly to models lacking explicit temporal structure. In such cases, recurrent architectures
+such as RNNs or LSTMs may offer improved robustness. Despite this, EfficientKAN-AE outperforms other variants on each
+of these faults, surpassing the next best models by 13–34 percentage points.
+11
+
+(a) Fault 3
+
+(b) Fault 5
+
+(c) Fault 16
+
+Figure 7: Temporal evolution of SPE values across AE variants under Faults 3, 5, and 16. All models were trained on 500 fault-free samples.
+
+References
+
+architectural simplicity and parameter efficiency of KAN-AEs,
+combined with their robustness in data-scarce regimes, make
+them strong candidates for deployment in industrial monitoring
+scenarios where fault data are limited or costly to obtain.
+However, the models evaluated in this study do not capture temporal dependencies and are restricted to fault detection,
+without addressing fault identification or root-cause diagnosis.
+The lack of temporal modeling particularly limits their ability
+to detect intermittent or evolving fault patterns. Additionally,
+while KANs are often presented as interpretable due to their
+functional edge representations, this aspect is not systematically evaluated in our current framework. A more rigorous analysis is needed to assess whether KANs’ structural transparency
+translates into actionable insights for process monitoring.
+To address these limitations, future research could explore
+several directions. One promising avenue is the integration of
+temporal modeling within KAN-AEs using recurrent architectures, temporal convolutions, or latent state-space formulations
+to enable sequential fault detection and better capture delayed
+or evolving fault patterns. Additionally, future work should develop interpretability tools that help operators understand how
+KAN-based models make decisions, going beyond standard
+contribution plots to provide actionable diagnostic insights.
+
+[1] H. WANG, T.-Y. CHAI, J.-L. DING, M. BROWN,
+Data driven fault diagnosis and fault tolerant control: Some advances and possible new directions,
+Acta Automatica Sinica 35 (6) (2009) 739–747.
+doi:https://doi.org/10.1016/S1874-1029(08)60093-2.
+URL https://www.sciencedirect.com/science/article/p
+[2] A. Kopbayev, F. Khan, M. Yang, S. Z. Halim,
+Fault detection and diagnosis to enhance safety
+in digitalized process system,
+Computers &
+Chemical
+Engineering
+158
+(2022)
+107609.
+doi:https://doi.org/10.1016/j.compchemeng.2021.107609.
+[3] Y.-J. Park, S.-K. S. Fan, C.-Y. Hsu, A review on fault
+detection and process diagnostics in industrial processes,
+Processes 8 (9) (2020). doi:10.3390/pr8091123.
+[4] L. Kaupp, H. Webert, K. Nazemi, B. Humm, S. Simons,
+Context: An industry 4.0 dataset of contextual faults in
+a smart factory, Procedia Computer Science 180 (2021)
+492–501, proceedings of the 2nd International Conference
+on Industry 4.0 and Smart Manufacturing (ISM 2020).
+doi:https://doi.org/10.1016/j.procs.2021.01.265.
+[5] W. Sun, A. R. Paiva, P. Xu, A. Sundaram, R. D. Braatz,
+Fault detection and identification using bayesian recurrent
+neural networks, Computers and Chemical Engineering
+141 (2020). doi:10.1016/j.compchemeng.2020.106991.
+
+6. Acknowledgments
+This work was supported by the McMaster Advanced Control Consortium (MACC).
+
+[6] M. Tamura, S. Tsujita, A study on the number of principal
+components and sensitivity of fault detection using pca,
+Computers and Chemical Engineering 31 (2007) 1035–
+1046. doi:10.1016/j.compchemeng.2006.09.004.
+
+7. CRediT authorship contribution statement
+Enrique Luna Villagómez: Conceptualization, Methodology,
+Software, Writing – original draft. Vladimir Mahalec: Supervision, Conceptualization, Methodology, Writing – review &
+editing.
+
+[7] Z. Ge, Z. Song, Distributed pca model for plant-wide process monitoring, Industrial and Engineering Chemistry
+Research 52 (2013) 1947–1957. doi:10.1021/ie301945s.
+12
+
+[8] E. L. Villagómez, V. Mahalec, Fault detection and identification using a novel process decomposition algorithm for
+distributed process monitoring, Journal of Process Control
+149 (2025) 103423.
+
+[20] T. W. Cabral, F. V. Gomes, E. R. de Lima, J. C. S. S.
+Filho, L. G. P. Meloni, Kolmogorov–arnold network in
+the fault diagnosis of oil-immersed power transformers,
+Sensors 24 (23) (2024). doi:10.3390/s24237585.
+
+[9] D. Cacciarelli, M. Kulahci, A novel fault detection and
+diagnosis approach based on orthogonal autoencoders,
+Computers & Chemical Engineering 163 (2022) 107853.
+
+[21] J. He, L. Mo, Wcnn-kan: A novel feature enhancement framework for rotating machinery fault diagnosis, in: 2024 International Conference on Sensing, Measurement & Data Analytics in the era
+of Artificial Intelligence (ICSMD), 2024, pp. 1–6.
+doi:10.1109/ICSMD64214.2024.10920623.
+
+[10] J. Zhu, M. Jiang, Z. Liu, Fault detection and diagnosis in
+industrial processes with variational autoencoder: A comprehensive study, Sensors 22 (2021) 227.
+
+[22] X. Zhang, Y. Cheng, H. Chen, H. Cheng, Y. Gao,
+Refrigerant charge fault diagnosis in vrf systems using kolmogorov-arnold networks and their convolutional variants: A comparative analysis with traditional models, Energy and Buildings 336 (2025) 115608.
+doi:https://doi.org/10.1016/j.enbuild.2025.115608.
+
+[11] X. Ren, Y. Zou, Z. Zhang, Fault detection and classification with feature representation based on deep residual
+convolutional neural network, Journal of Chemometrics
+33 (2019) e3170.
+[12] I. Lomov, M. Lyubimov, I. Makarov, L. E. Zhukov, Fault
+detection in tennessee eastman process with temporal
+deep learning models, Journal of Industrial Information
+Integration 23 (2021) 100216.
+
+[23] X. Kong, X. Jiang, B. Zhang, J. Yuan, Z. Ge, Latent variable models in the era of industrial big data: Extension
+and beyond, Annual Reviews in Control 54 (2022) 167–
+199.
+
+[13] J.-L. Kang, Visualization analysis for fault diagnosis in chemical processes using recurrent
+neural networks, Journal of the Taiwan Institute of Chemical Engineers 112 (2020) 137–151.
+doi:https://doi.org/10.1016/j.jtice.2020.06.016.
+
+[24] A. N. Kolmogorov, On the representation of continuous
+functions of several variables by superposition of continuous functions of one variable and addition, Doklady
+Akademii Nauk SSSR 114 (5) (1957) 953–956.
+
+[14] K. Simonyan, A. Vedaldi, A. Zisserman, Deep inside
+convolutional networks: Visualising image classification
+models and saliency maps (2014). arXiv:1312.6034.
+URL https://arxiv.org/abs/1312.6034
+
+[25] Blealtan, Efficient kan (kolmogorov-arnold network),
+https://github.com/Blealtan/efficient-kan,
+accessed: 2025-05-10 (2024).
+
+[26] Z. Li, Kolmogorov-arnold networks are radial basis func[15] S. Bach, A. Binder, G. Montavon, F. Klauschen, K.-R.
+tion networks (2024). arXiv:2405.06721.
+Müller, W. Samek, On pixel-wise explanations for
+[27] J. Xu, Z. Chen, J. Li, S. Yang, W. Wang, X. Hu, E. C. H.
+non-linear classifier decisions by layer-wise relevance
+Ngai, Fourierkan-gcf: Fourier kolmogorov-arnold netpropagation, PLOS ONE 10 (7) (2015) e0130140.
+work – an effective and efficient feature transformation for
+doi:10.1371/journal.pone.0130140.
+graph
+collaborative filtering (2024). arXiv:2406.01034.
+URL https://doi.org/10.1371/journal.pone.0130140
+URL https://arxiv.org/abs/2406.01034
+[16] S. M. Lundberg, S.-I. Lee, A unified approach to interpret[28] Z. Bozorgasl, H. Chen, Wav-kan: Wavelet kolmogoroving model predictions, in: Proceedings of the 31st Internaarnold networks (2024). arXiv:2405.12832.
+tional Conference on Neural Information Processing SysURL https://arxiv.org/abs/2405.12832
+tems, NIPS’17, Curran Associates Inc., Red Hook, NY,
+USA, 2017, p. 4768–4777.
+[29] F. Yu, R. Hu, Y. Lin, Y. Ma, Z. Huang, W. Li,
+Kae: Kolmogorov-arnold auto-encoder for representation
+[17] Z. Liu, Y. Wang, S. Vaidya, F. Ruehle, J. Halverson,
+learning (2024). arXiv:2501.00420.
+M. Soljačić, T. Y. Hou, M. Tegmark, Kan: KolmogorovURL https://arxiv.org/abs/2501.00420
+arnold networks (2025). arXiv:2404.19756.
+URL https://arxiv.org/abs/2404.19756
+[30] M. Moradi, S. Panahi, E. Bollt, Y.-C. Lai, Kolmogorovarnold network autoencoders (2024). arXiv:2410.02077.
+[18] T. Ji, Y. Hou, D. Zhang, A comprehensive surURL https://arxiv.org/abs/2410.02077
+vey on kolmogorov arnold networks (kan) (2025).
+arXiv:2407.11075.
+[31] J. J. Downs, E. F. Vogel, A plant-wide industrial process
+URL https://arxiv.org/abs/2407.11075
+control problem, Computers & Chemical Engineering 17
+(1993) 245–255. doi:10.1016/0098-1354(93)80018-I.
+[19] S. Rigas, M. Papachristou, I. Sotiropoulos, G. Alexandridis, Explainable fault classification and severity diag[32] T. J. McAvoy, N. Ye, Base control for the tennessee eastnosis in rotating machinery using kolmogorov–arnold netman problem, Computers & Chemical Engineering 18
+works, Entropy 27 (4) (2025). doi:10.3390/e27040403.
+(1994) 383–413.
+13
+
+[33] P. R. Lyman, C. Georgakis, Plant-wide control of the tennessee eastman problem, Computers & Chemical Engineering 19 (1995) 321–331.
+[34] N. Lawrence Ricker, Decentralized control of
+the tennessee eastman challenge process, Journal of Process Control 6 (4) (1996) 205–221.
+doi:https://doi.org/10.1016/0959-1524(96)00031-5.
+[35] E. L. Russell, L. H. Chiang, R. D. Braatz, Fault detection in industrial processes using canonical variate analysis and dynamic principal component analysis (2000).
+[36] C. Martin-Villalba, A. Urquia, G. Shao, Implementations
+of the tennessee eastman process in modelica, IFACPapersOnLine 51 (2) (2018) 619–624.
+[37] C. A. Rieth, B. D. Amsel, R. Tran, M. B. Cook, Additional
+Tennessee Eastman Process Simulation Data for Anomaly
+Detection Evaluation (2017). doi:10.7910/DVN/6C3JR1.
+URL https://doi.org/10.7910/DVN/6C3JR1
+[38] A. Bathelt, N. L. Ricker, M. Jelali, Revision of
+the tennessee eastman process model (7 2015).
+doi:10.1016/j.ifacol.2015.08.199.
+[39] I. Loshchilov, F. Hutter, Decoupled weight decay regularization (2019). arXiv:1711.05101.
+URL https://arxiv.org/abs/1711.05101
+[40] J. Bergstra, R. Bardenet, Y. Bengio, B. Kégl, Algorithms
+for hyper-parameter optimization, Advances in neural information processing systems 24 (2011).
+[41] T. Akiba, S. Sano, T. Yanase, T. Ohta, M. Koyama,
+Optuna: A next-generation hyperparameter optimization
+framework, in: Proceedings of the 25th ACM SIGKDD
+international conference on knowledge discovery & data
+mining, 2019, pp. 2623–2631.
+[42] D. W. Scott, Multivariate Density Estimation: Theory,
+Practice, and Visualization, John Wiley & Sons, New
+York, Chichester, 1992.
+[43] A. Benavoli, F. Mangili, G. Corani, M. Zaffalon, F. Ruggeri, A bayesian wilcoxon signed-rank test based on the
+dirichlet process, in: Proceedings of the 31st International Conference on International Conference on Machine Learning - Volume 32, ICML’14, JMLR.org, 2014,
+p. II–1026–II–1034.
+[44] A. Benavoli, G. Corani, J. Demšar, M. Zaffalon, Time
+for a change: a tutorial for comparing multiple classifiers
+through bayesian analysis, Journal of Machine Learning
+Research 18 (77) (2017) 1–36.
+URL http://jmlr.org/papers/v18/16-305.html
+
+14
+

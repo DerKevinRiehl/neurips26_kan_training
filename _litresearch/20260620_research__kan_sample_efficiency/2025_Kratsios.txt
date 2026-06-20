@@ -1,0 +1,2581 @@
+Approximation Rates in Besov Norms and Sample-Complexity
+of Kolmogorov-Arnold Networks with Residual Connections
+
+arXiv:2504.15110v3 [cs.LG] 6 Aug 2025
+
+Anastasis Kratsios∗, Bum Jun Kim†, and Takashi Furuya‡
+
+Abstract
+Inspired by the Kolmogorov–Arnold superposition theorem, Kolmogorov–Arnold Networks (KANs) have recently emerged as an improved backbone for most deep learning
+frameworks, promising more adaptivity than their multilayer perceptron (MLP) predecessor by allowing for trainable spline-based activation functions. In this paper, we probe
+the theoretical foundations of the KAN architecture by showing that it can optimally aps
+proximate any Besov function in Bp,q
+(X ) on a bounded open, or even fractal, domain X
+d
+α
+(X );
+in R at the optimal approximation rate with respect to any weaker Besov norm Bp,q
+where α < s. We complement our approximation result with a statistical guarantee by
+bounding the pseudodimension of the relevant class of Res-KANs. As an application of
+the latter, we directly deduce a dimension-free estimate on the sample complexity of a
+residual KAN model when learning a function of Besov regularity from N i.i.d. noiseless
+samples, showing that KANs can learn the smooth maps which they can approximate.
+
+1
+
+Introduction
+
+Many contemporary deep learning backbones leverage trainable activation functions, evolving
+from their traditional multi-layer perceptron (MLP) predecessors, to achieve superior adaptivity or training stability. Standard examples range from the SwiGLU [39] activation in transformer networks to the adaptive activations in Kolmogorov-Arnold networks [29] typically
+realized as a linear combination of B-splines, see e.g., [11], and some interesting theoretical
+thought experiments are nested neural networks [53]. In this paper, we focus on models of the
+latter type with an additional residual connection between layers, as introduced in the ResNet
+architecture [17], guided by contemporary deep learning wisdom which recognizes the practical benefits of skip connections and has seen a widespread incorporation in contemporary deep
+learning from GNNs [7] and transformers [44]. Residual connections are theoretically founded
+and are known to positively regularize a deep learning model’s loss landscape [35]; they allow
+for narrower networks to maintain their universality [28] compared to networks without skip
+connections [34, 18], and they often have no negative drawback on their approximation rates
+of these models [16]. We call these KANs augmented by a residual connection Res-KANs.
+Much of the theoretical support for KANs is rooted in the Kolmogorov-Arnold representation theorem; see e.g., [23] for an optimized formulation. These results either provide
+approximation guarantees for functions of a composition form [29], similarly to the composition sparsity [33, 9] literature, they offer approximation guarantees in the Lp -norms [46] by
+encoding ReLUk -neural network structure and subsequently transferring their Lp -type approximation guarantees [6, 48, 15, 31] or they show that there exist activation functions which allow
+∗
+
+email: kratsioa@mcmaster.ca
+email: bumjun.kim@weblab.t.u-tokyo.ac.jp
+‡
+email: takashi.furuya0101@gmail.com
+†
+
+1
+
+1.1
+
+Related Works
+
+1
+
+INTRODUCTION
+
+them to realize a Kolmogorov-Arnold-type superposition representation of any function [33]
+which is reminiscent of the super-expressive activation function literature [50, 52, 21, 45].
+Though these results support the expressive power of the KAN paradigm, their applicability to partial differential equation-type (PDE) problems, e.g., those arising in physics,
+engineering, biology, optimal control, or finance, can still be limited. This is because, in PDE
+applications, one needs to approximate the function itself but also typically converges the AI
+model toward the higher-order derivatives of the target functions.
+Why Is Studying KANs from the Besov Spaces Lens Natural? Given that most
+KANs are constructed using splines—and that spline-type wavelets are known to characterize
+Besov spaces (see, e.g., [13, 10]). Thus, it is most natural to study KANs within the framework
+of Besov spaces.
+Contribution: This paper precisely proves that Res-KANs are efficient approximators of
+functions on Besov spaces, over any reasonable bounded Lipschitz, or even on any compact
+fractal domain in Rd (Theorem 1). Importantly, with downstream PDE applications in mind,
+our approximation guarantees are not (only) in the uniform or Lp type but in higher-order
+Besov norms, which are just arbitrarily weaker than the target function’s regularity.
+We complement our main approximation result with a PAC-learnability guarantee (Theorem 2) showing that KANs can, indeed, learn Besov functions of high regularity from noiseless
+training data. Moreover, the sample complexity is not cursed by dimensionality in the highsmoothness regime.
+
+1.1
+
+Related Works
+
+In [46, Theorem 3.1], the authors establish approximation rates for KANs in the uniform
+norm, i.e., the C s (Ω) = W s,∞ (Ω) norm—on bounded open domains Ω, but do not provide
+any statistical guarantees. In contrast, our results measure approximation error in the more
+s (Ω), which subsume the Sobolev norms W s,p (Ω) when p = q < ∞.
+general Besov norms Bp,q
+Theorem 1). Though there is a relationship between KANs and ReLUk -MLPs deduced in [46,
+Theorem 3.2] and there are Sobolev approximation guarantees for ReLUk -MLPs obtained
+in [31], again both available results only hold for bounded open domains, and our results
+hold for non-open sets of possibly integer dimension; additionally, our approximation error is
+quantified in the interpolating Besov norms and not only the coarser Sobolev norms. In this
+way, approximation guarantees (Theorem 1) generalize the available comparable results in a
+number of ways.
+Moreover, unlike [46], we derive statistical guarantees for KANs via novel pseudodimension
+bounds (Lemma 6). In this sense, our contribution goes significantly beyond the existing
+approximation theory by providing the first statistical guarantees for KANs in the literature.
+The relationship between the approximation results in [46] and ours is therefore indirect and
+fundamentally different in scope.
+Organization Our paper is organized as follows. Section 2 overviews the necessary background required to formulate our main results; this includes background on cardinal B-splines,
+Res-KANs, and on Besov spaces over bounded open Lipschitz domains, and on Ahlfors-regular
+fractal domains, in Rd . Section 3 contains our main results, namely our two approximation
+theorems (Theorem 1) and our pseudodimension bound (Lemma 6). All proofs and additional
+background, e.g., fat shattering and pseudodimension, are only needed for proof details and
+are relegated to our appendices.
+
+2
+
+2
+
+2
+
+BACKGROUND
+
+Background
+
+We now present the necessary background to formulate our main result.
+
+2.1
+
+Cardinal B-Splines
+
+Kolmogorov-Arnold Networks (KANs) extend the multilayer perceptron (MLP) architecture
+by allowing its otherwise fixed and, thus, rigid, univariate activation functions to adapt to the
+individual local structures of the function being approximated. This adaptivity is realized by
+replacing each activation function with a cardinal B-spline Nk of order k for appropriately
+learned k.
+Basis Functions Constructed from ReLUs
+1(x)
+2(x)
+3(x)
+
+1.0
+
+First Cardinal B-Splines
+
+0.8
+
+I
+
+NI
+
+0
+
+1[0,1) (x)
+
+1
+
+ReLU(x) − 2 ReLU(x−1) + ReLU(x−2)
+
+2
+
+2
+2
+2
+ReLU(x)2
+− 3 ReLU(x−1)
++ 3 ReLU(x−2)
+− ReLU(x−3)
+2
+2
+2
+2
+
+I(x)
+
+0.6
+
+0.4
+
+0.2
+
+0.0
+1
+
+0
+
+1
+
+x
+
+2
+
+3
+
+4
+
+Figure 1: The cardinal B-splines of orders I = 0, 1, and 2.
+As shown, for example, in [32, Equation (4.28)], for any I ∈ N+ , the cardinal B-spline of
+order I with knots on 0, . . . , I + 1 is given by
+
+I+1
+X
+(−1)j I+1
+j
+NI (x) =
+ReLU(x − j)I
+(1)
+I!
+j=0
+
+for each x ∈ R. Figure 1 illustrates the cardinal B-splines with I = 0, 1, and 2, as detailed in
+the following examples.
+
+2.2
+
+Residual Kolmogorov-Arnold Networks (Res-KANs)
+
+The core idea behind the KAN is to allow the activation function to be trainable, where we
+enable mixtures of different spline degrees via sending any x ∈ R to
+σβ:I (x) =
+
+I
+X
+
+βi Ni (x)
+
+(2)
+
+i=0
+
+where the trainable parameter β ∈ RI+1 .
+
+In a KAN, each activation function acts componentwise but with trainable parameters depending on the neuron it is activating; that is, for
+def.
+each d ∈ N+ , every x ∈ Rd , and every β = (β1 , . . . , βk ) ∈ R(I+1)×d we have
+d
+def.
+σβ:I • (x) = σβj :I (xj ) j=1 .
+(3)
+We now introduce the core of our residual KAN networks, which ensure that no signal is lost
+during activation by incorporating additional residual connections, which have also become
+standard in modern AI as they additionally stabilize training dynamics by preserving gradient
+flow by regularizing the neural network’s loss landscape [35], and avoid vanishing gradient
+problems that can be caused by normalizing layers. As in [1], we allow first any residual
+connections to be skipped or focused on, if need be, via a trainable gating mechanism
+def.
+
+L(x|A, b, β, G : I) = σβ:I • (Ax + b) +
+|
+{z
+}
+KAN Layer
+
+3
+
+Gx
+|{z}
+
+Residual Connection
+
+(4)
+
+2.3
+
+Besov Spaces
+
+2
+
+BACKGROUND
+
+here the layer input and output dimensions respectively as din , dout ∈ N+ A, G are dout × din matrices with a matrix G diagonal ; meaning Gi,j = 0 if i ̸= j (not G need not be a square
+matrix), β is a (I + 1) × dℓ+1 matrix, b ∈ Rdℓ+1 .
+Although the composition of these KAN layers defines a meaningful function, that object
+may not be very regular, in the sense that it may have few higher-order derivatives, making it
+problematic for PDE applications where a high degree of regularity is required. There are two
+solutions: 1) the βi coefficients are all zero for small i, or 2) we incorporate a simple smoothing
+layer at the output. We opt for the second option, as then any function implemented by our
+smoothed residual KANs is necessarily smooth; i.e., infinitely differentiable.
+Besides the usual cardinal B-splines {N0 , . . . , NI }, we also treat the ReLU NR (t) ≡
+ReLU(t) and its square NR2 (t) ≡ ReLU(t)2 as additional degree-1 and degree-2 basis functions. Including these two functions into the dictionary slightly enlarges the basis available
+for Res-KANs.
+Definition 1 (Residual KANs (Res-KANs)). Let d, D, I ∈ N+ and α > 0. Here, we use
+{N0 , . . . , NI , NR , NR2 }, where Ni is the cardinal B-spline of order i and NR (t) = max{0, t},
+NR2 (t) = max{0, t}2 . A residual Kolmogorov-Arnold network (Res-KAN) is a function fˆ :
+Rd → RD with representation
+fˆ = A(L+1) f (L) + b(L+1)
+f (l) = L(f (l−1) |A(l) , b(l) , β (l) , G(l) : I + 2) for l = 1, . . . , L
+f
+
+(0)
+
+(5)
+
+(x) = x
+
+where, for l = 1, . . . , L, A(l) and G(l) are dl+1 × dl matrices with G diagonal, b ∈ Rdl+1 ,
+d0 , . . . , dL+1 ∈ N+ with d0 = d and dL+1 = D; furthermore, we take β (l) ∈ R(I+3)×dl+1 and
+apply the sparsity rule only to its first I + 1 rows, for which β (l) satisfies the sparsity pattern
+(ensuring smoothness)
+(l)
+βi,j = 0 for i < ⌈α⌉.
+(6)
+def.
+
+We denote the class of all Res-KANs with L hidden layers, width W = maxl=1,...,L+1 d(l) ,
+d
+D
+adaptivity parameter I, and smoothness parameter α by Res-KANI,α
+L,W (R , R ).
+
+2.3
+
+Besov Spaces
+
+We begin with the definition of the Besov spaces on any non-empty open domain Ω in Rd .
+Besov Spaces on Euclidean Domains Let 0 < p ≤ ∞, and 0 < α. The modulus of
+smoothness of order α of an f ∈ Lp (Ω), defined with respect to the restricted Lebesgue
+measure on Ω, is defined for each t > 0
+def.
+
+ωα (f, t)p =
+
+⌈α⌉
+
+sup
+δ∈Rd 0<∥δ∥≤t
+
+∥∆δ (f, ·)∥Lp (⌈α⌉h)
+
+where ∆th is the ⌈α⌉th order finite difference operator with step-size δ ∈ Rd \ {0} and
+def. R
+∥g∥pLp (⌈α⌉h) = |g(u)|p I⌈α⌉h dx < ∞, where I⌈α⌉h is the indicator function of the set {u ∈
+Rd : u + ⌈α⌉h ∈ Ω}. For any 0 < q < ∞, one of the many equivalent formulations of the
+α (Ω) is the collection of all f ∈ Lp (Ω) for which the following quasi-norm is
+Besov space Bp,q
+finite
+Z ∞
+1/q
+ωα (f, t)qp
+def.
+α (Ω) =
+∥f ∥Bp,q
+dt
++ ∥f ∥Lp (Ω) .
+(7)
+tqα+1
+0
+4
+
+2.3
+
+Besov Spaces
+
+2
+
+BACKGROUND
+
+We will focus on the following class of domains: An open set Ω is called an extension domain
+in Rd if there are some ϵ, δ > 0 such that for any x, y ∈ Ω satisfying
+∥x − y∥ ≤ δ
+there exists a rectifiable curve γ : [0, 1] → Rd of length at most C0 ∥x − y∥ with γ(0) = x and
+γ(1) = y such that, for any time t ∈ [0, 1]
+inf ∥γ(t) − u∥ ≥ ϵ min{∥γ(t) − x∥, ∥γ(t) − y∥}.
+
+u∈∂Ω
+
+We are interested in extension domains due to the extendability of functions therein to all
+of Rd , while also being able to ensure that their Sobolev regularity is preserved under these
+extensions; see e.g., [22, 8]. Extension domains, in the above sense, are often referred to as
+(ϵ, δ)-domains in harmonic analysis. However, we avoid this terminology here to prevent confusion with its standard use in approximation and learning theory, where ϵ typically denotes
+an approximation error and δ the probability that the approximation is valid.
+Besov Spaces on Fractals We begin with the definition of a Besov space on an arbitrary
+well-behaved, possibly fractional, domain X in some Euclidean space Rd as introduced in [19].
+Let 0 < n ≤ d, and let Hn denote the n-dimensional Hausdorff (outer) measure on Rd . We
+def.
+denote a closed ℓ∞ -ball of radius r > 0 centered at some x ∈ Rn by Q(x, r) = {y ∈ Rd :
+∥x − y∥∞ ≤ r} = [x − r/2, x + r/2]d . A subset X ⊆ Rd is called Ahlfors n-regular if there are
+constants 0 < c ≤ C such that for all 0 < r ≤ diam(X ) and for each x ∈ X
+
+crn ≤ Hn X ∩ Q(x, r) ≤ Crn .
+(8)
+Remark 1. The dimensionality restriction, which we will consider shortly for Ahlfors regular
+domains, namely that d−1 < n < d, directly implies that no (ϵ, δ)-domain is Ahlfors n-regular
+and vice versa, as every (ϵ, δ)-domain has integer dimension.
+For 1 ≤ p < ∞, we define the normalized local best polynomial approximation energy as
+def.
+
+Ek (f, Q)Lp (X ) =
+
+
+inf
+p∈Rk−1 [x1 ,...,xd ]
+
+1
+n
+H (Q ∩ S)
+
+Z
+
+p
+
+|f − P | dH
+
+n
+
+1/p
+(9)
+
+Q∩S
+
+where Q = Ballℓ∞ (x, r) for some x ∈ X and some r > 0, Rk−1 [x1 , . . . , xd ] is the vector space of
+def.
+polynomials on x1 , . . . , xd of degree at most k − 1 with the convention that R−1 [x1 , . . . , xd ] =
+{0} is the trivial vector space.
+Definition 2 (Besov Space on Ahlfors-Regular Sets). Let 0 < n ≤ d, X ⊆ Rd be Ahlfors
+α (X ) consists of all functions
+n-regular, and let α > 0, 1 ≤ p, q ≤ ∞. The Besov space Bp,q
+p
+f ∈ L (X ) for which the norm
+def.
+
+α (X ) = ∥f ∥Lp (X ) +
+∥f ∥Bp,q
+
+Z 1 
+0
+
+∥Ek (f, Q(·, τ ))∥Lu (X )
+τα
+
+q
+
+dτ
+τ
+
+ 1q
+,
+
+is finite, where 1 ≤ u ≤ p and k is an integer such that α < k.
+α (X ) above does
+Importantly, by [20, Theorem 3.6], the definition of the Besov space Bp,q
+not depend on the (arbitrary) choice of parameters k and u; granted that k > α and 1 ≤ u ≤ p.
+
+5
+
+3
+
+3
+
+MAIN RESULTS
+
+Main Results
+
+We are now in a position to state our main approximation guarantee.
+Theorem 1 (Approximation Guarantees for Res-KANs in Besov Norm). Let 0 < α < s < ∞
+and 0 < p, q < ∞, d − 1 < n < d, and X ⊆ [0, 1]d either be (1) an (ϵ, δ)-domain or (2)
+def.
+Ahlfors n-regular for some d − 1 < n < d and additionally 1 ≤ p, q. In case (1) set α⋆ = α,
+⋆
+def.
+α (X ) and every “simultaneous
+and in case (2) set α⋆ = α − (n − d)/p. For every f ∈ Bp,q
+r (X )
+approximation error” ε > 0, there exists a Res-KAN fˆ : Rd → R such that fˆ ∈ Bp,q
+satisfying
+r (X )) < ε
+∥f − fˆ|X ∥Bp,q
+
+⋆
+⋆
+and fˆ has width O(ε1/((α −s)) ), depth O(d), and O d2 ε1/((α −s)) non-zero parameters.
+Proof. See Appendix A.
+We now complement our approximation guarantees for residual KANs with corresponding
+α (X ) of prescribed Besov
+learning guarantees. Specifically, given any target function f ∈ Bp,q
+regularity, we ask: How many i.i.d. samples N are required to ensure that the in-sample
+performance of a Res-KAN estimator fˆ reliably reflects its out-of-sample performance? This
+question is posed within the standard nonlinear regression setting, where both random input
+sampling and additive measurement noise are present.
+We answer this question in the non-linear regression setting, where we wish to estimate
+data arising from a true (measurable) function fˆ : Rd → R. The training data consists of
+random pairs (X, Y ) where the random inputs X are drawn from a Borel probability measure
+Psmpl on Rd and the outputs are f (X) + ν, where ν is random measurement noise independent
+of X and is drawn with respect to a mean zero Borel probability measure Perr on R. We
+quantify the true error between any given Res-KAN fˆ and any target f by their true risk
+ˆ
+RP (f |fˆ) and their empirical risk R̂N
+P (f |f ) defined by
+N
+
+
+1 X ˆ
+R(f |fˆ) = EX∼Psmpl |fˆ(X) − (f (X)+ν)| and R̂N (f |fˆ) =
+|f (Xn ) − (f (Xn )+νn )|
+N
+ν∼Perr
+n=1
+
+where X1 , . . . , XN are i.i.d. samples from Psmpl and ν1 , . . . , νN are i.i.d. samples from Perr .
+Theorem 2 (Sample Complexity for Res-KANs When Learning From Noisy Besov Data).
+Suppose
+ that X is a Lipschitz domain, let 1 ≤ τ ≤ ∞, 1 ≤ p, q < ∞, and α > (d+1)(1/p −
+1/τ ) + and let L, I, W ∈ N+ . For every Borel probability measure Psmpl ∈ P(X ), each centered
+Borel probability measure Psmpl ∈ P(R), each training set of i.i.d. samples (X1 , Y1 ), . . . , (XN , YN ) ∼
+Psmpl ⊗ Perr every approximation error ε > 0 and every failure probability 0 < δ ≤ 1 if
+
+
+N ∈ O ϵ−2−(d+1)/α (ln(1/ε))2 + ϵ−2 ln(1/δ) .
+then
+!
+P sup R(f |fˆ) − R̂N (f |fˆ) ≤ ε
+
+−cN ϵ2 +(d+1) ln2
+
+≥1−e
+
+
+
+(d+1)
+ϵ
+
+
+
+f,fˆ
+d
+α
+where the supremum is taken over all fˆ ∈ Res-KANI,α
+L,W (R , R) and all f ∈ Bp,q (X ) with
+α (X ) ≤ 1.
+Besov norm ∥f ∥Bp,q
+
+Proof. See Appendix B.
+
+6
+
+3.1
+
+Implications: KANs vs. Other Deep
+A Learning
+PROOF OF
+Alternatives
+MAIN APPROXIMATION RESULT
+
+3.1
+
+Implications: KANs vs. Other Deep Learning Alternatives
+
+It is known that ReLU MLPs [41] and Transformers [26] achieve optimal approximation rates
+(in the sense of constructive approximation theory) and optimal sample complexity (via empirical process theory). It, thus, cannot be improved in these respects. Since our results show
+that KANs match these same rates, we conclude that KANs are likewise optimal from both
+constructive approximation (Theorem 1) and statistical learning (Theorem 2) perspectives.
+Accordingly, KANs do not appear to offer any advantage over MLPs or Transformers from
+these theoretical standpoints.
+Any empirical advantage observed for KANs over classical models must therefore arise from
+other sources, such as their inductive bias when trained via SGD-type algorithms or the stability of their training dynamics. The main practical takeaway from our work is that identifying
+the advantage of KANs will require going beyond approximation or generalization guarantees
+and focusing instead on their behavior during optimization.
+
+4
+
+Conclusion
+
+In this paper, we establish the theoretical foundations of Kolmogorov–Arnold Networks (KANs),
+showing that they can approximate any Besov function on a bounded or even fractal domain
+at the optimal rate in Theorem 1. We also provide a dimension-free sample complexity bound
+for learning such functions with a residual KAN model in Theorem 2. Due to the deep connection between Besov spaces and splines [13, 10], we believe that this is a very natural setting to
+quantify the power of Kolmogorov-Arnold networks. Our results relied on a KAN build which
+incorporated residual connections, aligning with modern deep learning practices. Simple toy
+experiments further confirm that adding residual connections does not degrade performance,
+and the KAN retains accuracy similar to that of its non-residual counterpart.
+
+Acknowledgements
+The authors would like to thank Yao Liding for their very helpful feedback on Sobolev extension operators over Euclidean domains.
+A. Kratsios acknowledges financial support from an NSERC Discovery Grant No. RGPIN2023-04482 and No. DGECR-2023-00230. They both also acknowledge that resources used
+in preparing this research were provided, in part, by the Province of Ontario, the Government of Canada through CIFAR, and companies sponsoring the Vector Institute1 . T. Furuya
+was supported by JSPS KAKENHI Grant Number JP24K16949, 25H01453, JST CREST
+JPMJCR24Q5, JST ASPIRE JPMJAP2329.
+
+A
+
+Proof of Main Approximation Result
+
+We now prove Theorem 1. We first verify that residual KANs can locally implement the
+multiplication operation. The next lemma serves as an exact version of the well-known fact
+that tanh-MLPs [12], ReLU MLPs [49], and, more generally, MLPs with smooth activation
+functions [25, 27, 51], can approximately implement the d-fold multiplication operation on arbitrarily large hypercubes. This next result shows that residual KANs can exactly implement
+the d-fold multiplication operation, locally, on arbitrarily large hypercubes.
+1
+
+https://vectorinstitute.ai/partnerships/current-partners/
+
+7
+
+A
+
+PROOF OF MAIN APPROXIMATION RESULT
+
+Lemma 1 (Exact Multiplication on Arbitrarily-Large Hypercubes). For every d ∈ N+ and
+each M > 0 there exists a Res-KAN ×2d : Rd → R satisfying: for each x ∈ [−M, M ]d
+×2d (x) =
+
+d
+Y
+
+xi
+
+i=1
+
+Moreover, ×2d has depth 2(d − 1), width at most d + 4, and the number of non-zero parameters
+d2 + 33d − 36.
+Proof. Step 0 – Square gadget. Consider
+q(t) := ReLU(t)2 + ReLU(−t)2 = t2
+
+(t ∈ R).
+
+This square gadget can be implemented by
+!
+1
+• Affine matrix Asquare =
+∈ R2×1 with 2 non-zero affine weights, with bsquare =
+−1
+!
+0
+.
+0
+• Activation coefficients using two columns of (0, . . . , 0, 0, 1)⊤ for β, yielding 2 non-zero
+β-entries.
+• Head weights (1, 1) to sum the two channels.
+Step 1 – Two-input multiplier. For u, v ∈ [−M, M ], we have
+
+
+uv = 21 q(u + v) − q(u) − q(v) .
+Motivated by this observation, we build q(u + v), q(u), and q(v) to implement the two-input
+multiplier. Specifically, we use an affine matrix
+
+
+1
+1
+
+
+−1 −1
+
+
+1
+0
+
+ ∈ R6×2 ,
+Amult = 
+
+−1
+0
+
+
+
+
+0
+1
+0 −1
+which has 8 non-zero entries. We then apply the square gadget with 6 activation coefficients
+and a head with weights of Ahead = 21 (1, 1, −1, −1, −1, −1), amounting to 6 head weights.
+Thus, the block uses 8 + 6 + 6 = 20 non-zero parameters and temporarily occupies 6 auxiliary
+channels.
+Step 2 – Implementing d-fold multiplication. Consider p1 = x1 and
+
+
+pl := 21 (pl−1 + xl )2 − p2l−1 − x2l ,
+Q
+Q
+for l = 2, . . . , d. Induction gives pl = li=1 xi , hence pd = di=1 xi .
+Now, we implement a two-input multiplier using the first two elements. Specifically, for
+the very first layer with input (x1 , x2 , . . . , xd ) ∈ Rd , we aim to build a two-input multiplier
+on x1 and x2 and pass the remaining elements. Note that the two-input multiplier uses an
+8
+
+A
+
+PROOF OF MAIN APPROXIMATION RESULT
+
+affine matrix and a head matrix, which requires two Res-KAN layers. In this unit, the first
+Res-KAN layer computes six terms with squared ReLU and passes the remaining (d − 2)
+elements using
+!
+Amult
+06×(d−2)
+A1,first =
+∈ R(d+4)×d ,
+0(d−2)×2 0(d−2)×(d−2)
+!
+06×2
+06×(d−2)
+G1,first =
+∈ R(d+4)×d ,
+0(d−2)×2 I(d−2)×(d−2)
+with the six activation coefficients that correspond to NR2 (t) = max{0, t}2 .
+From the six terms with squared ReLU and (d − 2) remaining elements, the second ResKAN layer applies
+
+
+Ahead
+01×(d−2)
+
+
+ ∈ Rd×(d+4) ,
+A1,second = 
+−A
+0
+head
+1×(d−2)
+
+
+0(d−2)×6 0(d−2)×(d−2)
+!
+02×6
+02×(d−2)
+G1,second =
+∈ Rd×(d+4) ,
+0(d−2)×6 I(d−2)×(d−2)
+with the six activation coefficients that correspond to NR (t) = max{0, t}. Note that the
+second KAN layer here outputs (ReLU(x1 x2 ), ReLU(−x1 x2 ), 0, . . . , 0) ∈ Rd and the residual connection outputs (0, 0, x3 , . . . , xd ) ∈ Rd ; thus, the second Res-KAN layer yields the sum
+(ReLU(x1 x2 ), ReLU(−x1 x2 ), x3 , . . . , xd ) ∈ Rd . We then merge ReLU(x1 x2 ) and ReLU(−x1 x2 )
+in the first layer of the subsequent unit.
+Now consider the lth unit with l ≥ 2. The first Res-KAN layer computes six terms with
+squared ReLU and passes the remaining (d − l − 1) elements using
+!
+Amerge
+06×(d−l−1)
+Al,first =
+∈ R(d−l+5)×(d−l+2) ,
+0(d−l−1)×3 0(d−l−1)×(d−l−1)
+!
+06×3
+06×(d−l−1)
+Gl,first =
+∈ R(d−l+5)×(d−l+2) ,
+0(d−l−1)×3 I(d−l−1)×(d−l−1)
+with the six activation coefficients that correspond to NR2 (t) = max{0, t}2 , where
+
+
+1 −1 1
+
+
+−1 1 −1
+
+
+ 1 −1 0 
+ ∈ R6×3 .
+Amerge = 
+
+−1 1
+0
+
+
+
+
+0
+0
+1
+0
+0 −1
+We exploit the fact that ReLU(x) − ReLU(−x) = x here to merge the two ReLUs, implementing the two-input multiplier intermediately. Similarly, from the six terms with squared
+ReLU and remaining (d − l − 1) elements, the second Res-KAN layer applies
+
+
+Ahead
+01×(d−l−1)
+
+
+ ∈ R(d−l+1)×(d−l+5) ,
+Al,second = 
+−A
+0
+head
+1×(d−l−1)
+
+
+0(d−l−1)×6 0(d−l−1)×(d−l−1)
+9
+
+A
+
+Gl,second =
+
+02×6
+
+PROOF OF MAIN APPROXIMATION RESULT
+
+02×(d−l−1)
+
+!
+
+0(d−l−1)×6 I(d−l−1)×(d−l−1)
+
+∈ R(d−l+1)×(d−l+5) ,
+
+with the six activation coefficients that correspond to NR (t) = max{0, t}. The second ResKAN layer here yields (ReLU(pl+1 ), ReLU(−pl+1 ), xl+2 , . . . , xd ) ∈ R(d−l+1) .
+We repeat this unit for l = 2, 3, . . . , d − 1, yielding an output of (ReLU(pd ), ReLU(−pd )).
+Finally, we use the head of Res-KAN as A(L+1) = (1, −1) to obtain pd , implementing the
+d-fold multiplication as desired.
+Step 3 – Parameter count. Note that the lth unit contains two Res-KAN layers.
+Counting up to d − 1, the total depth amounts to 2(d − 1). The maximum width is d + 4 at
+the first unit.
+Now, we count the number of non-zero parameters. For the very first unit, the first ResKAN layer contains 8 non-zero parameters in the affine matrix, 6 in the activation coefficients,
+and d − 2 in the G matrix, whereas its second Res-KAN layer includes 12 in the two head
+matrices, 6 in the activation coefficients, and d − 2 in the G matrix; the total number amounts
+to 2d + 28. For the lth unit, the first Res-KAN layer contains 12 in the affine matrix, 6
+in the activation coefficients, and d − l − 1 in the G matrix; the same goes for its second
+Res-KAN layer; the total number amounts to 2d − 2l + 36 for the lth unit. Finally, we add
+the two that are used in the head of Res-KAN. Counting all non-zero parameters amounts to
+d2 + 33d − 36.
+Together, we may approximately implement a basic component of a spline-type multiα ([0, 1]d )
+resolution analysis (MRA); see [30], a type of characterization of the Besov space Bp,q
+as derived in [14]. Returning to our cardinal B-splines above, expressed in (1), we consider
+the d-fold tensor product of such splines Nd:I : R → R given for each x ∈ Rd by
+def.
+
+Nd:I (x) =
+
+d
+Y
+
+NI (xk ).
+
+(10)
+
+k=1
+
+Q
+def.
+Next, for each k ∈ N+ let Dk = { di=1 [xi − 2k−1 , xi + 2k−1 ] : 2k x ∈ Zd } denote the set of
+dyadic cubes in Rd with side-length 2−k centered at points in the dyadic lattice 2k Zd . For
+def.
+any Ω ⊆ Rd , we write DΩ
+k = {Q ∈ Dk : Q ∩ Ω ̸= ∅}. We consider a spline-based MRA based
+on (10) over the cube [0, 1]d is constructed as follows: for every k ∈ N+ and each dyadic cube
+def.
+Q = Qj:k ∈ Dk we associate a spline Nj,k:I : R → R defined by
+def.
+
+Nj,k:I (x) = NI (2k x − j).
+
+(11)
+
+Our next lemma shows that the Res-KAN networks can exactly emulate the basic wavelet-type
+splines in (11).
+Lemma 2 (Multi-Dimensional Cardinal B-Spline Implementation). Let I, d, k ∈ N+ , and
+j ∈ 2−k Zk . There exists a Res-KAN network N̂d:I : Rd → R such that, for each x ∈ Rd
+N̂k,j:I (x) = Nk,j:I (x)
+Moreover, N̂k,j:I has width at most d + 4, depth 2d − 1, and d2 + 35d − 36 non-zero parameters.
+Furthermore, only the 2d non-zero parameters in the layer depend on k and on j.
+Proof of Lemma 2. We consider the case where d > 1 with the case where d = 1 following the
+definition of the Res-KAN. Consider the Res-KAN N̂d:I : Rd → R given by for each x ∈ Rd
+
+
+def.
+N̂d:I (x) = ×2d σeI+1 • Id x + 0d
+10
+
+A
+
+PROOF OF MAIN APPROXIMATION RESULT
+
+where e1 , . . . , eI+1 are the standard basis vectors of RI+1 , • denotes componentwise composition, and ×2d is the same as in Lemma 1. By Lemma 1 N̂d:I has width at most d + 4, depth
+2(d − 1), and d2 + 33d − 36 non-zero parameters; moreover, we have
+N̂d:I (x) =
+
+=
+
+d 
+Y
+i=1
+d 
+Y
+
+σeI+1 • Id x + 0d
+NI (xk )
+
+
+
+
+
+i=1
+
+= Nd:I (x)
+where the last equality holds by the definition of Nd:I in (10). Consequently, for each k ∈ N+
+and each j ∈ 2−k Zk we have
+def.
+
+N̂j,k:I (x) = Nd:I (2k x − j) = N̂d:I (2k x − j).
+def.
+
+Since the map x 7→ 2k x − j is an affine map from Rd to itself, then N̂k,j:I (·) = N̂d:I (2k · −j)
+also has depth 2d − 1, width at most d + 4, and a simple count shows that it has d2 + 35d − 36
+non-zero parameters.
+Using one of the main results of [14], we are now able to describe the Besov spaces
+α ([0, 1]d ) in terms of the Res-KAN networks. We reiterate that the key point here is the
+Bp,q
+approximability of the Besov norm.
+Lemma 3 (Approximation in Besov Norm by Normalized Residual KAN Network). Let 0 <
+s ([0, 1]d ). For every “simultaneous approximation
+q, p ≤ ∞ and α < s < ∞, for each f ∈ Bp,q
+error” ε > 0, there exists a Res-KAN fˆε : Rd → R satisfying
+f − fˆε B α ([0,1]d ) < ε.
+p,q
+
+
+Moreover, fˆ has width at most (d + 4) 2K+1 − 2 , depth at most 2d − 1, and no more than
+
+
+
+d2 + 35d − 35 (2K+1 − 1) non-zero parameters; where K ≤ log2 ε1/(α−s) − 1 .
+Proof of Lemma 3.
+def.
+def.
+Step 1 - Asymptotic Spline Expansion: Set r = ⌈α⌉, λ = min{r, r−1+ p1 }, 0 < q, p < ∞,
+def.
+
+and 0 < α < λ. Set I = r. By [13, Corollary 5.3] we know that any f ∈ Lp ([0, 1]d ) belongs
+f
+s ([0, 1]d ) if and only if there is a real sequence β f def.
+to Bp,q
+such that
+· = (βQ:k )
+[0,1]d
+Q∈Dk
+
+f=
+
+X
+
+f
+βQ:k
+Nj,k:r
+
+X
+
+,k∈N+
+
+(12)
+
+k∈N
+[0,1]d
+Qj ∈Dk
+
+for all x ∈ [0, 1]d with coefficient sequence β·f satisfying
+c∥f ∥qB s ([0,1]d ) ≤ ∥f ∥spline:α,p,q ≤ C∥f ∥1B s ([0,1]d )
+q,p
+
+q,p
+
+(13)
+
+for some absolute constants 0 < c ≤ C < depending only on p, q, s, and on d; where the
+quasi-norm ∥ · ∥spline:α,p,q is given by
+def.
+∥f ∥qspline:α,p,q =
+
+∞
+X
+
+!q/p
+αkq
+
+2
+
+k=0
+
+X
+j∈Λ(k)
+
+11
+
+p −kd
+
+|βj,k | 2
+
+(14)
+
+A
+
+PROOF OF MAIN APPROXIMATION RESULT
+
+def.
+
+and where Λ(k) = {j ∈ 2−k Zd : βj ̸= 0} (see [13, page 402 above Equation (4.8)]).
+s ([0, 1]d ) then ∥f ∥
+Observe that, again by [13, Corollary 5.3], since f ∈ Bp,q
+spline:s,p,q < ∞.
+Thus, (14) implies that: there is some C > 0 such that
+!q/p
+sup 2
+
+X
+
+skq
+
+k∈N
+
+p −kd
+
+|βj,k | 2
+
+< C.
+
+(15)
+
+j∈Λ(k)
+
+!q/p
+Thus, (15) implies the following growth condition on the terms
+
+p −kd
+j∈Λ(k) |βj,k | 2
+
+P
+
+!q/p
+X
+
+p −kd
+
+< C 2−skq .
+
+|βj,k | 2
+
+(16)
+
+j∈Λ(k)
+
+Step 2 - Spline Emulation: Applying Lemma 2, once for each k ∈ N+ and every j ∈ Λ(k),
+we deduce the existence of a sequence of Res-KAN networks N̂k,j:I k∈N+ , j∈Λ(j) satisfying the
+global emulation property
+N̂k,j:I (x) = Nk,j:I (x)
+for each x ∈ Rd . Again, each such N̂k,j:I has width at most d + 4, depth 2d − 1, and
+d2 + 35d − 36 non-zero parameters, and only the first layer depends on k and on j, with all
+other parameters being shared. Thus, the asymptotic expansion in (12) may be re-expressed
+purely as a convergent series of Res-KANs
+X X f
+f=
+βQ:k N̂j,k:I
+(17)
+k∈N j∈Λ(k)
+
+again, with the (actually the same) coefficient sequence β·d inducing a finite quasi-norm (14).
+Step 3 - Finite-Parameterized Truncation: We now construct our approximator by
+truncating the expansion in (17) as follows. For each K ∈ N+ , to be set retroactively, define
+def.
+fˆK =
+
+K
+X
+X
+
+f
+N̂j,k:I .
+βQ:k
+
+(18)
+
+k=0 j∈Λ(k)
+
+It remains the bound on the Besov norm of ∥f − fˆK ∥Bp,q
+α ([0,1]d ) above. For this, using (17), (18),
+and again relying on (2) we have that
+∥f − fˆK ∥Bp,q
+α ([0,1]d ) ≲
+
+X X
+
+f
+βQ:k
+Nj,k:r −
+
+k∈N j∈Λ(k)
+
+=
+
+X X
+
+∞
+X
+
+f
+βQ:k
+Nj,k:r −
+
+X
+
+≲
+
+∞
+X
+k=K+1
+
+K
+X
+k=0
+
+f
+βQ:k
+Nj,k:r
+
+k=K+1 j∈Λ(k)
+
+
+
+f
+βQ:k
+N̂j,k:r
+
+k=0 j∈Λ(k)
+
+k∈N j∈Λ(k)
+
+=
+
+K
+X
+X
+
+X
+
+α ([0,1]d )
+Bp,q
+
+f
+βQ:k
+Nj,k:r
+
+[0,1]d
+
+Qj ∈Dk
+
+α ([0,1]d )
+Bp,q
+
+α ([0,1]d )
+Bp,q
+
+!q/p 1/q
+2αkq
+
+X
+j∈Λ(k)
+
+12
+
+|βj,k |p 2−kd
+
+
+
+(19)
+
+A.1
+
+From the Unit Cube to General A
+Domains
+PROOF OF MAIN APPROXIMATION RESULT
+
+∞
+X
+
+≲
+
+!1/q
+C2αkq 2−skq
+
+k=K+1
+∞
+
+X
+
+=C
+
+2
+
+(α−s)q
+
+k
+
+!1/q
+
+k=K+1
+
+=C
+
+2(α−s)q(K+1)
+1 − 2q(α−s)
+
+!1/q
+
+= Cα,s,q 2(α−s)(K+1)
+
+(20)
+
+where Cα,s,q = C/(1 − 2q(α−s) )1/q > 0 and (19) holds by the decay rates of the coefficients β·f
+α ([0, 1]d ); see [42, Theorem 4.22 (ii) and Equation (4.109)].
+implied by the inclusion of f ∈ Bp,q
+. Thus, for any given ε > 0, we retroactively set
+
+ l
+m
+log2 (ε)
+K=
+− 1 = log2 ε1/((α−s)) − 1
+(21)
+(α − s)
+def.
+
+and re-label fˆε = fˆK then, (20) implies that
+def.
+
+∥f − fˆε ∥Bp,q
+α ([0,1]d ) ≲α,s,q ε
+where ≲α,s,q is used to a constant only depending on α, s, and on q.
+Step 4 - Verifying The Neural Representation: Since, for each k ∈ [K] and every
+j ∈ Λ(k), the networks N̂j,k:I have the same depth, then we may represent (18) by a neural
+network of width
+K
+X
+X
+
+(d + 4) ≤ (d + 4)
+
+k=0 j∈Λ(k)
+
+K
+X
+
+
+2k = (d + 4) 2K+1 − 2
+
+k=1
+
+depth 2d − 1, and with at most
+K
+X
+k=0
+
+ X
+K
+X 
+
+
+2
+#
+(d + 35d − 36) + 1 ≤
+2k d2 + 35d − 35 = d2 + 35d − 35 (2K+1 − 1)
+k=0
+
+j∈Λ(k)
+
+non-zero parameters. Namely via the representation
+!⊤
+M
+
+fˆε (x) =
+
+def.
+
+k∈[K],j∈Λ(k)
+
+f
+βQ:k
+
+!
+M
+
+N̂j,k:I 1Pk∈[K] P
+
+k∈[K],j∈Λ(k)
+
+x
+
+
+
+.
+
+j∈Λ(k)
+
+This completes our proof.
+We remind the reader that this directly implies Sobolev-norm approximation guarantees
+s (Ω) is equivalent to the Sobolev space W s,p (Ω) when s is not an integer; see e.g., [42,
+since Bp,p
+Equation and Remark 5.31]. We now extend the conclusion of Lemma 3 to general domains.
+
+A.1
+
+From the Unit Cube to General Domains
+
+We now extend Lemma 3 to general domains. We consider two cases: classical regular domains
+or domains of fractal type. Both are treated separately, and their joint conclusion is the main
+result of this section.
+13
+
+A.1
+
+From the Unit Cube to General A
+Domains
+PROOF OF MAIN APPROXIMATION RESULT
+
+A.1.1
+
+Regular Domains
+
+The following result is true on (ε, δ)-domains in Rd ; remark that every Lipschitz domain is
+an (ε, δ)-domain. We may now extend our results from the d-dimensional unit hypercube
+to general Lipschitz domains by using Rychkov’s extension operator, introduced in [38], as
+improved on in [40] or the extension operator used in [36].
+Lemma 4 (Approximation in Besov Norm by Normalized Residual KAN Network - (ε, δ)-Domain).
+s ([0, 1]d ), every
+Let 0 < q, p, α < s < ∞, let Ω ⊆ [0, 1]d be an (ϵ, δ)-domain. For each f ∈ Bp,q
+“simultaneous approximation error” ε > 0, there exists a Res-KAN fˆε : Rd → R satisfying
+f − fˆε B α (Ω) < ε.
+p,q
+
+
+Moreover, fˆ has width at most (d + 4) 2K+1 − 2 , depth at most 2d − 1, and no more than
+
+
+
+d2 + 35d − 35 (2K+1 − 1) non-zero parameters; where K ≤ log2 ε1/(α−s) − 1 .
+Proof. As remarked at the start of [38, Chapter 2] any bounded extension operator on special
+Lipschitz domains implies a bounded extension operator on general (ε, δ)-domains (by gluing
+using a partition of unity); thus, the main results of [36] implies that there exists a bounded
+α (Ω) → E : B α (Rd ). Since the restriction operators between (ϵ, δ)linear operator E : Bp,q
+p,q
+α (Ω) and any
+domains are bounded then we have the following estimate: for any f ∈ Bp,q
+Res-KAN fˆ
+ˆ)|Ω ∥ α d
+α (Ω) ≲ ∥E(f ) − E(f
+∥f − fˆ|Ω ∥Bp,q
+Bp,q (R )
+≲ ∥E(f )|[0,1]d − E(fˆ)|Ω |[0,1]d ∥Bp,q
+α ([0,1]d )
+= ∥E(f )|[0,1]d − E(fˆ)|[0,1]d ∥Bp,q
+α ([0,1]d )
+= ∥E(f )|[0,1]d − fˆ|[0,1]d ∥Bp,q
+α ([0,1]d )
+
+(22)
+
+where (22) is followed by the definition of the restriction extension operators. Since E(f )|[0,1]d ∈
+α ([0, 1]d ), then we may retroactively pick our Res-KAN fˆ as in Proposition (3) to bound
+Bp,q
+the right-hand side above by ε; i.e.
+ˆ| d ∥ α
+α (Ω) ≲ ∥E(f )|[0,1]d − f
+∥f − fˆ|Ω ∥Bp,q
+[0,1] Bp,q ([0,1]d ) < ε.
+This completes our proof.
+A.1.2
+
+Fractal Domains
+
+Lemma 5 (KAN-Approximation of Besov Functions on Fractal Domains). Let 0 < α < s <
+∞ and 1 ≤ p, q < ∞, d − 1 < n < d and X ⊆ [0, 1]d be an Ahlfors n-regular. Then, for every
+s (X ) and every ε > 0 there is a Res-KAN fˆ such that: fˆ|
+f ∈ Bp,q
+X is indeed a well-defined
+α−(n−d)/p
+
+element of Bp,q
+
+(X ) and satisfies
+∥f − fˆ|X ∥B α−(n−d)/p (X ) < ε.
+p,q
+
+
+Moreover, fˆ has width at most (d + 4) 2K+1 − 2 , depth at most 2d − 1, and no more than
+
+
+
+d2 + 35d − 35 (2K+1 − 1) non-zero parameters; where K ≤ log2 ε1/(α−(n−d)/p−s) − 1 .
+Proof of Lemma 5. By the Whitney-type extension result in [20, Theorem 6.1], there exists
+s−(n−d)/p
+s (Rd ) and a constant c
+an E : Bp,q
+(X ) → Bp,q
+n,d,p,X > 0 such that
+s (X ) ≤ cn,d,p,X ∥f ∥ s−(n−d)/p
+∥E(f )∥Bp,q
+B
+(Rd )
+
+14
+
+(23)
+
+B
+
+PROOF OF GENERALIZATION BOUND
+
+s−(n−d)/p
+
+for each f ∈ Bp,q
+(X ). Moreover, E is a left-inverse of the restriction map. Therefore, for
+s (X ) and every ε > 0, Lemma 3 guarantees that there is a Res-KAN fˆ satisfying
+each f ∈ Bp,q
+∥E(f )|[0,1]d − fˆ|[0,1]d ∥Bp,q
+α ([0,1]d ) < ε.
+
+(24)
+
+Since the restriction operators from Besov spaces on Rd to (ε, δ)-domains are bounded linear
+α ([0, 1]d ), in
+operators; then there is a constant Cp,q,α,d > 0 such that: for every g ∈ Bp,q
+particular for g = E(f ) − fˆ, we have
+∥g∥Bp,q
+α (Rd ) ≤ Cp,q,α,d ∥g|[0,1]d ∥B α ([0,1]d ) .
+p,q
+
+(25)
+
+α (Rd ) then its restriction fˆ|
+By the restriction theorem in [20, Theorem 4.1.], since fˆ ∈ Bp,q
+X
+is a well-defined element of B α−(n−d)/p (Rd ). We may therefore, comfortably combine (23)
+and (25) with (24) to obtain
+
+∥f − fˆ|X ∥B α−(n−d)/p (Rd ) ≤ cn,d,p,X ∥E(f ) − fˆ∥B α−(n−d)/p (Rd )
+≤ cn,d,p,X Cp,q,α,d ∥E(f )|[0,1]d − fˆ|[0,1]d ∥Bp,q
+α ([0,1]d )
+≤ cn,d,p,X Cp,q,α,d ε.
+Relabeling the constant ε > 0 as ε/(cn,d,p,X Cp,q,α,d ) yields the conclusion.
+We now obtain our main approximation theorem.
+Proof of Theorem 1. Together Lemmata 4 and 5 now imply Theorem 1.
+
+B
+
+Proof of Generalization Bound
+
+Before proving our main results, we recall some technical definitions from learning theory on
+which our proof rests.
+
+B.1
+
+Definitions for our Learning Theoretic Guarantees
+
+Our analysis in this section relies on the following dimensions from classical learning theory.
+Definition 3 (Growth function, VC-dimension, Shattering). Let H denote a class of functions
+from X to {0, 1} (the hypotheses, or the classification rules). For any non-negative integer
+m, we define the growth function of H as
+def.
+
+ΠH (m) =
+
+max
+
+x1 ,...,xm ∈X
+
+|{(h(x1 ), . . . , h(xm )) : h ∈ H}| .
+
+If |{(h(x1 ), . . . , h(xm )) : h ∈ H}| = 2m , we say H shatters the set {x1 , . . . , xm }. The VapnikChervonenkis dimension of H, denoted VCdim(H), is the size of the largest shattered set, i.e.,
+the largest m such that ΠH (m) = 2m . If there is no largest m, we define VCdim(H) = ∞.
+Definition 4 (Pseudodimension). Let H be a class of functions from X to R. The pseudodimension of H, written Pdim(H), is the largest integer m for which there is an (xi )m
+i=1 ⊕
+m × Rm satisfying: for any (b , . . . , b ) ∈ {0, 1}m there exists h ∈ H such that
+(yi )m
+∈
+X
+1
+m
+i=1
+∀i : h(xi ) > yi ⇐⇒ bi = 1
+The pseudodimension is not scale sensitive. This is not the case for the γ-fat shattering
+dimension defined as follows.
+15
+
+B.2
+
+The Proof
+
+B
+
+PROOF OF GENERALIZATION BOUND
+
+Definition 5 (γ-Fat Shattering and γ-Fat Shattering Dimension). Let H ⊆ [0, 1]X . We say
+that H Pγ -shatters a set X = {x1 , . . . , xn } ⊆ X if there exist s1 , . . . , sn such that, for all
+E ⊆ X, there is an h ∈ H satisfying
+∀xi ∈ E,
+∀xi ∈ X − E,
+
+h(xi ) ≥ si + γ
+h(xi ) ≤ si − γ
+
+The fat shattering dimension of H at scale γ, denoted by Pdimγ (H), is the size of a largest
+Pγ -shattered set.
+We may now prove our main statistical guarantee.
+
+B.2
+
+The Proof
+
+We now prove our learning guarantees, beginning with Lemma 6. Thus, we must first recall
+the following result relating the pseudodimension of a set of binary classifiers implemented
+by the neural network to the VC-dimension of a modification of that class with two extra
+computational units. We emphasize that the following result holds for general feedforward
+neural networks (i.e., neural networks given by a connected directed acyclic graph on which
+a computation is executed on every node, which is neither initial (input node) nor terminal
+(output node)); see e.g., [24] for a clean formulation.
+Lemma 6 (Fat-Shattering Dimension Bound for KANs). Let α > 0, d, L, W, I ∈ N+ , with
+⌈α⌉ ≤ I. Then, for every γ > 0
+
+
+
+d
+2
+2
+2
+Pdimγ Res-KANI,α
+L,W (R , R) ∈ O L W (I + 3 − ⌈α⌉) log L W (I + 3 − ⌈α⌉) + L .
+Proof. First, the smoothness condition in (6) implies that each KAN-neuron in (2) can be
+represented as a feedforward network with computational graph
+I+3−⌈α⌉
+
+Ĝ = ({z0 , z2 } ∪ {z1:i }i=0
+
+I+3−⌈α⌉
+
+, {{z0 , z1:i }i=0
+
+I+3−⌈α⌉
+
+∪ {z1:i , z2 }i=0
+
+}
+
+with input node z0 , output node z2 , and for each computational node z1:0 , . . . , z1:I+3−⌈α⌉ we
+have
+z1:i = βi pi (x)
+def.
+
+where pi = Ni (viewed as a piecewise polynomial of degree I + 1) with, of course, no more
+than I + 1 breakpoints.
+Each fully-connected Res-KAN layer, as defined in (4), can be represented as a feedforward neural network with 2 layers (including the input and output layers), and at most
+2dout (din + 1)(2(I + 3 − ⌈α⌉) non-zero parameters, and (2(I + 3 − ⌈α⌉)dout computational
+d
+units. Consequently, every fˆ ∈ Res-KANI,α
+L,W (R , R) can be represented as a feedforward neudef.
+
+ral network at most W ′ = L2dout (din + 1)(2(I + 3 − ⌈α⌉) non-zero parameters and at most
+def.
+L(2(I + 3 − ⌈α⌉)dout computational units, arranged into at most L′ = 2L layers.
+d
+˜ d
+Following [3, Theorem 14.1], for every fˆ ∈ Res-KANI,α
+L,W (R , R) let f : R → {0, 1} defined
+by modifying the computational graph of fˆ as follows: We added one extra input unit and one
+extra computation unit. This additional computation unit is a I[0,∞) (heavyside activation
+function) unit receiving input only from the output unit of fˆ and from the new input unit,
+and it is the output unit of f˜. Let F consist of all functions constructed in this manner by
+d
+modifying some fˆ ∈ Res-KANI,α
+L,W (R , R) in this way.
+d
+Thus, [4, Theorem 2.1] implies that the VC-dimension of Res-KANI,α
+L,W (R , R) is at most
+
+VCdim(F) ∈ O(W ′ L′ log W ′ + W ′ (L′ )2 ).
+16
+
+(26)
+
+B.2
+
+The Proof
+
+B
+
+PROOF OF GENERALIZATION BOUND
+
+d
+Now [3, Theorem 14.1] implies that the pseudodimension Pdim(Res-KANI,α
+L,W (R , R)) satisfies
+
+
+d
+Pdim Res-KANI,α
+L,W (R , R) ≲ VCdim(F).
+
+(27)
+
+Combining (26) with (27) yields
+
+d
+′ ′
+′
+′
+′ 2
+Pdim Res-KANI,α
+L,W (R , R) ∈ O(W L log W + W (L ) )
+
+
+∈ O L2 W 2 (I + 3 − ⌈α⌉) log L W 2 (I + 3 − ⌈α⌉) + L .
+(28)
+Now, by [3, Theorem 11.13 (i)], for every γ > 0 we have
+
+
+I,α
+d
+d
+Pdimγ Res-KANI,α
+(29)
+L,W (R , R) ≤ Pdim Res-KANL,W (R , R) .
+We obtain our conclusion upon combining (28) with (29).
+α,I,p,q
+Consider the hypothesis class HW,L
+(X ) consisting of all maps hfˆ,f : X ×R → R for which
+I,α
+d
+there exist some fˆ ∈ Res-KAN
+(R , R) and some f ∈ B α (X ) with ∥f ∥B α (X ) ≤ 1 such
+p,q
+
+L,W
+
+that: for every x ∈ X we have
+
+p,q
+
+def.
+hfˆ,f (x, y) = fˆ(x) − (f (x)−y) .
+
+(30)
+
+α (X ) by B α (X ) . Our next result bounds the
+We henceforth denote the unit ball in Bp,q
+1
+p,q
+α,I,p,q
+fat-shattering dimension of this “regression error” hypothesis class HW,L
+(X ) in terms of
+the number of the: degree, regularity parameters I and α, as well as the depth and width L
+and W of our hypothesis class, together with some added constraints on the regularity of the
+target function in the Besov space which we are learning.
+α,I,p,q
+Lemma 7 (Fat-Shattering Dimension of the “Regression-Error” Class HW,L
+(X )). Suppose
+that X is a Lipschitz domain, let 1 ≤ τ ≤ ∞, 1 ≤ p, q ≤ ∞ and α > ((d+1) (1/p − 1/τ ))+
+and let L, I, W ∈ N+ . For every γ > 0 we have
+
+
+α,I,p,q
+Pdimγ (HW,L
+(X )) ≲ log2 (1/(8γ))2 r L2 W 2 log rL W 2 + L + (8γ)−(d+1)/α
+def.
+
+where r = I + 3 − ⌈α⌉.
+α,I,p,q
+Proof of Theorem 7. Abbreviate H = HW,L
+(X ). For any A ⊆ C(X ) and each ε > 0 let
+N (ϵ, A) denote the ϵ-covering number of A in C(X ) (with the uniform norm). Then, for every
+ε > 0, the definition of H′ and the triangle inequality implies that
+
+
+d
+α
+N (ϵ, H′ ) ≤ N ϵ/2, Res-KANI,α
+(31)
+L,W (R , R) N ϵ/2, Bp,q (X ×R)1 .
+def.
+
+Taking logarithmic across (31) we find that
+
+
+
+
+d
+α
+log2 (N (ϵ, H)) ≤ log2 N ϵ/2, Res-KANI,α
+(R
+,
+R)
++
+log
+N
+ϵ/2,
+B
+(X
+×R)
+.
+1
+2
+p,q
+L,W
+
+(32)
+
+By [43, Theorem 2.7.4], since 1 ≤ τ ≤ ∞, 1 ≤ p, q ≤ ∞ and α > ((d+1) (1/p − 1/τ ))+ then,
+
+
+
+α (X ×R)
+we may bound log2 N ϵ/2, Bp,q
+above by O (ε/2)−(d+1)/α . Consequently, (32)
+can be further bounded-above by
+
+
+d
+log2 (N (ϵ, H)) ≲ log2 N ϵ/2, Res-KANI,α
+(R
+,
+R)
++ ε−(d+1)/α .
+(33)
+L,W
+
+17
+
+B.2
+
+The Proof
+
+B
+
+PROOF OF GENERALIZATION BOUND
+
+Now, applying [5, Theorem 2] we may bound the log2 -covering number of
+
+
+d
+log2 N ϵ/2, Res-KANI,α
+(R
+,
+R)
+L,W
+above by its c2 ε-fat shattering dimension; for some absolute constant c2 > 0 and an additional
+multiplicative factor of log2 (1/ε)2 ; that is
+
+
+
+d
+d
+2
+log2 N ϵ/2, Res-KANI,α
+(R
+,
+R)
+≲ Pdimc2 ε/2 Res-KANI,α
+L,W
+L,W (R , R) log(2/(c2 ε))
+
+(34)
+∈ O log2 (1/ε)2 L2 W 2 (I + 3 − ⌈α⌉)
+
+
+
+× log L W 2 (I + 3 − ⌈α⌉) + L
+where the order-estimate on the right-hand side of (34) follows from Lemma 6. Incorporating (34) into the right-hand side of (33) yields
+ 
+log2 (N (ϵ, H)) ≲ log2 (1/ε)2 L2 W 2 (I+3−⌈α⌉) log L W 2 (I+3−⌈α⌉) +L +ε−(d+1)/α . (35)
+Now, applying [5, Theorem 2] again, we have that
+Pdimϵ/8 (H) ≤ max log2 (N (ϵ, H, L1 (dP ))) ≲ log2 (N (ϵ, H))
+P
+
+(36)
+
+where N (ϵ, H, L1 (dP )) is the ϵ-covering number of H with respect to the norm on EX∼P [∥X∥].
+Upon using (35) to bound the right-hand side of (36) and then relabelling γ = ε/8, we deduce
+our conclusion.
+Having bounded the fat-shattering dimension of our “regression error” hypothesis class
+α,I,p,q
+(X ), we may obtain the conclusion of Theorem 2 by appealing to one of the main
+HW,L
+results of [2].
+α,I,p,q
+(X ). By [2, Theorem 3.6], we have
+Proof of Theorem 2. We again abbreviate H = HW,L
+that: for every error size ε > 0 and each failure probability 0 < δ ≤ 1 the following holds
+!
+N
+1 X
+P sup EX∼Psmpl (hf,fˆ(X)) −
+hf,fˆ(Xn ) ≤ ε ≥ 1 − δ
+(37)
+N
+hf,fˆ∈H
+def.
+
+n=1
+
+provided that
+
+N ≤ c1
+
+1
+ϵ2
+
+
+ 
+
+
+1
+2 Pdimϵ/32 (H)
+Pdimϵ/32 (H) ln
++ ln
+ϵ
+δ
+
+(38)
+
+for some absolute constant c1 > 1. Consequently, if we set the failure probability, δ, to be
+
+
+
+2
+Pdimϵ/32 (H)
+def.
+δ = exp − Nc1ϵ + Pdimϵ/32 (H) ln2
+.
+(39)
+ϵ
+Note that, we may use the upper-bound for the ε/32-fat shattering dimension computed in
+Lemma 7; namely,
+
+
+Pdimϵ/32 (H) ≲ log2 (4/ϵ)2 r L2 W 2 log rL W 2 + L + (4/ϵ)d/α
+(40)
+def.
+
+⋆ ; where
+where, as before, r = (I + 3 − ⌈α⌉). Therefore such that (37) holds if N ≤ Nϵ,δ
+h
+
+i
+⋆ def. c1
+1
++
+ln
+(41)
+Nϵ,δ
+= 2 (A + B) ln2 A+B
+ϵ
+δ
+ϵ
+
+18
+
+C
+
+def.
+
+A = c log2
+
+ 2
+4
+ϵ
+
+TOY NUMERICAL SANITY CHECKS
+
+
+def.
+r L2 W 2 ln(rLW 2 ) + L and B = (4/ϵ)(d+1)/α
+
+(42)
+
+for some absolute constant c > 0. Consequently, we have that
+
+
+N ∈ O ϵ−2−(d+1)/α (ln(1/ε))2 + ϵ−2 ln(1/δ) .
+Upon combining (37) with (39), and observing that
+1
+ˆ
+RP (f |fˆ) = EX∼Psmpl (hf,fˆ(X)) and R̂N
+P (f |f ) =
+N
+
+N
+X
+
+(hf,fˆ)(Xn )
+
+n=1
+
+def.
+
+we obtain our conclusion upon relabelling c = 1/c1 .
+
+C
+
+Toy Numerical Sanity Checks
+
+Since the original KAN paper [29] and its many variants [47, 54, 37] are now well-established
+as effective learners, we only perform brief sanity checks to validate our theory and confirm that the addition of the residual connection has a consistently positive impact on the
+KAN architecture. We first then verify that one can indeed learn a function in the Besov
+α ([0, 1]), but not in B α+1 ([0, 1]), as well as its derivatives. We then verified that
+space B2,2
+2,2
+the traditional KAN build and our mild variant with residual connections both offer similar
+performance. We verify that the training loss converges relatively steadily during training.
+α ([0, 1])
+A Non-Smooth Besov Function of a Specific Regularity The Besov space B2,2
+α
+coincides with the Sobolev space H ([0, 1]) for integer α > 0. Thus, we may briefly validate
+our theoretical results for the family of functions {fα }10
+α=1 , where for each such α we set
+def.
+
+fα =
+
+xα log(x)
+.
+α!
+
+(43)
+
+We chose this example since, fα is a classical example of a function belonging to H α ([0, 1])
+but not to H α+1 ([0, 1]). To see this, notice that fα is α-times differentiable, not only weakly,
+with sth derivative bounded below near 0 by
+1
+dα+1 α
+x log(x) ≿
+α+1
+dx
+x
+α+1
+
+d
+α
+therefore lim dx
+α+1 x log(x) = ∞. We have chosen the normalization factor of 1/α! since
+x↓0
+
+it is the leading coefficient of the α − 1st derivative of xα log(x). Thus, the Sobolev/Besov
+α ([0,1]) norm of each fα remains roughly on the same scale (about unity) and are indeed
+∥ · ∥B2,2
+comparing apples-to-apples between derivative levels of α.
+We Do Actually Learn A Function And Its Derivatives? Next, we verify that Theorems 1 and 2 are indeed reflected in practice; namely, that we can both approximate a function
+and its higher (weak) derivatives from training data. By the Poincaré é-inequality, it suffices
+to compare the mean squared error (MSE) between the sth derivative of our prediction and
+the target data on [0, 1]. Iterating the Poincaré-inequality implies that we have control over
+the function itself and all the first s − 1 derivatives upon controlling our MSE to the sth
+derivative; i.e.
+∂sf
+∂ s+1 f
+∥f ∥L2 ([0,1]) ≲ · · · ≲
+≲
+.
+∂xs L2 ([0,1])
+∂xs+1 L2 ([0,1])
+19
+
+C
+
+TOY NUMERICAL SANITY CHECKS
+
+Note that, in practice, all derivatives are computed numerically using autograd. Thus, we
+train on the MSE loss augmented with the MSE between the αth derivative of our Res-KAN
+and the target function, i.e., for a hyperparameter 0 ≤ λ ≤ 1 controlling our focus on higher
+derivatives during training, we optimize the following loss function
+def. (1 − λ)
+lossλ (fˆ) =
+N
+
+N
+X
+n=1
+
+N
+2
+2
+λ X  ∂sf
+∂ s fˆ
+f (Xn ) − fˆ(Xn ) +
+(X
+)
+−
+(X
+)
+.
+n
+n
+N
+∂xs
+∂xs
+n=1
+
+We allow λ to linearly decrease from 1 to 0 during training, so that the KAN initially learns
+the overall function structure (encoded in its derivatives) before fine-tuning its pointwise value
+approximation in the final SGD iterations.
+Training Loss
+
+0.0010
+
+0.025
+
+0.0015
+
+0.015
+
+0.0020
+
+100
+
+0.0035
+
+0.000
+0
+
+20
+
+40
+
+Epochs
+
+60
+
+80
+
+0.0040
+
+100
+
+True Values
+Res-KAN
+0.0
+
+0.2
+
+0.4
+
+x
+
+0.6
+
+0.8
+
+0
+
+1.0
+
+Training Loss
+
+True Values
+Res-KAN
+
+0.0001
+
+0.0001
+
+0.06
+
+0.0003
+
+0.04
+
+0.0004
+
+0.02
+
+0.0005
+
+0
+
+100
+
+200
+
+Epochs
+
+300
+
+400
+
+500
+
+4
+
+6
+1e 6
+
+3f
+x3 | (S = 3)
+
+40
+
+20
+
+0.0006
+
+0.00
+
+2
+0
+2
+Error in 2-th Finite Difference
+
+60
+
+0.0002
+
+Frequency
+
+f_alpha(x)
+
+0.08
+
+4
+
+80
+
+0.0000
+
+0.10
+
+6
+
+Error distribution of Derivative Error | x3f3
+
+Function: x! log(x) vs. Predicted Values
+
+Training Loss Curve
+0.12
+
+300
+200
+
+0.0030
+
+0.005
+
+Loss
+
+400
+
+0.0025
+
+0.010
+
+2f
+x2 | (S = 2)
+
+500
+
+Frequency
+
+0.0005
+
+0.030
+f_alpha(x)
+
+Loss
+
+0.0000
+
+0.035
+
+0.020
+
+Error distribution of Derivative Error | x2f2
+
+Function: x! log(x) vs. Predicted Values
+
+Training Loss Curve
+0.040
+
+0.2
+
+0.4
+
+x
+
+0.6
+
+0.8
+
+1.0
+
+0
+
+2.0
+
+1.5
+
+1.0
+0.5 0.0
+0.5
+1.0
+Error in 3-th Finite Difference
+
+1.5
+
+2.0
+1e 6
+
+Figure 2: Evolution of training loss, test prediction, and derivative approximation quality
+when learning the functions fα in (43) for α = 3 and α = 5.
+
+Do The Residual Connection Adversely Impact the KAN Build? We now compare
+the KAN build with and without the additional residual connection. Our objective is to
+perform a quick check validating standard profound learning wisdom, that its incorporation
+can only benefit the model. Each model has width 200, two hidden layers, and is trained insample with 103 datapoints uniformly sampled on [−2, 2] then tested, mimicking the realizable
+setting of Theorem 2, on a grid of 102 test points in [−2, 2]. The experiment confirms that
+the KAN builds can capture the low-regularity structures, e.g., the spike and rapid a-periodic
+oscillations, and both builds offer similar performance. The results of our experiments are
+plotted as a function of the integer values of α from 1 to S = 30 in Figure 3. As we see,
+both KAN builds with and without a residual connection offer similar predictive performance,
+regardless of the degree of Sobolev-Besov regularity available in the target function.
+Functions Beyond our Guarantees Lastly, we briefly verify that the KAN with residual
+can handle pathological regression tasks. Figure 4 briefly considers two such cases when
+the target function exhibits a rapid a-periodic oscillatory, e.g., 1/ cos(x), or when it exhibits
+√
+sharp cusps, e.g., 1/ 10 x. As we see, the training loss descends, the challenging pattern can
+
+20
+
+REFERENCES
+
+REFERENCES
+
+Verifying Residual Does not Deteriorate Approximation
+StandardKAN
+ResidualKAN
+
+0.06
+0.05
+
+Test MSE
+
+0.04
+0.03
+0.02
+0.01
+0.00
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+s in fs(x) = s!1 xslog(x)
+
+8
+
+9
+
+Figure 3: Both the KAN and Res-KAN build offer similar approximation efficacy across
+different Sobolev-Besov smoothness levels.
+be learned to reasonable accuracy, and the higher derivatives of the Res-KAN indeed also
+converge to those of the pathological target function.
+Error distribution of Derivative Error | x2f2
+
+Function: cos(1/x) vs. Predicted Values
+
+Training Loss Curve
+1.00
+
+Training Loss
+
+0.6
+
+True Values
+Res-KAN
+
+0.75
+
+0.5
+
+800
+
+0.50
+
+0.3
+
+600
+
+0.25
+
+Frequency
+
+Loss
+
+f_alpha(x)
+
+0.4
+
+0.00
+0.25
+0.50
+
+0.2
+
+1.00
+0
+
+20
+
+40
+
+Epochs
+
+60
+
+80
+
+100
+
+0.2
+
+x
+
+0.6
+
+0.8
+
+0
+
+1.0
+
+1000
+
+Training Loss
+
+0.35
+
+1.0
+
+0.30
+
+0.050
+
+0.025 0.000 0.025 0.050 0.075
+Error in 2-th Finite Difference
+
+Error distribution of Derivative Error |
+
+0.100
+
+0.125
+
+3f
+x3
+
+| (S = 3)
+
+0.025 0.000 0.025 0.050
+Error in 3-th Finite Difference
+
+0.075
+
+3f
+x3
+
+800
+
+f_alpha(x)
+
+0.20
+0.15
+
+Frequency
+
+0.9
+
+0.25
+Loss
+
+0.4
+
+Function: 10 |x| vs. Predicted Values
+
+Training Loss Curve
+
+0.40
+
+400
+200
+
+0.75
+0.1
+
+0.8
+
+600
+400
+
+0.7
+
+0.10
+
+200
+
+0.6
+
+0.05
+0.00
+
+2f
+x2 | (S = 2)
+
+0
+
+100
+
+200
+
+Epochs
+
+300
+
+400
+
+500
+
+True Values
+Res-KAN
+2.0
+
+1.5
+
+1.0
+
+0.5
+
+0.0
+x
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+0
+
+0.075
+
+0.050
+
+Figure 4: Two challenging one-dimensional functions to learn - using ReLU and ReLU2 MLPs,
+as well as the standard and the residual KAN builds.
+A detailed numerical investigation confirms that, for the relevant class of Besov-type
+functions and beyond, including a residual connection in the KAN architecture does not
+negatively impact performance. Consequently, practitioners who prefer implementing the
+standard, non-residual KAN can expect our results to transfer seamlessly to this simpler
+setting. Nevertheless, the residual connection may offer practical benefits, particularly in
+more complex regimes, by enhancing optimization stability and facilitating convergence in
+deeper or wider network configurations.
+
+References
+[1] Acciaio, B., Kratsios, A., and Pammer, G. Designing universal causal deep learning
+21
+
+REFERENCES
+
+REFERENCES
+
+models: The geometric (hyper) transformer. Mathematical Finance 34, 2 (2024), 671–
+735.
+[2] Alon, N., Ben-David, S., Cesa-Bianchi, N., and Haussler, D. Scale-sensitive
+dimensions, uniform convergence, and learnability. J. ACM 44, 4 (1997), 615–631.
+[3] Anthony, M., and Bartlett, P. L. Neural network learning: Theoretical foundations. cambridge university press, 2009.
+[4] Bartlett, P., Maiorov, V., and Meir, R. Almost linear vc dimension bounds for
+piecewise polynomial networks. Advances in neural information processing systems 11
+(1998).
+[5] Bartlett, P. L., Kulkarni, S. R., and Posner, S. E. Covering numbers for realvalued function classes. IEEE Trans. Inform. Theory 43, 5 (1997), 1721–1724.
+[6] Belomestny, D., Naumov, A., Puchkin, N., and Samsonov, S. Simultaneous
+approximation of a smooth function and its derivatives by deep neural networks with
+piecewise-polynomial activations. Neural Networks 161 (2023), 242–253.
+[7] Borde, H. S. d. O., Lukoianov, A., Kratsios, A., Bronstein, M., and Dong,
+X. Scalable message passing neural networks: No need for attention in large graph
+representation learning. arXiv preprint arXiv:2411.00835 (2024).
+[8] Brewster, K., Mitrea, D., Mitrea, I., and Mitrea, M. Extending sobolev functions with partially vanishing traces from locally (ε, δ)-domains and applications to mixed
+boundary problems. Journal of Functional Analysis 266, 7 (2014), 4314–4421.
+[9] Cheridito, P., Jentzen, A., and Rossmannek, F. Efficient approximation of highdimensional functions with neural networks. IEEE Transactions on Neural Networks and
+Learning Systems 33, 7 (2021), 3079–3093.
+[10] Chui, C. K., and Wang, J.-Z. A general framework of compactly supported splines
+and wavelets. J. Approx. Theory 71, 3 (1992), 263–304.
+[11] de Boor, C. A practical guide to splines, revised ed., vol. 27 of Applied Mathematical
+Sciences. Springer-Verlag, New York, 2001.
+[12] De Ryck, T., Lanthaler, S., and Mishra, S. On the approximation of functions
+by tanh neural networks. Neural Networks 143 (2021), 732–750.
+[13] DeVore, R. A., and Popov, V. A. Interpolation of approximation spaces. In Constructive theory of functions (Varna, 1987). Publ. House Bulgar. Acad. Sci., Sofia, 1988,
+pp. 110–119.
+[14] DeVore, R. A., and Sharpley, R. C. Besov spaces on domains in Rd . Trans. Amer.
+Math. Soc. 335, 2 (1993), 843–864.
+[15] Furuya, T., and Kratsios, A. Simultaneously solving fbsdes with neural operators of
+logarithmic depth, constant width, and sub-linear rank. arXiv preprint arXiv:2410.14788
+(2024).
+[16] Gribonval, R., Kutyniok, G., Nielsen, M., and Voigtlaender, F. Approximation spaces of deep neural networks. Constructive approximation 55, 1 (2022), 259–367.
+
+22
+
+REFERENCES
+
+REFERENCES
+
+[17] He, K., Zhang, X., Ren, S., and Sun, J. Deep residual learning for image recognition.
+In Proceedings of the IEEE conference on computer vision and pattern recognition (2016),
+pp. 770–778.
+[18] Hwang, G. Minimum width for deep, narrow mlp: A diffeomorphism approach. arXiv
+preprint arXiv:2308.15873 (2023).
+[19] Ihnatsyeva, L., and Korte, R. Smoothness spaces of higher order on lower dimensional subsets of the Euclidean space. Math. Nachr. 288, 11-12 (2015), 1303–1316.
+[20] Ihnatsyeva, L., and Vähäkangas, A. V. Characterization of traces of smooth functions on Ahlfors regular sets. J. Funct. Anal. 265, 9 (2013), 1870–1915.
+[21] Jiao, Y., Lai, Y., Lu, X., Wang, F., Yang, J. Z., and Yang, Y. Deep neural
+networks with relu-sine-exponential activations break curse of dimensionality in approximation on hölder class. SIAM Journal on Mathematical Analysis 55, 4 (2023), 3635–3649.
+[22] Jones, P. W. Quasiconformal mappings and extendability of functions in Sobolev
+spaces. Acta Mathematica 147 (1981), 71–88.
+[23] Kahane, J.-P. Sur le théorème de superposition de Kolmogorov. J. Approximation
+Theory 13 (1975), 229–234.
+[24] Karpinski, M., and Macintyre, A. Polynomial bounds for vc dimension of sigmoidal
+and general pfaffian neural networks. Journal of Computer and System Sciences 54, 1
+(1997), 169–176.
+[25] Kidger, P., and Lyons, T. Universal approximation with deep narrow networks. In
+Conference on learning theory (2020), PMLR, pp. 2306–2327.
+[26] Kim, J., Nakamaki, T., and Suzuki, T. Transformers are minimax optimal nonparametric in-context learners. In ICML 2024 Workshop on In-Context Learning (2024).
+[27] Kratsios, A., and Papon, L. Universal approximation theorems for differentiable
+geometric deep learning. The Journal of Machine Learning Research 23, 1 (2022), 8896–
+8968.
+[28] Lin, H., and Jegelka, S. Resnet with one-neuron hidden layers is a universal approximator. Advances in neural information processing systems 31 (2018).
+[29] Liu, Z., Wang, Y., Vaidya, S., Ruehle, F., Halverson, J., Soljacic, M., Hou,
+T. Y., and Tegmark, M. KAN: Kolmogorov–arnold networks. In The Thirteenth
+International Conference on Learning Representations (2025).
+[30] Mallat, S. G. Multiresolution approximations and wavelet orthonormal bases of l2.
+Transactions of the American mathematical society 315, 1 (1989), 69–87.
+[31] Mao, T., Siegel, J. W., and Xu, J. Approximation rates for shallow ReLUk neural
+networks on sobolev spaces via the radon transform. arXiv preprint arXiv:2408.10996
+(2024).
+[32] Mhaskar, H. N., and Micchelli, C. A. Approximation by superposition of sigmoidal
+and radial basis functions. Adv. in Appl. Math. 13, 3 (1992), 350–373.
+[33] Mhaskar, H. N., and Poggio, T. An analysis of training and generalization errors
+in shallow and deep networks. Neural Networks 121 (2020), 229–241.
+23
+
+REFERENCES
+
+REFERENCES
+
+[34] Park, S., Yun, C., Lee, J., and Shin, J. Minimum width for universal approximation.
+In International Conference on Learning Representations (2021).
+[35] Riedi, R. H., Balestriero, R., and Baraniuk, R. G. Singular value perturbation
+and deep network optimization. Constructive Approximation 57, 2 (2023), 807–852.
+[36] Rogers, L. G. Degree-independent sobolev extension on locally uniform domains. Journal of Functional Analysis 235, 2 (2006), 619–665.
+[37] Rong, D., Lin, Z., and Xie, G. Recurrent fourier-kolmogorov arnold networks for
+photovoltaic power forecasting. Scientific Reports 15, 1 (2025), 4684.
+[38] Rychkov, V. S. On restrictions and extensions of the Besov and Triebel-Lizorkin spaces
+with respect to Lipschitz domains. J. London Math. Soc. (2) 60, 1 (1999), 237–257.
+[39] Shazeer, N. Glu variants improve transformer. arXiv preprint arXiv:2002.05202 (2020).
+[40] Shi, Z., and Yao, L. New estimates of Rychkov’s universal extension operator for
+Lipschitz domains and some applications. Math. Nachr. 297, 4 (2024), 1407–1443.
+[41] Suzuki, T. Adaptivity of deep relu network for learning in besov and mixed smooth
+besov spaces: optimal rate and curse of dimensionality. In ICLR (2019).
+[42] Triebel, H. Theory of function spaces. III, vol. 100 of Monographs in Mathematics.
+Birkhäuser Verlag, Basel, 2006.
+[43] Van Der Vaart, A. W., Wellner, J. A., van der Vaart, A. W., and Wellner,
+J. A. Weak convergence. Springer, 1996.
+[44] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N.,
+Kaiser, L., and Polosukhin, I. Attention is all you need. Advances in neural information processing systems 30 (2017).
+[45] Wang, Q., Zhang, S., Zeng, D., Xie, Z., Guo, H., Zeng, T., and Fan, F.-L.
+Don’t fear peculiar activation functions: Euaf and beyond. Neural Networks (2025),
+107258.
+[46] Wang, Y., Siegel, J. W., Liu, Z., and Hou, T. Y. On the expressiveness and spectral
+bias of KANs. In The Thirteenth International Conference on Learning Representations
+(2025).
+[47] Wu, Y., Zang, Z., Zou, X., Luo, W., Bai, N., Xiang, Y., Li, W., and Dong, W.
+Graph attention and kolmogorov–arnold network based smart grids intrusion detection.
+Scientific Reports 15, 1 (2025), 8648.
+[48] Yang, Y., and Zhou, D.-X. Optimal rates of approximation by shallow ReLUk neural networks and applications to nonparametric regression. Constructive Approximation
+(2024), 1–32.
+[49] Yarotsky, D. Optimal approximation of continuous functions by very deep relu networks. In Conference on learning theory (2018), PMLR, pp. 639–649.
+[50] Yarotsky, D. Elementary superexpressive activations. In International conference on
+machine learning (2021), PMLR, pp. 11932–11940.
+
+24
+
+REFERENCES
+
+REFERENCES
+
+[51] Zhang, S., Lu, J., and Zhao, H. Deep network approximation: Beyond relu to diverse
+activation functions. Journal of Machine Learning Research 25, 35 (2024), 1–39.
+[52] Zhang, S., Shen, Z., and Yang, H. Deep network approximation: Achieving arbitrary
+accuracy with fixed number of neurons. Journal of Machine Learning Research 23, 276
+(2022), 1–60.
+[53] Zhang, S., Shen, Z., and Yang, H. Neural network architecture beyond width and
+depth. Advances in Neural Information Processing Systems 35 (2022), 5669–5681.
+[54] Zhang, Z., Wang, Q., Zhang, Y., Shen, T., and Zhang, W. Physics-informed neural networks with hybrid kolmogorov-arnold network and augmented lagrangian function
+for solving partial differential equations. Scientific Reports 15, 1 (2025), 10523.
+
+25
+
