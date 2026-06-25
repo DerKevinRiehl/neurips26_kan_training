@@ -155,10 +155,10 @@ These mixed findings, together with the absence of a systematic assessment of sa
 %%% PARAGRAPH 05: MOTIVATION FOR RESEARCH QUESTION
 In this work, we study the sample-efficiency capabilities of KANs relative to MLPs in RL-based control.
 We focus on the practical setting in which interaction data are expensive and compare architectures under controlled sample budgets, parameter budgets, and training protocols.
-% TODO notes from KC:
-% (1) Please change .sty file that URN, ISBN, and DOI appear in references.
-% (2) Continue with experiments section.
-% (3) First experiment: use the Feynman dataset from Liu et al., sample train and test sets independently from the equation intervals, fix test size, vary training size, and evaluate function approximation with regression metrics.
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Works}
 
@@ -204,10 +204,12 @@ This component-level evidence reinforces the need to distinguish where KANs are 
 
 \subsection{Feynman Sample-Efficiency Benchmark}
 
-We first isolate the core approximation question in a controlled supervised setting before moving to full RL control.
+The first experiment tests the core approximation question in a controlled supervised setting, before moving to full RL control.
 If KANs are more sample-efficient because their edge functions provide a useful inductive bias, this advantage should already be visible when learning smooth physical laws from few samples.
 For this purpose, we follow Liu et al. and use the Feynman benchmark, which contains closed-form physics equations derived from the Feynman Lectures and related symbolic-regression benchmarks \cite{liu2024kan,udrescu2020aifeynman,udrescu2020aifeynman2}.
-We use the unit-free subset considered by Liu et al. and restrict attention to equations with at least two input variables, since univariate equations reduce KANs to one-dimensional spline fitting.
+We use the unit-free subset considered by Liu et al. and include all equations in that subset, including both univariate and multivariate functions.
+This choice is useful because univariate equations provide a sanity check for spline-based edge learning, while multivariate equations test whether KANs retain any sample-efficiency advantage when the model must learn interactions between variables.
+To prevent the easier univariate cases from dominating the conclusion, we report aggregate results both over the full benchmark and stratified by input dimension.
 
 Each benchmark task is a regression problem of the form $y=f_j(x_1,\ldots,x_{d_j})$, where $f_j$ is a known analytic equation and each input coordinate is sampled from the interval specified by the benchmark.
 For every equation, we independently sample a training set and a test set from the same input domain.
@@ -215,11 +217,12 @@ The test set size is fixed at $N_{\mathrm{test}}=1000$ points.
 The training set size is varied over $N_{\mathrm{train}}\in\{10,20,50,100,200,500,1000\}$, which yields a learning curve for each architecture and equation.
 All results are averaged over multiple random train/test draws and model initializations.
 
-We compare KANs against MLP baselines under matched training protocols.
+We compare KANs against MLP baselines under matched training protocols and explicitly report model complexity.
 The primary comparison fixes the optimizer, training steps, early-stopping rule, and random seeds across architectures.
-Because KANs and MLPs allocate parameters differently, we report both a width-matched comparison and a parameter-matched comparison.
-The width-matched comparison asks whether replacing MLP layers by KAN layers improves low-data learning in a comparable architecture.
-The parameter-matched comparison asks whether KANs improve sample efficiency at a fixed model-size budget.
+Because KANs and MLPs allocate parameters differently, exact parameter matching is not always the cleanest primary comparison.
+Our main comparison therefore fixes an architecture recipe and training budget, reports trainable parameter counts, and plots error as a function of both training samples and parameters.
+As a robustness check, we additionally include a parameter-matched comparison in which MLP widths are adjusted to match the KAN parameter count as closely as possible.
+This separates sample efficiency from model-size effects without hiding the fact that KAN and MLP parameters have different computational costs.
 
 We evaluate function approximation using complementary regression metrics rather than a single loss.
 The primary metric is root mean squared error (RMSE), which matches the evaluation used in the original KAN Feynman experiments.
@@ -274,7 +277,8 @@ These questions directly support the later RL experiments, where environment int
 \subsection{Dataset Construction}
 
 The Feynman benchmark consists of analytic equations with named input variables and prescribed sampling ranges \cite{udrescu2020aifeynman,udrescu2020aifeynman2}.
-Following Liu et al., we use the `Feynman\_no\_units' subset and remove equations with fewer than two input variables \cite{liu2024kan}.
+Following Liu et al., we use the `Feynman\_no\_units' subset and keep all equations for which finite train and test samples can be generated \cite{liu2024kan}.
+This includes univariate equations, which are reported separately from multivariate equations in the aggregate analysis.
 For each equation $f_j:\mathbb{R}^{d_j}\rightarrow\mathbb{R}$, we generate supervised examples by sampling $x\sim\mathcal{U}(\mathcal{D}_j)$ and evaluating $y=f_j(x)$.
 The domain $\mathcal{D}_j$ is the Cartesian product of the variable intervals specified by the benchmark.
 Training and test sets are sampled independently for every random seed.
@@ -299,10 +303,19 @@ No information from the test set is used for model selection or normalization.
 The main comparison includes KAN and MLP regressors trained with the same optimizer, loss, maximum number of update steps, batch size, and random seeds.
 For KANs, we use spline-based edge functions as in the original KAN implementation, with spline order and grid size fixed across equations unless otherwise stated.
 For MLPs, we use smooth activations such as SiLU to avoid giving KANs an artificial advantage over nonsmooth ReLU baselines on smooth physics equations.
-We report two architecture controls.
-The width-matched setting uses the same hidden-layer widths across KANs and MLPs.
-The parameter-matched setting chooses MLP widths so that the number of trainable parameters is as close as possible to the KAN parameter count.
+We report trainable parameter counts and wall-clock training time for every trained model.
+The primary setting uses a fixed architecture recipe for each model family.
+A secondary parameter-matched setting chooses MLP widths so that the number of trainable parameters is as close as possible to the KAN parameter count.
 When exact matching is impossible, we report the parameter ratio alongside the result.
+This protocol avoids treating parameter count as interchangeable across architectures while still checking whether apparent sample-efficiency gains are explained by model size.
+
+\subsection{KAN Implementations}
+
+To validate KAN baselines, we use the public All-KAN implementation repository as the implementation source for several KAN variants.
+The implementation collection is organized around the original KAN model and the KAN 2.0 scientific-discovery framework \cite{liu2024kan,liu2024kan2}.
+Our experiment wrapper currently exposes EfficientKAN for B-spline KANs, FastKAN for Gaussian RBF edge functions, and BSRBF-KAN for hybrid B-spline/RBF edge functions \cite{li2024kolmogorovarnold,ta2024bsrbf}.
+The All-KAN repository also includes recent variants such as FC-KAN, PRKAN, and AF-KAN, which provide implementation references for future ablations \cite{ta2024fc,ta2025prkan,ta2025afkan}.
+All implementation choices are fixed across sample budgets within an experiment, and each reported result specifies the backend used to instantiate the KAN model.
 
 \subsection{Metrics}
 
@@ -342,6 +355,7 @@ $R^2$ reports explained variance and is easier to interpret when communicating w
 
 For each equation and training size, we report the mean and standard error over seeds.
 Across equations, we report the median and interquartile range rather than only the mean, since a small number of high-scale or ill-conditioned equations can dominate aggregate errors.
+We report these aggregate statistics for all equations, for univariate equations only, and for multivariate equations only.
 The full sample-efficiency curve plots NRMSE against $N_{\mathrm{train}}$ on a logarithmic x-axis.
 As scalar summaries, we report the area under the error-sample curve and the sample threshold $N_\tau$.
 The area under the error-sample curve is computed by trapezoidal integration of NRMSE over $\log N_{\mathrm{train}}$, where lower values indicate better sample efficiency.
