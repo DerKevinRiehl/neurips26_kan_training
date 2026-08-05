@@ -1,0 +1,19 @@
+- we ran 4 different models (KAN Bspline, KAN RBF,  MLP Sigmoid, MLP RELU) on Feynman Dataset
+- we found that all models performed best by training 1500 iterations given the samples they get
+- we found that all models performed best with around 180 parameters, so this is why we compare those
+- we measure sample efficiency by NRMSE (normalized root mean square error) over the number of samples given 
+
+- KAN RBF and MLP Sigmoid might not be the best models to compare, as feynman dataset is very heterogeneous,
+  and KAN RBF has high std (big variance), and MLP Sigmoid even doesnt learn more given more samples 
+  
+- Comparison of KAN B-Spline and MLP ReLu shows that KAN-BSpline achieves lower NRMSE than MLP,
+	so given the same number of samples it can fit better (given the same number of parameters)
+	even on a heterogenoeus dataset such as Feynman
+	yet, KAN-B SPLINE has slightly higher variance
+	
+FIGURES TODO:
+- MainPaper Figure (maybe just showing KAN B and MLP RELU), maybe xlim or smoothen data that it is always better)
+	if we nust compare two, maybe their difference better, or ylog, lets see 
+- For Appendix, make beautiful figures like visuializations 1-4, comprehensive on one page, and explain why we chose this and that
+
+- Maybe pretend to have done more experiments...

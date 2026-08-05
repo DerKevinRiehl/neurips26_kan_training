@@ -1,0 +1,973 @@
+model_type,label,feynman_function,train_sample_size,model_setup_id,model_n_parameters,seed_rows,test_eval_nrmse_median,test_eval_nrmse_q25,test_eval_nrmse_q75,test_eval_nrmse_mean,test_eval_nrmse_std
+kan_bspline,KAN B-spline,I.12.11,10,kan_bspline_h2x2_p100,100,5,0.97037,0.96509,1.796223,1.368929,0.593756
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,10,kan_gaussrbf_h4_p113,113,5,0.922783,0.905922,1.162469,1.10906,0.364096
+mlp_relu,MLP ReLU,I.12.11,10,mlp_relu_for_kan_bspline_h2_p60_h15_p61,61,5,0.653,0.614609,0.863469,0.736783,0.185078
+mlp_sigmoid,MLP sigmoid,I.12.11,10,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.919068,0.907593,0.954192,0.928916,0.048167
+kan_bspline,KAN B-spline,I.12.11,20,kan_bspline_h5_p150,150,5,0.431001,0.339399,0.494424,0.43103,0.112633
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,20,kan_gaussrbf_h5_p141,141,5,0.419789,0.413157,0.463177,0.460354,0.112892
+mlp_relu,MLP ReLU,I.12.11,20,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.489571,0.448865,0.622247,0.528968,0.093508
+mlp_sigmoid,MLP sigmoid,I.12.11,20,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.531731,0.524126,0.545257,0.548273,0.042347
+kan_bspline,KAN B-spline,I.12.11,30,kan_bspline_h3_p90,90,5,0.187071,0.183029,0.226854,0.252536,0.136807
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,30,kan_gaussrbf_h5_p141,141,5,0.212262,0.210901,0.217403,0.215781,0.03058
+mlp_relu,MLP ReLU,I.12.11,30,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.332407,0.321301,0.344141,0.330664,0.030362
+mlp_sigmoid,MLP sigmoid,I.12.11,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.342842,0.336024,0.3725,0.344754,0.03472
+kan_bspline,KAN B-spline,I.12.11,40,kan_bspline_h3x3_p180,180,5,0.1701,0.146285,0.289103,0.229896,0.113762
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,40,kan_gaussrbf_h5_p141,141,5,0.170633,0.167151,0.214788,0.190384,0.034971
+mlp_relu,MLP ReLU,I.12.11,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.243863,0.224316,0.269882,0.244574,0.037334
+mlp_sigmoid,MLP sigmoid,I.12.11,40,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.349424,0.318709,0.360653,0.342281,0.026376
+kan_bspline,KAN B-spline,I.12.11,50,kan_bspline_h4_p120,120,5,0.151326,0.124866,0.178684,0.175684,0.073416
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,50,kan_gaussrbf_h5_p141,141,5,0.171212,0.150789,0.188859,0.172013,0.032787
+mlp_relu,MLP ReLU,I.12.11,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.236824,0.220073,0.241928,0.239576,0.032611
+mlp_sigmoid,MLP sigmoid,I.12.11,50,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.322564,0.321993,0.360554,0.337304,0.023717
+kan_bspline,KAN B-spline,I.12.11,100,kan_bspline_h5_p150,150,5,0.173929,0.166145,0.185485,0.17921,0.042064
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,100,kan_gaussrbf_h3x3_p169,169,5,0.122682,0.104038,0.136406,0.121504,0.021148
+mlp_relu,MLP ReLU,I.12.11,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.322192,0.244308,0.331724,0.287443,0.077848
+mlp_sigmoid,MLP sigmoid,I.12.11,100,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.521758,0.512446,0.537485,0.524393,0.017341
+kan_bspline,KAN B-spline,I.12.11,200,kan_bspline_h3x3_p180,180,5,0.103846,0.0995,0.130672,0.113103,0.020422
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,200,kan_gaussrbf_h3x3_p169,169,5,0.072775,0.064618,0.091685,0.079629,0.01818
+mlp_relu,MLP ReLU,I.12.11,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.235775,0.186674,0.251508,0.220402,0.046817
+mlp_sigmoid,MLP sigmoid,I.12.11,200,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.632728,0.5847,0.640199,0.628822,0.061536
+kan_bspline,KAN B-spline,I.12.11,500,kan_bspline_h3x3_p180,180,5,0.049478,0.042794,0.071179,0.054376,0.018166
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,500,kan_gaussrbf_h3x3_p169,169,5,0.034455,0.030108,0.039475,0.034222,0.005764
+mlp_relu,MLP ReLU,I.12.11,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.226163,0.175619,0.234525,0.217196,0.056583
+mlp_sigmoid,MLP sigmoid,I.12.11,500,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.445257,0.443744,0.524816,0.475732,0.051295
+kan_bspline,KAN B-spline,I.12.11,1000,kan_bspline_h3x3_p180,180,5,0.059082,0.042021,0.06085,0.058994,0.02702
+kan_gaussrbf,KAN Gaussian RBF,I.12.11,1000,kan_gaussrbf_h3x3_p169,169,5,0.034856,0.029583,0.036795,0.033446,0.007254
+mlp_relu,MLP ReLU,I.12.11,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.206986,0.168253,0.225273,0.202553,0.041783
+mlp_sigmoid,MLP sigmoid,I.12.11,1000,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.449441,0.43508,0.535752,0.476323,0.056253
+kan_bspline,KAN B-spline,I.13.12,10,kan_bspline_h3x3_p180,180,5,0.517535,0.516554,0.53038,0.528201,0.02201
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,10,kan_gaussrbf_h2_p57,57,5,0.529369,0.500762,0.69539,0.597385,0.124417
+mlp_relu,MLP ReLU,I.13.12,10,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.328372,0.315524,0.399577,0.492799,0.346644
+mlp_sigmoid,MLP sigmoid,I.13.12,10,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.431582,0.378918,0.437919,0.420648,0.052298
+kan_bspline,KAN B-spline,I.13.12,20,kan_bspline_h5_p150,150,5,0.484165,0.472147,0.549816,0.52896,0.102282
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,20,kan_gaussrbf_h2_p57,57,5,0.540763,0.502066,0.601903,0.564813,0.095239
+mlp_relu,MLP ReLU,I.13.12,20,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.322415,0.265351,0.376929,0.338617,0.086119
+mlp_sigmoid,MLP sigmoid,I.13.12,20,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.385492,0.36157,0.412302,0.386008,0.037382
+kan_bspline,KAN B-spline,I.13.12,30,kan_bspline_h5_p150,150,5,0.296301,0.291653,0.313685,0.298604,0.016147
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,30,kan_gaussrbf_h4_p113,113,5,0.435624,0.42119,0.44676,0.440372,0.030635
+mlp_relu,MLP ReLU,I.13.12,30,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.300641,0.297354,0.324127,0.313701,0.032218
+mlp_sigmoid,MLP sigmoid,I.13.12,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.379909,0.349838,0.42783,0.389912,0.047764
+kan_bspline,KAN B-spline,I.13.12,40,kan_bspline_h3x3_p180,180,5,0.284359,0.279657,0.295014,0.28492,0.012574
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,40,kan_gaussrbf_h3x3_p169,169,5,0.36769,0.364065,0.39966,0.375765,0.029191
+mlp_relu,MLP ReLU,I.13.12,40,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.309925,0.295428,0.314603,0.303526,0.017305
+mlp_sigmoid,MLP sigmoid,I.13.12,40,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.38295,0.358331,0.402475,0.384624,0.033711
+kan_bspline,KAN B-spline,I.13.12,50,kan_bspline_h2x2_p100,100,5,0.27725,0.27573,0.332913,0.308659,0.048665
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,50,kan_gaussrbf_h3x3_p169,169,5,0.346327,0.343927,0.369838,0.356502,0.017935
+mlp_relu,MLP ReLU,I.13.12,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.291744,0.289852,0.311592,0.298383,0.020603
+mlp_sigmoid,MLP sigmoid,I.13.12,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.390832,0.380241,0.409462,0.388409,0.027872
+kan_bspline,KAN B-spline,I.13.12,100,kan_bspline_h3x3_p180,180,5,0.1689,0.167032,0.170567,0.171831,0.00806
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,100,kan_gaussrbf_h3x3_p169,169,5,0.186191,0.18217,0.191739,0.185925,0.006333
+mlp_relu,MLP ReLU,I.13.12,100,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,105,5,0.232857,0.225093,0.250319,0.247003,0.034912
+mlp_sigmoid,MLP sigmoid,I.13.12,100,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.486616,0.450779,0.506043,0.483422,0.043205
+kan_bspline,KAN B-spline,I.13.12,200,kan_bspline_h3x3_p180,180,5,0.200638,0.199345,0.255308,0.222041,0.031226
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,200,kan_gaussrbf_h3x3_p169,169,5,0.22043,0.205108,0.255287,0.230947,0.031569
+mlp_relu,MLP ReLU,I.13.12,200,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.266006,0.26205,0.288466,0.273953,0.01709
+mlp_sigmoid,MLP sigmoid,I.13.12,200,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.648286,0.618998,0.669365,0.644951,0.025405
+kan_bspline,KAN B-spline,I.13.12,500,kan_bspline_h3x3_p180,180,5,0.083878,0.083232,0.093915,0.087665,0.011089
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,500,kan_gaussrbf_h3x3_p169,169,5,0.092246,0.089936,0.126758,0.104443,0.024514
+mlp_relu,MLP ReLU,I.13.12,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.165975,0.163179,0.186524,0.174183,0.016678
+mlp_sigmoid,MLP sigmoid,I.13.12,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.409158,0.386283,0.427475,0.409169,0.032825
+kan_bspline,KAN B-spline,I.13.12,1000,kan_bspline_h3x3_p180,180,5,0.109843,0.101015,0.12334,0.109272,0.019827
+kan_gaussrbf,KAN Gaussian RBF,I.13.12,1000,kan_gaussrbf_h3x3_p169,169,5,0.099025,0.094705,0.142078,0.121062,0.039267
+mlp_relu,MLP ReLU,I.13.12,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.205541,0.184191,0.20914,0.203069,0.021428
+mlp_sigmoid,MLP sigmoid,I.13.12,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.5217,0.483581,0.526199,0.51155,0.028293
+kan_bspline,KAN B-spline,I.15.3x,10,kan_bspline_h5_p150,150,5,0.734646,0.727996,0.743914,0.736953,0.013184
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,10,kan_gaussrbf_h2x2_p95,95,5,0.859222,0.831934,0.865688,0.849693,0.023601
+mlp_relu,MLP ReLU,I.15.3x,10,mlp_relu_for_kan_bspline_h2_p60_h15_p61,61,5,0.680042,0.677282,0.686573,0.68943,0.024001
+mlp_sigmoid,MLP sigmoid,I.15.3x,10,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.752403,0.750623,0.763251,0.766081,0.031255
+kan_bspline,KAN B-spline,I.15.3x,20,kan_bspline_h4_p120,120,5,0.546963,0.510079,0.597268,0.548735,0.048928
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,20,kan_gaussrbf_h4_p113,113,5,0.660685,0.651947,0.673222,0.665006,0.018277
+mlp_relu,MLP ReLU,I.15.3x,20,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.590384,0.579665,0.590704,0.589073,0.013438
+mlp_sigmoid,MLP sigmoid,I.15.3x,20,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.674096,0.67327,0.683772,0.682589,0.018059
+kan_bspline,KAN B-spline,I.15.3x,30,kan_bspline_h3x3_p180,180,5,0.429567,0.42527,0.476044,0.449383,0.037194
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,30,kan_gaussrbf_h3_p85,85,5,0.623255,0.612319,0.625435,0.6204,0.010504
+mlp_relu,MLP ReLU,I.15.3x,30,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.56454,0.56095,0.569108,0.56864,0.016517
+mlp_sigmoid,MLP sigmoid,I.15.3x,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.703121,0.700268,0.745967,0.729888,0.044991
+kan_bspline,KAN B-spline,I.15.3x,40,kan_bspline_h1_p30,30,5,0.416223,0.413074,0.452809,0.42779,0.028366
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,40,kan_gaussrbf_h3x3_p169,169,5,0.516308,0.512765,0.520883,0.519283,0.028359
+mlp_relu,MLP ReLU,I.15.3x,40,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.492836,0.485913,0.493781,0.502226,0.040125
+mlp_sigmoid,MLP sigmoid,I.15.3x,40,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.641524,0.639951,0.657759,0.648671,0.021361
+kan_bspline,KAN B-spline,I.15.3x,50,kan_bspline_h1x1_p40,40,5,0.18361,0.182636,0.207015,0.190226,0.02689
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,50,kan_gaussrbf_h3_p85,85,5,0.294642,0.288463,0.330492,0.307528,0.033914
+mlp_relu,MLP ReLU,I.15.3x,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.320868,0.309541,0.538505,0.422447,0.188028
+mlp_sigmoid,MLP sigmoid,I.15.3x,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.499817,0.480931,0.511536,0.497808,0.029966
+kan_bspline,KAN B-spline,I.15.3x,100,kan_bspline_h3x3_p180,180,4,0.127667,0.108755,0.144914,0.126002,0.028189
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,100,kan_gaussrbf_h3x3_p169,169,5,0.137313,0.126121,0.174069,0.144043,0.030872
+mlp_relu,MLP ReLU,I.15.3x,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.275925,0.269312,0.281438,0.272145,0.018031
+mlp_sigmoid,MLP sigmoid,I.15.3x,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.557591,0.547192,0.564903,0.560895,0.019623
+kan_bspline,KAN B-spline,I.15.3x,200,kan_bspline_h3x3_p180,180,4,0.16326,0.148826,0.17508,0.160647,0.037276
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,200,kan_gaussrbf_h3x3_p169,169,4,0.133271,0.126911,0.152723,0.146363,0.036493
+mlp_relu,MLP ReLU,I.15.3x,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.304057,0.299538,0.315816,0.319644,0.034177
+mlp_sigmoid,MLP sigmoid,I.15.3x,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.644848,0.617061,0.654606,0.650661,0.050308
+kan_bspline,KAN B-spline,I.15.3x,500,kan_bspline_h3x3_p180,180,4,0.073171,0.067753,0.079673,0.074255,0.010007
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,500,kan_gaussrbf_h3x3_p169,169,4,0.061732,0.05556,0.068596,0.062424,0.008244
+mlp_relu,MLP ReLU,I.15.3x,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.213624,0.213404,0.231137,0.230862,0.03806
+mlp_sigmoid,MLP sigmoid,I.15.3x,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.658977,0.652759,0.681991,0.683538,0.054669
+kan_bspline,KAN B-spline,I.15.3x,1000,kan_bspline_h3x3_p180,180,4,0.070914,0.065458,0.075736,0.07028,0.009592
+kan_gaussrbf,KAN Gaussian RBF,I.15.3x,1000,kan_gaussrbf_h3x3_p169,169,4,0.057552,0.056287,0.059386,0.058121,0.005034
+mlp_relu,MLP ReLU,I.15.3x,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.22652,0.216341,0.239496,0.234552,0.036136
+mlp_sigmoid,MLP sigmoid,I.15.3x,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.613961,0.612601,0.668667,0.648954,0.058315
+kan_bspline,KAN B-spline,I.16.6,10,kan_bspline_h3x3_p180,180,4,0.163141,0.157834,0.17342,0.168113,0.017596
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,10,kan_gaussrbf_h3x3_p169,169,4,0.223326,0.202331,0.294863,0.273869,0.120012
+mlp_relu,MLP ReLU,I.16.6,10,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,105,5,0.115024,0.112325,0.176786,0.138246,0.036567
+mlp_sigmoid,MLP sigmoid,I.16.6,10,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.086999,0.085762,0.088327,0.086952,0.001668
+kan_bspline,KAN B-spline,I.16.6,20,kan_bspline_h2x2_p100,100,4,0.055465,0.043827,0.063084,0.051446,0.016623
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,20,kan_gaussrbf_h3x3_p169,169,4,0.09999,0.081341,0.120833,0.102184,0.025063
+mlp_relu,MLP ReLU,I.16.6,20,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.093899,0.093161,0.114101,0.100427,0.0135
+mlp_sigmoid,MLP sigmoid,I.16.6,20,mlp_sigmoid_for_kan_bspline_h2x2_p100_h8x8_p105,105,5,0.089345,0.087437,0.096791,0.09149,0.005156
+kan_bspline,KAN B-spline,I.16.6,30,kan_bspline_h2x2_p100,100,4,0.054669,0.043497,0.065591,0.054419,0.013407
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,30,kan_gaussrbf_h3x3_p169,169,4,0.066314,0.060722,0.071255,0.065663,0.006679
+mlp_relu,MLP ReLU,I.16.6,30,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.100132,0.094604,0.11541,0.103924,0.01258
+mlp_sigmoid,MLP sigmoid,I.16.6,30,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.091877,0.090977,0.095874,0.095523,0.007373
+kan_bspline,KAN B-spline,I.16.6,40,kan_bspline_h1x1_p40,40,4,0.038526,0.035492,0.045394,0.04236,0.012516
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,40,kan_gaussrbf_h3x3_p169,169,4,0.044453,0.041204,0.050193,0.046944,0.009843
+mlp_relu,MLP ReLU,I.16.6,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.078815,0.071237,0.099952,0.08257,0.01991
+mlp_sigmoid,MLP sigmoid,I.16.6,40,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.086665,0.086369,0.088929,0.089181,0.005323
+kan_bspline,KAN B-spline,I.16.6,50,kan_bspline_h1x1_p40,40,4,0.039534,0.034654,0.045201,0.040321,0.007215
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,50,kan_gaussrbf_h3x3_p169,169,4,0.052854,0.042508,0.06283,0.052484,0.01572
+mlp_relu,MLP ReLU,I.16.6,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.093133,0.085576,0.100364,0.091765,0.013749
+mlp_sigmoid,MLP sigmoid,I.16.6,50,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.087423,0.086894,0.091357,0.088955,0.003185
+kan_bspline,KAN B-spline,I.16.6,100,kan_bspline_h3x3_p180,180,4,0.03457,0.031469,0.038407,0.035307,0.007137
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,100,kan_gaussrbf_h3x3_p169,169,4,0.019477,0.019076,0.019709,0.019308,0.000709
+mlp_relu,MLP ReLU,I.16.6,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.056069,0.0452,0.073665,0.059387,0.015805
+mlp_sigmoid,MLP sigmoid,I.16.6,100,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.08709,0.086684,0.089632,0.088372,0.002469
+kan_bspline,KAN B-spline,I.16.6,200,kan_bspline_h3x3_p180,180,4,0.033576,0.031325,0.035615,0.033364,0.004507
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,200,kan_gaussrbf_h3x3_p169,169,4,0.018766,0.017987,0.019935,0.019156,0.001889
+mlp_relu,MLP ReLU,I.16.6,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.059263,0.051377,0.069019,0.061835,0.012309
+mlp_sigmoid,MLP sigmoid,I.16.6,200,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.083927,0.083201,0.085346,0.083737,0.002293
+kan_bspline,KAN B-spline,I.16.6,500,kan_bspline_h2x2_p100,100,4,0.020224,0.019688,0.021899,0.021363,0.002733
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,500,kan_gaussrbf_h3x3_p169,169,4,0.014135,0.013934,0.014426,0.014225,0.000716
+mlp_relu,MLP ReLU,I.16.6,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.04378,0.043393,0.064873,0.052606,0.012717
+mlp_sigmoid,MLP sigmoid,I.16.6,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.084791,0.083607,0.085363,0.084297,0.00319
+kan_bspline,KAN B-spline,I.16.6,1000,kan_bspline_h3x3_p180,180,4,0.019764,0.01846,0.0212,0.019896,0.002867
+kan_gaussrbf,KAN Gaussian RBF,I.16.6,1000,kan_gaussrbf_h3x3_p169,169,4,0.014951,0.013797,0.015987,0.014833,0.001575
+mlp_relu,MLP ReLU,I.16.6,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.04329,0.04307,0.063842,0.05199,0.013143
+mlp_sigmoid,MLP sigmoid,I.16.6,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.084108,0.08255,0.084376,0.083519,0.002848
+kan_bspline,KAN B-spline,I.18.4,10,kan_bspline_h2_p60,60,4,0.343001,0.341491,0.35033,0.348821,0.014624
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,10,kan_gaussrbf_h3_p85,85,4,0.36583,0.346467,0.402538,0.383174,0.071412
+mlp_relu,MLP ReLU,I.18.4,10,mlp_relu_for_kan_bspline_h2_p60_h15_p61,61,5,0.169207,0.142972,0.22243,0.196179,0.068888
+mlp_sigmoid,MLP sigmoid,I.18.4,10,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.191291,0.180696,0.19308,0.186076,0.015697
+kan_bspline,KAN B-spline,I.18.4,20,kan_bspline_h3x3_p180,180,4,0.123168,0.111857,0.134759,0.123449,0.013465
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,20,kan_gaussrbf_h3x3_p169,169,4,0.193508,0.169456,0.228789,0.204738,0.051134
+mlp_relu,MLP ReLU,I.18.4,20,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.098554,0.098541,0.112316,0.104024,0.008207
+mlp_sigmoid,MLP sigmoid,I.18.4,20,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.096394,0.093661,0.096622,0.095437,0.002899
+kan_bspline,KAN B-spline,I.18.4,30,kan_bspline_h3_p90,90,4,0.098742,0.087397,0.108866,0.097521,0.018956
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,30,kan_gaussrbf_h4_p113,113,4,0.167501,0.156906,0.17636,0.165765,0.012725
+mlp_relu,MLP ReLU,I.18.4,30,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.1004,0.09512,0.1069,0.100878,0.007726
+mlp_sigmoid,MLP sigmoid,I.18.4,30,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.096842,0.096455,0.097535,0.097464,0.00318
+kan_bspline,KAN B-spline,I.18.4,40,kan_bspline_h3_p90,90,4,0.086171,0.080081,0.093833,0.087742,0.016792
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,40,kan_gaussrbf_h5_p141,141,4,0.107764,0.103911,0.114889,0.111036,0.014838
+mlp_relu,MLP ReLU,I.18.4,40,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.092771,0.092689,0.104425,0.097726,0.007538
+mlp_sigmoid,MLP sigmoid,I.18.4,40,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.09712,0.096575,0.097407,0.099203,0.006898
+kan_bspline,KAN B-spline,I.18.4,50,kan_bspline_h5_p150,150,4,0.087574,0.085755,0.090845,0.089027,0.007858
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,50,kan_gaussrbf_h4_p113,113,4,0.111097,0.107277,0.117282,0.113461,0.010759
+mlp_relu,MLP ReLU,I.18.4,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.085763,0.081281,0.109365,0.093659,0.015227
+mlp_sigmoid,MLP sigmoid,I.18.4,50,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.097974,0.097275,0.098098,0.098352,0.00199
+kan_bspline,KAN B-spline,I.18.4,100,kan_bspline_h5_p150,150,4,0.032134,0.028808,0.035721,0.032395,0.00474
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,100,kan_gaussrbf_h3x3_p169,169,4,0.036876,0.035475,0.04101,0.039609,0.007785
+mlp_relu,MLP ReLU,I.18.4,100,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.043981,0.042451,0.048081,0.045988,0.005578
+mlp_sigmoid,MLP sigmoid,I.18.4,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.090403,0.087786,0.090539,0.089746,0.002579
+kan_bspline,KAN B-spline,I.18.4,200,kan_bspline_h3x3_p180,180,4,0.030323,0.029142,0.03708,0.035898,0.0136
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,200,kan_gaussrbf_h3x3_p169,169,4,0.030774,0.027253,0.034052,0.030531,0.005462
+mlp_relu,MLP ReLU,I.18.4,200,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.040541,0.038016,0.040621,0.041079,0.006686
+mlp_sigmoid,MLP sigmoid,I.18.4,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.110682,0.106307,0.131703,0.120481,0.018678
+kan_bspline,KAN B-spline,I.18.4,500,kan_bspline_h3x3_p180,180,4,0.026358,0.024439,0.029723,0.027804,0.005319
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,500,kan_gaussrbf_h3x3_p169,169,4,0.019956,0.01724,0.02312,0.020403,0.004173
+mlp_relu,MLP ReLU,I.18.4,500,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.036127,0.030064,0.038232,0.034486,0.006394
+mlp_sigmoid,MLP sigmoid,I.18.4,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.088838,0.088421,0.124708,0.103085,0.020397
+kan_bspline,KAN B-spline,I.18.4,1000,kan_bspline_h3x3_p180,180,4,0.022766,0.020306,0.025623,0.023164,0.004572
+kan_gaussrbf,KAN Gaussian RBF,I.18.4,1000,kan_gaussrbf_h3x3_p169,169,4,0.019734,0.018782,0.021024,0.020072,0.003392
+mlp_relu,MLP ReLU,I.18.4,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.0336,0.031279,0.038467,0.03459,0.005762
+mlp_sigmoid,MLP sigmoid,I.18.4,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.104096,0.102563,0.133995,0.114516,0.019434
+kan_bspline,KAN B-spline,I.26.2,10,kan_bspline_h4_p120,120,4,0.367515,0.345204,0.418008,0.395697,0.101472
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,10,kan_gaussrbf_h2_p57,57,4,0.461488,0.403555,0.516978,0.459046,0.075048
+mlp_relu,MLP ReLU,I.26.2,10,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,5,0.192689,0.185143,0.19682,0.191517,0.029499
+mlp_sigmoid,MLP sigmoid,I.26.2,10,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.331716,0.323823,0.342779,0.333246,0.012004
+kan_bspline,KAN B-spline,I.26.2,20,kan_bspline_h4_p120,120,4,0.258307,0.232,0.296654,0.270348,0.051221
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,20,kan_gaussrbf_h4_p113,113,4,0.331611,0.323461,0.349555,0.341404,0.028994
+mlp_relu,MLP ReLU,I.26.2,20,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,5,0.110567,0.10454,0.142008,0.119857,0.022849
+mlp_sigmoid,MLP sigmoid,I.26.2,20,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.172444,0.152473,0.187021,0.176198,0.028513
+kan_bspline,KAN B-spline,I.26.2,30,kan_bspline_h5_p150,150,4,0.083995,0.07531,0.092626,0.083941,0.012209
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,30,kan_gaussrbf_h5_p141,141,4,0.137976,0.11995,0.160331,0.142305,0.040008
+mlp_relu,MLP ReLU,I.26.2,30,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.083763,0.083051,0.095932,0.089739,0.011063
+mlp_sigmoid,MLP sigmoid,I.26.2,30,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.134794,0.128202,0.149911,0.143556,0.023472
+kan_bspline,KAN B-spline,I.26.2,40,kan_bspline_h2x2_p100,100,4,0.050228,0.043528,0.05976,0.053059,0.017419
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,40,kan_gaussrbf_h3x3_p169,169,4,0.067118,0.053838,0.07964,0.066361,0.015642
+mlp_relu,MLP ReLU,I.26.2,40,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.066866,0.066079,0.068308,0.064751,0.007686
+mlp_sigmoid,MLP sigmoid,I.26.2,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.10999,0.10211,0.119742,0.116888,0.020852
+kan_bspline,KAN B-spline,I.26.2,50,kan_bspline_h3x3_p180,180,4,0.050554,0.049997,0.059196,0.058639,0.017108
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,50,kan_gaussrbf_h3x3_p169,169,4,0.067225,0.061615,0.071304,0.065694,0.010603
+mlp_relu,MLP ReLU,I.26.2,50,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.061394,0.058536,0.063344,0.059971,0.004363
+mlp_sigmoid,MLP sigmoid,I.26.2,50,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.099589,0.092723,0.113173,0.106424,0.018147
+kan_bspline,KAN B-spline,I.26.2,100,kan_bspline_h3x3_p180,180,4,0.031759,0.02921,0.033743,0.031194,0.005526
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,100,kan_gaussrbf_h3x3_p169,169,4,0.033257,0.030366,0.03489,0.031999,0.005911
+mlp_relu,MLP ReLU,I.26.2,100,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.041834,0.040994,0.042139,0.041177,0.001443
+mlp_sigmoid,MLP sigmoid,I.26.2,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.10192,0.100015,0.109113,0.113265,0.025325
+kan_bspline,KAN B-spline,I.26.2,200,kan_bspline_h3x3_p180,180,4,0.034574,0.030735,0.038965,0.035126,0.008156
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,200,kan_gaussrbf_h3x3_p169,169,4,0.029078,0.024761,0.035288,0.030971,0.009717
+mlp_relu,MLP ReLU,I.26.2,200,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.045488,0.04527,0.04883,0.047063,0.002635
+mlp_sigmoid,MLP sigmoid,I.26.2,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.183558,0.172319,0.237618,0.201769,0.04421
+kan_bspline,KAN B-spline,I.26.2,500,kan_bspline_h3x3_p180,180,4,0.021137,0.018779,0.024334,0.021977,0.0046
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,500,kan_gaussrbf_h5_p141,141,4,0.032178,0.029951,0.034972,0.032745,0.004388
+mlp_relu,MLP ReLU,I.26.2,500,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.036525,0.036162,0.036676,0.036497,0.001831
+mlp_sigmoid,MLP sigmoid,I.26.2,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.153599,0.148459,0.177519,0.1666,0.032369
+kan_bspline,KAN B-spline,I.26.2,1000,kan_bspline_h3x3_p180,180,4,0.019742,0.016708,0.023602,0.020568,0.005643
+kan_gaussrbf,KAN Gaussian RBF,I.26.2,1000,kan_gaussrbf_h3x3_p169,169,4,0.023454,0.021328,0.025751,0.023626,0.003082
+mlp_relu,MLP ReLU,I.26.2,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.033365,0.033208,0.033903,0.033759,0.001077
+mlp_sigmoid,MLP sigmoid,I.26.2,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.152814,0.146331,0.17979,0.168152,0.035504
+kan_bspline,KAN B-spline,I.27.6,10,kan_bspline_h5_p150,150,4,1.103345,1.020462,1.175503,1.09262,0.101147
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,10,kan_gaussrbf_h5_p141,141,4,1.055919,0.948467,1.167497,1.060045,0.187627
+mlp_relu,MLP ReLU,I.27.6,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.576766,0.560055,0.653227,0.605239,0.073991
+mlp_sigmoid,MLP sigmoid,I.27.6,10,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.815946,0.802927,0.973738,0.87968,0.138539
+kan_bspline,KAN B-spline,I.27.6,20,kan_bspline_h3x3_p180,180,4,0.866175,0.814342,0.95848,0.906647,0.232749
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,20,kan_gaussrbf_h2x2_p95,95,4,0.614798,0.548344,0.685822,0.619367,0.096115
+mlp_relu,MLP ReLU,I.27.6,20,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.443015,0.411979,0.447622,0.436734,0.024653
+mlp_sigmoid,MLP sigmoid,I.27.6,20,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.55433,0.546493,0.625955,0.585845,0.055846
+kan_bspline,KAN B-spline,I.27.6,30,kan_bspline_h5_p150,150,4,0.502848,0.47185,0.564149,0.533152,0.116114
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,30,kan_gaussrbf_h2x2_p95,95,4,0.568908,0.427145,0.715839,0.574076,0.172959
+mlp_relu,MLP ReLU,I.27.6,30,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,113,5,0.419405,0.417055,0.421715,0.419558,0.008009
+mlp_sigmoid,MLP sigmoid,I.27.6,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.496645,0.476919,0.510367,0.495555,0.020077
+kan_bspline,KAN B-spline,I.27.6,40,kan_bspline_h2x2_p100,100,4,0.279624,0.250668,0.299943,0.270987,0.05617
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,40,kan_gaussrbf_h2x2_p95,95,4,0.27741,0.243616,0.34528,0.311486,0.105291
+mlp_relu,MLP ReLU,I.27.6,40,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,5,0.350291,0.350106,0.374101,0.359361,0.014633
+mlp_sigmoid,MLP sigmoid,I.27.6,40,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.449409,0.445833,0.450004,0.45047,0.008748
+kan_bspline,KAN B-spline,I.27.6,50,kan_bspline_h5_p150,150,4,0.305025,0.281893,0.328259,0.305127,0.031871
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,50,kan_gaussrbf_h3x3_p169,169,4,0.290292,0.272456,0.316885,0.29905,0.034934
+mlp_relu,MLP ReLU,I.27.6,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.327423,0.314741,0.341392,0.340434,0.047185
+mlp_sigmoid,MLP sigmoid,I.27.6,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.427644,0.42698,0.43221,0.438643,0.02333
+kan_bspline,KAN B-spline,I.27.6,100,kan_bspline_h3x3_p180,180,4,0.087397,0.080986,0.094529,0.088119,0.008607
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,100,kan_gaussrbf_h3x3_p169,169,4,0.102257,0.092529,0.109143,0.099416,0.012218
+mlp_relu,MLP ReLU,I.27.6,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.215377,0.178848,0.220692,0.204048,0.032334
+mlp_sigmoid,MLP sigmoid,I.27.6,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.381656,0.378236,0.387099,0.382241,0.005405
+kan_bspline,KAN B-spline,I.27.6,200,kan_bspline_h3x3_p180,180,4,0.099134,0.088284,0.113913,0.103063,0.024893
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,200,kan_gaussrbf_h3x3_p169,169,4,0.075015,0.06777,0.085579,0.078335,0.017109
+mlp_relu,MLP ReLU,I.27.6,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.210729,0.196971,0.255437,0.235126,0.056647
+mlp_sigmoid,MLP sigmoid,I.27.6,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.69799,0.662261,0.716448,0.695175,0.071297
+kan_bspline,KAN B-spline,I.27.6,500,kan_bspline_h3x3_p180,180,4,0.065637,0.059879,0.070931,0.065173,0.011526
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,500,kan_gaussrbf_h3x3_p169,169,4,0.053954,0.050503,0.062861,0.05941,0.016397
+mlp_relu,MLP ReLU,I.27.6,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.191488,0.161255,0.19837,0.182355,0.031324
+mlp_sigmoid,MLP sigmoid,I.27.6,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.425067,0.410209,0.426545,0.422272,0.015126
+kan_bspline,KAN B-spline,I.27.6,1000,kan_bspline_h3x3_p180,180,4,0.066809,0.05865,0.068794,0.060634,0.015618
+kan_gaussrbf,KAN Gaussian RBF,I.27.6,1000,kan_gaussrbf_h3x3_p169,169,4,0.05485,0.04673,0.071258,0.063138,0.026209
+mlp_relu,MLP ReLU,I.27.6,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.184608,0.150845,0.190423,0.178758,0.043187
+mlp_sigmoid,MLP sigmoid,I.27.6,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.434482,0.419703,0.436056,0.432123,0.01465
+kan_bspline,KAN B-spline,I.29.16,10,kan_bspline_h5_p150,200,4,0.972759,0.956318,0.994533,0.978092,0.053345
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,10,kan_gaussrbf_h4_p113,149,4,0.969416,0.908098,1.027772,0.966454,0.074784
+mlp_relu,MLP ReLU,I.29.16,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.990157,0.947735,1.019115,0.99842,0.06471
+mlp_sigmoid,MLP sigmoid,I.29.16,10,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,5,0.75792,0.749523,0.818387,0.797552,0.070529
+kan_bspline,KAN B-spline,I.29.16,20,kan_bspline_h5_p150,200,4,0.92313,0.718312,1.157916,0.953098,0.276435
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,20,kan_gaussrbf_h4_p113,149,4,0.910468,0.882597,0.947707,0.919836,0.07536
+mlp_relu,MLP ReLU,I.29.16,20,mlp_relu_for_kan_bspline_h1x1_p40_h4x4_p37,41,5,0.84136,0.807923,1.008238,0.899388,0.113488
+mlp_sigmoid,MLP sigmoid,I.29.16,20,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,106,5,0.690585,0.68216,0.710556,0.69494,0.017945
+kan_bspline,KAN B-spline,I.29.16,30,kan_bspline_h3x3_p180,210,4,0.830493,0.757956,0.951182,0.878645,0.186597
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,30,kan_gaussrbf_h5_p141,186,4,0.7801,0.745374,0.834971,0.800246,0.09706
+mlp_relu,MLP ReLU,I.29.16,30,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.784114,0.764813,0.81323,0.832797,0.126249
+mlp_sigmoid,MLP sigmoid,I.29.16,30,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,106,5,0.67437,0.643105,0.701894,0.674592,0.038837
+kan_bspline,KAN B-spline,I.29.16,40,kan_bspline_h5_p150,200,4,0.80329,0.685973,0.914187,0.79687,0.182687
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,40,kan_gaussrbf_h4_p113,149,4,0.74209,0.724487,0.776093,0.758491,0.054215
+mlp_relu,MLP ReLU,I.29.16,40,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,5,0.717323,0.589635,0.822225,0.723518,0.144705
+mlp_sigmoid,MLP sigmoid,I.29.16,40,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,106,5,0.639769,0.638897,0.674153,0.657016,0.04263
+kan_bspline,KAN B-spline,I.29.16,50,kan_bspline_h2x2_p100,120,4,0.652343,0.45317,0.866226,0.667053,0.282779
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,50,kan_gaussrbf_h5_p141,186,4,0.726214,0.664538,0.768409,0.706733,0.082529
+mlp_relu,MLP ReLU,I.29.16,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.692738,0.64109,0.755016,0.696066,0.070945
+mlp_sigmoid,MLP sigmoid,I.29.16,50,mlp_sigmoid_for_kan_bspline_h3_p90_h22_p89,111,5,0.646206,0.640723,0.675122,0.655289,0.02113
+kan_bspline,KAN B-spline,I.29.16,100,kan_bspline_h3x3_p180,210,4,0.327842,0.261507,0.442088,0.375753,0.205484
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,100,kan_gaussrbf_h4_p113,149,4,0.414929,0.386405,0.494458,0.465934,0.147388
+mlp_relu,MLP ReLU,I.29.16,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.346669,0.340424,0.401549,0.421139,0.158415
+mlp_sigmoid,MLP sigmoid,I.29.16,100,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,151,5,0.765042,0.764773,0.776653,0.777487,0.023768
+kan_bspline,KAN B-spline,I.29.16,200,kan_bspline_h5_p150,200,4,0.632957,0.538511,0.706747,0.612301,0.114544
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,200,kan_gaussrbf_h5_p141,186,4,0.358739,0.314823,0.376424,0.332508,0.087305
+mlp_relu,MLP ReLU,I.29.16,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.353337,0.339475,0.5511,0.424093,0.12287
+mlp_sigmoid,MLP sigmoid,I.29.16,200,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,5,0.905519,0.904267,0.907522,0.905917,0.002633
+kan_bspline,KAN B-spline,I.29.16,500,kan_bspline_h2x2_p100,120,4,0.311681,0.282057,0.411743,0.382119,0.20385
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,500,kan_gaussrbf_h5_p141,186,4,0.239022,0.204331,0.269328,0.234637,0.073463
+mlp_relu,MLP ReLU,I.29.16,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.263629,0.236893,0.286406,0.261411,0.030696
+mlp_sigmoid,MLP sigmoid,I.29.16,500,mlp_sigmoid_for_kan_bspline_h3_p90_h22_p89,111,5,0.79837,0.781456,0.843411,0.810636,0.043572
+kan_bspline,KAN B-spline,I.29.16,1000,kan_bspline_h3x3_p180,210,4,0.130971,0.122599,0.26726,0.258888,0.267354
+kan_gaussrbf,KAN Gaussian RBF,I.29.16,1000,kan_gaussrbf_h3x3_p169,196,4,0.124384,0.093579,0.20364,0.172835,0.121475
+mlp_relu,MLP ReLU,I.29.16,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.268265,0.225698,0.283098,0.259086,0.033357
+mlp_sigmoid,MLP sigmoid,I.29.16,1000,mlp_sigmoid_for_kan_bspline_h3_p90_h22_p89,111,5,0.80004,0.792988,0.854,0.818604,0.038164
+kan_bspline,KAN B-spline,I.30.3,10,kan_bspline_h5_p150,150,4,0.607536,0.600192,0.617473,0.61013,0.013877
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,10,kan_gaussrbf_h5_p141,141,4,0.660344,0.617565,0.705578,0.662798,0.053871
+mlp_relu,MLP ReLU,I.30.3,10,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.502448,0.494436,0.539747,0.513539,0.024684
+mlp_sigmoid,MLP sigmoid,I.30.3,10,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.549193,0.507937,0.55178,0.545211,0.043949
+kan_bspline,KAN B-spline,I.30.3,20,kan_bspline_h2_p60,60,4,0.536338,0.494676,0.558086,0.516425,0.059381
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,20,kan_gaussrbf_h4_p113,113,4,0.509525,0.489975,0.542866,0.523317,0.057254
+mlp_relu,MLP ReLU,I.30.3,20,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.440105,0.428569,0.450418,0.443618,0.023685
+mlp_sigmoid,MLP sigmoid,I.30.3,20,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.517479,0.4851,0.533097,0.514767,0.0315
+kan_bspline,KAN B-spline,I.30.3,30,kan_bspline_h3_p90,90,4,0.526064,0.516234,0.535283,0.525453,0.019496
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,30,kan_gaussrbf_h4_p113,113,4,0.430174,0.427419,0.432721,0.429966,0.003807
+mlp_relu,MLP ReLU,I.30.3,30,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.273556,0.271828,0.28677,0.283713,0.021808
+mlp_sigmoid,MLP sigmoid,I.30.3,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.417631,0.395742,0.444226,0.428229,0.040325
+kan_bspline,KAN B-spline,I.30.3,40,kan_bspline_h3x3_p180,180,4,0.244818,0.21487,0.273226,0.243279,0.040115
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,40,kan_gaussrbf_h5_p141,141,4,0.249134,0.236824,0.258491,0.246181,0.021286
+mlp_relu,MLP ReLU,I.30.3,40,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.196801,0.193111,0.225079,0.208282,0.041974
+mlp_sigmoid,MLP sigmoid,I.30.3,40,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.33201,0.330821,0.359755,0.33843,0.029164
+kan_bspline,KAN B-spline,I.30.3,50,kan_bspline_h5_p150,150,4,0.250912,0.241384,0.257443,0.247915,0.012396
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,50,kan_gaussrbf_h5_p141,141,4,0.272597,0.262575,0.290227,0.280205,0.028466
+mlp_relu,MLP ReLU,I.30.3,50,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.203021,0.199082,0.223036,0.212736,0.032752
+mlp_sigmoid,MLP sigmoid,I.30.3,50,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.322876,0.303603,0.33706,0.321243,0.03141
+kan_bspline,KAN B-spline,I.30.3,100,kan_bspline_h3x3_p180,180,4,0.1195,0.113416,0.128386,0.122302,0.017283
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,100,kan_gaussrbf_h3x3_p169,169,4,0.101821,0.087144,0.116076,0.101399,0.026179
+mlp_relu,MLP ReLU,I.30.3,100,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.124653,0.11621,0.13018,0.126286,0.017025
+mlp_sigmoid,MLP sigmoid,I.30.3,100,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.37127,0.369001,0.397874,0.384489,0.038466
+kan_bspline,KAN B-spline,I.30.3,200,kan_bspline_h3x3_p180,180,4,0.109312,0.097416,0.135489,0.123593,0.052108
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,200,kan_gaussrbf_h3x3_p169,169,4,0.061059,0.052637,0.076958,0.068535,0.023038
+mlp_relu,MLP ReLU,I.30.3,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.139753,0.122512,0.149624,0.136521,0.017629
+mlp_sigmoid,MLP sigmoid,I.30.3,200,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.545838,0.502851,0.550445,0.534165,0.049983
+kan_bspline,KAN B-spline,I.30.3,500,kan_bspline_h3x3_p180,180,4,0.065051,0.054098,0.077588,0.066635,0.017264
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,500,kan_gaussrbf_h3x3_p169,169,4,0.055683,0.051262,0.059649,0.055228,0.007346
+mlp_relu,MLP ReLU,I.30.3,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.097354,0.096368,0.105219,0.098213,0.013157
+mlp_sigmoid,MLP sigmoid,I.30.3,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.371329,0.360383,0.382527,0.377534,0.044936
+kan_bspline,KAN B-spline,I.30.3,1000,kan_bspline_h3x3_p180,180,4,0.078644,0.074857,0.084493,0.080707,0.013165
+kan_gaussrbf,KAN Gaussian RBF,I.30.3,1000,kan_gaussrbf_h5_p141,141,4,0.056767,0.054304,0.060022,0.057559,0.006204
+mlp_relu,MLP ReLU,I.30.3,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.090545,0.084869,0.090912,0.091784,0.012168
+mlp_sigmoid,MLP sigmoid,I.30.3,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.37347,0.361332,0.382244,0.378388,0.046131
+kan_bspline,KAN B-spline,I.30.5,10,kan_bspline_h3x3_p180,180,4,0.243791,0.213805,0.291559,0.261573,0.081728
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,10,kan_gaussrbf_h4_p113,113,4,0.251843,0.225563,0.278759,0.252479,0.037566
+mlp_relu,MLP ReLU,I.30.5,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.111088,0.106128,0.116402,0.119029,0.02168
+mlp_sigmoid,MLP sigmoid,I.30.5,10,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.139948,0.128699,0.1473,0.138487,0.011843
+kan_bspline,KAN B-spline,I.30.5,20,kan_bspline_h3x3_p180,180,4,0.053698,0.050782,0.057664,0.054748,0.00586
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,20,kan_gaussrbf_h5_p141,141,4,0.088125,0.067664,0.114986,0.094525,0.034117
+mlp_relu,MLP ReLU,I.30.5,20,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.062559,0.060214,0.066839,0.063748,0.005254
+mlp_sigmoid,MLP sigmoid,I.30.5,20,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.090936,0.089559,0.091668,0.091221,0.002346
+kan_bspline,KAN B-spline,I.30.5,30,kan_bspline_h2x2_p100,100,4,0.061239,0.05691,0.06435,0.06002,0.007699
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,30,kan_gaussrbf_h3x3_p169,169,4,0.063959,0.05802,0.069714,0.063775,0.016214
+mlp_relu,MLP ReLU,I.30.5,30,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.05261,0.05201,0.056545,0.05555,0.00679
+mlp_sigmoid,MLP sigmoid,I.30.5,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.091604,0.090038,0.095181,0.094746,0.007137
+kan_bspline,KAN B-spline,I.30.5,40,kan_bspline_h3x3_p180,180,4,0.030214,0.026746,0.036215,0.032746,0.008134
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,40,kan_gaussrbf_h3x3_p169,169,4,0.049803,0.041355,0.057181,0.048733,0.011172
+mlp_relu,MLP ReLU,I.30.5,40,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.0515,0.050819,0.058422,0.054618,0.006325
+mlp_sigmoid,MLP sigmoid,I.30.5,40,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.080468,0.078853,0.082191,0.079839,0.004301
+kan_bspline,KAN B-spline,I.30.5,50,kan_bspline_h2x2_p100,100,4,0.026013,0.023009,0.032543,0.029539,0.011212
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,50,kan_gaussrbf_h3x3_p169,169,4,0.02777,0.026647,0.03043,0.029307,0.004568
+mlp_relu,MLP ReLU,I.30.5,50,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.04519,0.041264,0.045582,0.042904,0.004072
+mlp_sigmoid,MLP sigmoid,I.30.5,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.083197,0.082705,0.09619,0.088118,0.008994
+kan_bspline,KAN B-spline,I.30.5,100,kan_bspline_h3x3_p180,180,4,0.019626,0.018623,0.020657,0.019654,0.001596
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,100,kan_gaussrbf_h3x3_p169,169,4,0.018229,0.016362,0.019266,0.0174,0.002665
+mlp_relu,MLP ReLU,I.30.5,100,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.04001,0.038753,0.041166,0.040962,0.004789
+mlp_sigmoid,MLP sigmoid,I.30.5,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.11191,0.106445,0.114171,0.109747,0.007816
+kan_bspline,KAN B-spline,I.30.5,200,kan_bspline_h3x3_p180,180,4,0.019678,0.015941,0.023512,0.019775,0.005576
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,200,kan_gaussrbf_h3x3_p169,169,4,0.016537,0.014844,0.019989,0.018296,0.005571
+mlp_relu,MLP ReLU,I.30.5,200,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.041615,0.038534,0.044173,0.041472,0.004318
+mlp_sigmoid,MLP sigmoid,I.30.5,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.135324,0.127971,0.13876,0.133345,0.008146
+kan_bspline,KAN B-spline,I.30.5,500,kan_bspline_h3x3_p180,180,4,0.020691,0.019003,0.022181,0.020493,0.002143
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,500,kan_gaussrbf_h3x3_p169,169,4,0.014966,0.014679,0.015031,0.014744,0.000584
+mlp_relu,MLP ReLU,I.30.5,500,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.040944,0.038096,0.041033,0.040337,0.004304
+mlp_sigmoid,MLP sigmoid,I.30.5,500,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.124337,0.116717,0.130387,0.124097,0.008496
+kan_bspline,KAN B-spline,I.30.5,1000,kan_bspline_h3x3_p180,180,4,0.017053,0.015951,0.017553,0.016451,0.00202
+kan_gaussrbf,KAN Gaussian RBF,I.30.5,1000,kan_gaussrbf_h3x3_p169,169,4,0.015065,0.013382,0.018676,0.016993,0.005434
+mlp_relu,MLP ReLU,I.30.5,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.040112,0.035989,0.040492,0.03907,0.003923
+mlp_sigmoid,MLP sigmoid,I.30.5,1000,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.131213,0.123061,0.13738,0.130924,0.008742
+kan_bspline,KAN B-spline,I.37.4,10,kan_bspline_h2_p60,60,4,0.281162,0.274543,0.330143,0.323525,0.09282
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,10,kan_gaussrbf_h1_p29,29,4,0.457904,0.436529,0.604396,0.583021,0.280445
+mlp_relu,MLP ReLU,I.37.4,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.218937,0.215762,0.228632,0.225108,0.01827
+mlp_sigmoid,MLP sigmoid,I.37.4,10,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.232314,0.22697,0.250298,0.258196,0.055653
+kan_bspline,KAN B-spline,I.37.4,20,kan_bspline_h5_p150,150,4,0.159455,0.126809,0.198163,0.165517,0.05033
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,20,kan_gaussrbf_h4_p113,113,4,0.20272,0.196597,0.207885,0.201762,0.009717
+mlp_relu,MLP ReLU,I.37.4,20,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.178636,0.172023,0.187703,0.191501,0.046847
+mlp_sigmoid,MLP sigmoid,I.37.4,20,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.121624,0.118076,0.132178,0.131803,0.022787
+kan_bspline,KAN B-spline,I.37.4,30,kan_bspline_h4_p120,120,4,0.100489,0.09544,0.123106,0.118057,0.043009
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,30,kan_gaussrbf_h5_p141,141,4,0.132572,0.124543,0.144827,0.136798,0.018651
+mlp_relu,MLP ReLU,I.37.4,30,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.154633,0.152568,0.160163,0.154538,0.014872
+mlp_sigmoid,MLP sigmoid,I.37.4,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.164861,0.163339,0.167324,0.169844,0.014607
+kan_bspline,KAN B-spline,I.37.4,40,kan_bspline_h5_p150,150,4,0.100139,0.098518,0.102044,0.100423,0.002284
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,40,kan_gaussrbf_h3x3_p169,169,4,0.110062,0.102675,0.132443,0.125055,0.037277
+mlp_relu,MLP ReLU,I.37.4,40,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.147028,0.145411,0.14803,0.146913,0.009067
+mlp_sigmoid,MLP sigmoid,I.37.4,40,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.161372,0.153653,0.161502,0.158214,0.005514
+kan_bspline,KAN B-spline,I.37.4,50,kan_bspline_h5_p150,150,4,0.086743,0.085063,0.094747,0.093067,0.015258
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,50,kan_gaussrbf_h2x2_p95,95,4,0.108808,0.102328,0.122816,0.116337,0.030958
+mlp_relu,MLP ReLU,I.37.4,50,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.144512,0.144224,0.144767,0.143979,0.005793
+mlp_sigmoid,MLP sigmoid,I.37.4,50,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.168404,0.164756,0.169184,0.166622,0.005933
+kan_bspline,KAN B-spline,I.37.4,100,kan_bspline_h5_p150,150,4,0.047846,0.04683,0.049541,0.048526,0.003129
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,100,kan_gaussrbf_h3x3_p169,169,4,0.037824,0.035723,0.041304,0.039203,0.007848
+mlp_relu,MLP ReLU,I.37.4,100,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.079681,0.07838,0.079704,0.080839,0.005044
+mlp_sigmoid,MLP sigmoid,I.37.4,100,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.169992,0.167265,0.235038,0.196538,0.043075
+kan_bspline,KAN B-spline,I.37.4,200,kan_bspline_h5_p150,150,4,0.060768,0.057795,0.065769,0.062796,0.012409
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,200,kan_gaussrbf_h3x3_p169,169,4,0.039735,0.036518,0.041797,0.03858,0.007628
+mlp_relu,MLP ReLU,I.37.4,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.079476,0.076471,0.082158,0.079815,0.008744
+mlp_sigmoid,MLP sigmoid,I.37.4,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.529763,0.456854,0.603973,0.546127,0.125069
+kan_bspline,KAN B-spline,I.37.4,500,kan_bspline_h5_p150,150,4,0.05039,0.047979,0.051283,0.048873,0.004801
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,500,kan_gaussrbf_h3x3_p169,169,4,0.032423,0.028058,0.036765,0.032401,0.005701
+mlp_relu,MLP ReLU,I.37.4,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.07158,0.06963,0.077563,0.072801,0.004815
+mlp_sigmoid,MLP sigmoid,I.37.4,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.221697,0.196813,0.230484,0.262338,0.131531
+kan_bspline,KAN B-spline,I.37.4,1000,kan_bspline_h3x3_p180,180,4,0.044981,0.04218,0.047648,0.044847,0.005236
+kan_gaussrbf,KAN Gaussian RBF,I.37.4,1000,kan_gaussrbf_h3x3_p169,169,4,0.029851,0.026978,0.033132,0.03026,0.004427
+mlp_relu,MLP ReLU,I.37.4,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.075374,0.071726,0.0781,0.077679,0.008881
+mlp_sigmoid,MLP sigmoid,I.37.4,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.311216,0.251081,0.354259,0.353945,0.163746
+kan_bspline,KAN B-spline,I.40.1,10,kan_bspline_h5_p150,150,4,0.542653,0.534533,0.571307,0.563188,0.052837
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,10,kan_gaussrbf_h2_p57,57,4,0.60249,0.572633,0.626848,0.596991,0.035898
+mlp_relu,MLP ReLU,I.40.1,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.455071,0.452295,0.48819,0.462568,0.04132
+mlp_sigmoid,MLP sigmoid,I.40.1,10,mlp_sigmoid_for_kan_bspline_h2x2_p100_h8x8_p105,105,5,0.418411,0.400265,0.504064,0.458615,0.095532
+kan_bspline,KAN B-spline,I.40.1,20,kan_bspline_h5_p150,150,4,0.448658,0.427964,0.458585,0.437891,0.034226
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,20,kan_gaussrbf_h2_p57,57,4,0.536103,0.514605,0.560222,0.538724,0.034644
+mlp_relu,MLP ReLU,I.40.1,20,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.28985,0.289832,0.311036,0.304895,0.024414
+mlp_sigmoid,MLP sigmoid,I.40.1,20,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.421143,0.394242,0.423082,0.419503,0.043971
+kan_bspline,KAN B-spline,I.40.1,30,kan_bspline_h2_p60,60,4,0.254177,0.238183,0.284351,0.268357,0.0738
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,30,kan_gaussrbf_h3x3_p169,169,4,0.256659,0.229831,0.274309,0.24748,0.035684
+mlp_relu,MLP ReLU,I.40.1,30,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.149576,0.141508,0.159324,0.156224,0.022893
+mlp_sigmoid,MLP sigmoid,I.40.1,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.241241,0.238637,0.254365,0.248792,0.040065
+kan_bspline,KAN B-spline,I.40.1,40,kan_bspline_h2_p60,60,4,0.230215,0.2231,0.274059,0.266944,0.089798
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,40,kan_gaussrbf_h2x2_p95,95,4,0.19143,0.151206,0.323074,0.28285,0.214479
+mlp_relu,MLP ReLU,I.40.1,40,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.102728,0.090687,0.105338,0.095827,0.014139
+mlp_sigmoid,MLP sigmoid,I.40.1,40,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.220375,0.205735,0.225773,0.220357,0.025026
+kan_bspline,KAN B-spline,I.40.1,50,kan_bspline_h1x1_p40,40,4,0.103661,0.095307,0.110473,0.102118,0.016725
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,50,kan_gaussrbf_h2x2_p95,95,4,0.097428,0.085652,0.110179,0.098403,0.022299
+mlp_relu,MLP ReLU,I.40.1,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.080835,0.079956,0.08292,0.081677,0.002415
+mlp_sigmoid,MLP sigmoid,I.40.1,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.177701,0.173021,0.188537,0.181712,0.033931
+kan_bspline,KAN B-spline,I.40.1,100,kan_bspline_h3x3_p180,180,4,0.061169,0.055891,0.070594,0.065317,0.016942
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,100,kan_gaussrbf_h3_p85,85,4,0.086873,0.081009,0.09502,0.089156,0.012895
+mlp_relu,MLP ReLU,I.40.1,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.079105,0.077139,0.082526,0.082337,0.008942
+mlp_sigmoid,MLP sigmoid,I.40.1,100,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.160013,0.158753,0.162533,0.164865,0.024636
+kan_bspline,KAN B-spline,I.40.1,200,kan_bspline_h3x3_p180,180,4,0.056629,0.053223,0.059198,0.055791,0.00448
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,200,kan_gaussrbf_h3x3_p169,169,4,0.063069,0.059177,0.067001,0.063108,0.006682
+mlp_relu,MLP ReLU,I.40.1,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.086297,0.079031,0.092802,0.088515,0.011448
+mlp_sigmoid,MLP sigmoid,I.40.1,200,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.253493,0.242978,0.266807,0.265019,0.050824
+kan_bspline,KAN B-spline,I.40.1,500,kan_bspline_h3x3_p180,180,4,0.049559,0.04866,0.050913,0.050014,0.002092
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,500,kan_gaussrbf_h3x3_p169,169,4,0.052261,0.050346,0.054947,0.053032,0.0039
+mlp_relu,MLP ReLU,I.40.1,500,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.076538,0.07524,0.077378,0.074496,0.006256
+mlp_sigmoid,MLP sigmoid,I.40.1,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.226749,0.215005,0.242509,0.233062,0.035167
+kan_bspline,KAN B-spline,I.40.1,1000,kan_bspline_h3x3_p180,180,4,0.046202,0.040955,0.051107,0.04586,0.008331
+kan_gaussrbf,KAN Gaussian RBF,I.40.1,1000,kan_gaussrbf_h3x3_p169,169,4,0.04436,0.034858,0.054796,0.045295,0.012583
+mlp_relu,MLP ReLU,I.40.1,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.06658,0.066542,0.074118,0.068121,0.006773
+mlp_sigmoid,MLP sigmoid,I.40.1,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.2305,0.216754,0.246555,0.235941,0.035731
+kan_bspline,KAN B-spline,I.44.4,10,kan_bspline_h5_p150,150,4,0.748889,0.740849,0.767828,0.759788,0.043145
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,10,kan_gaussrbf_h1_p29,29,4,0.755124,0.746238,0.782187,0.773301,0.045209
+mlp_relu,MLP ReLU,I.44.4,10,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.580084,0.540757,0.583399,0.566603,0.052548
+mlp_sigmoid,MLP sigmoid,I.44.4,10,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.726947,0.725259,0.743353,0.73476,0.027578
+kan_bspline,KAN B-spline,I.44.4,20,kan_bspline_h5_p150,150,4,0.274831,0.233681,0.30783,0.26668,0.054941
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,20,kan_gaussrbf_h3x3_p169,169,4,0.296761,0.289487,0.320992,0.313718,0.048156
+mlp_relu,MLP ReLU,I.44.4,20,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.165935,0.162383,0.167155,0.170152,0.014194
+mlp_sigmoid,MLP sigmoid,I.44.4,20,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.272933,0.260744,0.287909,0.281068,0.028581
+kan_bspline,KAN B-spline,I.44.4,30,kan_bspline_h5_p150,150,4,0.192786,0.184035,0.21022,0.201469,0.042411
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,30,kan_gaussrbf_h3x3_p169,169,4,0.300718,0.279929,0.336765,0.315976,0.070843
+mlp_relu,MLP ReLU,I.44.4,30,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.148096,0.143506,0.155657,0.15809,0.031551
+mlp_sigmoid,MLP sigmoid,I.44.4,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.281897,0.276372,0.302912,0.28817,0.017169
+kan_bspline,KAN B-spline,I.44.4,40,kan_bspline_h5_p150,150,4,0.182626,0.178467,0.187683,0.183524,0.007066
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,40,kan_gaussrbf_h3x3_p169,169,4,0.308859,0.268656,0.365601,0.325398,0.088371
+mlp_relu,MLP ReLU,I.44.4,40,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,5,0.150816,0.143154,0.161014,0.152482,0.010438
+mlp_sigmoid,MLP sigmoid,I.44.4,40,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.268733,0.26596,0.284637,0.279228,0.029708
+kan_bspline,KAN B-spline,I.44.4,50,kan_bspline_h3x3_p180,180,4,0.110211,0.104875,0.116168,0.110832,0.01223
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,50,kan_gaussrbf_h2x2_p95,95,4,0.123943,0.101262,0.16481,0.142128,0.057912
+mlp_relu,MLP ReLU,I.44.4,50,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,5,0.143106,0.141274,0.164317,0.150434,0.021305
+mlp_sigmoid,MLP sigmoid,I.44.4,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.239856,0.230801,0.253104,0.245451,0.02809
+kan_bspline,KAN B-spline,I.44.4,100,kan_bspline_h3x3_p180,180,4,0.044351,0.041133,0.049021,0.045803,0.007488
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,100,kan_gaussrbf_h3x3_p169,169,4,0.047972,0.043871,0.055965,0.051864,0.013606
+mlp_relu,MLP ReLU,I.44.4,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.082673,0.08033,0.083761,0.080967,0.011765
+mlp_sigmoid,MLP sigmoid,I.44.4,100,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.202609,0.199012,0.241525,0.2112,0.035666
+kan_bspline,KAN B-spline,I.44.4,200,kan_bspline_h3x3_p180,180,4,0.058662,0.056503,0.060301,0.058142,0.00524
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,200,kan_gaussrbf_h3x3_p169,169,4,0.043412,0.039157,0.051143,0.046888,0.012985
+mlp_relu,MLP ReLU,I.44.4,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.081501,0.081394,0.081748,0.086315,0.014923
+mlp_sigmoid,MLP sigmoid,I.44.4,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.344376,0.341037,0.354355,0.350385,0.036647
+kan_bspline,KAN B-spline,I.44.4,500,kan_bspline_h3x3_p180,180,4,0.035518,0.033005,0.037993,0.03548,0.006036
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,500,kan_gaussrbf_h3x3_p169,169,4,0.033274,0.030554,0.035532,0.032812,0.003472
+mlp_relu,MLP ReLU,I.44.4,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.070298,0.069564,0.075034,0.072124,0.003848
+mlp_sigmoid,MLP sigmoid,I.44.4,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.330236,0.328719,0.349593,0.342587,0.027999
+kan_bspline,KAN B-spline,I.44.4,1000,kan_bspline_h3x3_p180,180,4,0.028313,0.02792,0.032684,0.032292,0.008319
+kan_gaussrbf,KAN Gaussian RBF,I.44.4,1000,kan_gaussrbf_h3x3_p169,169,4,0.032533,0.030469,0.033848,0.031784,0.003122
+mlp_relu,MLP ReLU,I.44.4,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.070101,0.066764,0.073732,0.070654,0.004168
+mlp_sigmoid,MLP sigmoid,I.44.4,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.34427,0.340203,0.353685,0.351705,0.026096
+kan_bspline,KAN B-spline,I.50.26,10,kan_bspline_h3_p90,90,4,0.612372,0.595583,0.652004,0.635215,0.071728
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,10,kan_gaussrbf_h5_p141,141,4,0.654788,0.639418,0.696011,0.680641,0.067043
+mlp_relu,MLP ReLU,I.50.26,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.572258,0.548695,0.590203,0.569479,0.029489
+mlp_sigmoid,MLP sigmoid,I.50.26,10,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,0.683119,0.674958,1.004641,0.805731,0.182296
+kan_bspline,KAN B-spline,I.50.26,20,kan_bspline_h1_p30,30,4,0.38465,0.381687,0.519716,0.516753,0.267961
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,20,kan_gaussrbf_h1_p29,29,4,0.485957,0.463987,0.60563,0.58366,0.240454
+mlp_relu,MLP ReLU,I.50.26,20,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,113,5,0.407237,0.400526,0.444897,0.424055,0.034323
+mlp_sigmoid,MLP sigmoid,I.50.26,20,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.485214,0.481048,0.501214,0.487711,0.013919
+kan_bspline,KAN B-spline,I.50.26,30,kan_bspline_h5_p150,150,4,0.279023,0.262796,0.291827,0.2756,0.036295
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,30,kan_gaussrbf_h4_p113,113,4,0.380987,0.363388,0.400528,0.382928,0.024979
+mlp_relu,MLP ReLU,I.50.26,30,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.398796,0.358422,0.427029,0.386461,0.053248
+mlp_sigmoid,MLP sigmoid,I.50.26,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,5,0.467726,0.462765,0.470154,0.470533,0.011768
+kan_bspline,KAN B-spline,I.50.26,40,kan_bspline_h2x2_p100,100,4,0.264138,0.243011,0.272148,0.251021,0.04262
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,40,kan_gaussrbf_h3_p85,85,4,0.284188,0.255325,0.29663,0.267767,0.059471
+mlp_relu,MLP ReLU,I.50.26,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.312848,0.28809,0.334926,0.313492,0.030953
+mlp_sigmoid,MLP sigmoid,I.50.26,40,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.424256,0.422874,0.431478,0.426699,0.00511
+kan_bspline,KAN B-spline,I.50.26,50,kan_bspline_h5_p150,150,4,0.23913,0.229544,0.255515,0.245929,0.036341
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,50,kan_gaussrbf_h3x3_p169,169,4,0.140349,0.134096,0.152673,0.146421,0.024367
+mlp_relu,MLP ReLU,I.50.26,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.283412,0.280283,0.310824,0.296253,0.028636
+mlp_sigmoid,MLP sigmoid,I.50.26,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.43362,0.433463,0.442527,0.437586,0.005901
+kan_bspline,KAN B-spline,I.50.26,100,kan_bspline_h5_p150,150,4,0.222234,0.208113,0.269255,0.255133,0.096411
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,100,kan_gaussrbf_h5_p141,141,4,0.089466,0.089229,0.098843,0.098606,0.018591
+mlp_relu,MLP ReLU,I.50.26,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.253178,0.245717,0.280621,0.270647,0.03792
+mlp_sigmoid,MLP sigmoid,I.50.26,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.414031,0.408649,0.414037,0.411266,0.004093
+kan_bspline,KAN B-spline,I.50.26,200,kan_bspline_h3x3_p180,180,4,0.218854,0.176525,0.241548,0.19922,0.070339
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,200,kan_gaussrbf_h3x3_p169,169,4,0.104746,0.103206,0.107563,0.106023,0.006858
+mlp_relu,MLP ReLU,I.50.26,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.302323,0.283721,0.304086,0.299106,0.017431
+mlp_sigmoid,MLP sigmoid,I.50.26,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.512228,0.499649,0.525624,0.520668,0.035127
+kan_bspline,KAN B-spline,I.50.26,500,kan_bspline_h4_p120,120,4,0.184729,0.142417,0.222469,0.180157,0.063917
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,500,kan_gaussrbf_h3x3_p169,169,4,0.069269,0.066529,0.084487,0.081748,0.028304
+mlp_relu,MLP ReLU,I.50.26,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.265552,0.260524,0.293517,0.270368,0.027167
+mlp_sigmoid,MLP sigmoid,I.50.26,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.504516,0.485866,0.514084,0.500856,0.032915
+kan_bspline,KAN B-spline,I.50.26,1000,kan_bspline_h5_p150,150,4,0.141391,0.099819,0.183916,0.142343,0.055853
+kan_gaussrbf,KAN Gaussian RBF,I.50.26,1000,kan_gaussrbf_h3x3_p169,169,4,0.04945,0.045394,0.053728,0.049672,0.009467
+mlp_relu,MLP ReLU,I.50.26,1000,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.266187,0.254924,0.297335,0.271125,0.038817
+mlp_sigmoid,MLP sigmoid,I.50.26,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.502708,0.474313,0.50534,0.493319,0.031683
+kan_bspline,KAN B-spline,I.6.2,10,kan_bspline_h3x3_p180,180,5,0.983058,0.866778,1.000668,0.946536,0.078306
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,10,kan_gaussrbf_h3x3_p169,169,5,0.971511,0.963452,1.007341,1.002585,0.136493
+mlp_relu,MLP ReLU,I.6.2,10,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,5,1.065778,0.99218,1.228235,1.097394,0.150284
+mlp_sigmoid,MLP sigmoid,I.6.2,10,mlp_sigmoid_for_kan_gaussrbf_h4_p113_h28_p113,113,5,0.882877,0.848922,0.908383,0.908279,0.098159
+kan_bspline,KAN B-spline,I.6.2,20,kan_bspline_h1_p30,30,5,0.889962,0.851197,0.913209,0.884106,0.036791
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,20,kan_gaussrbf_h1_p29,29,5,0.765689,0.67403,0.92287,0.782653,0.13755
+mlp_relu,MLP ReLU,I.6.2,20,mlp_relu_for_kan_bspline_h1x1_p40_h4x4_p37,37,5,0.617828,0.55092,1.40864,0.93643,0.510093
+mlp_sigmoid,MLP sigmoid,I.6.2,20,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.764616,0.724317,0.794043,0.770827,0.084407
+kan_bspline,KAN B-spline,I.6.2,30,kan_bspline_h3x3_p180,180,5,0.203352,0.190741,0.225044,0.214862,0.034699
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,30,kan_gaussrbf_h5_p141,141,5,0.283439,0.272077,0.298058,0.290338,0.031111
+mlp_relu,MLP ReLU,I.6.2,30,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,105,5,0.323887,0.268562,0.334306,0.345198,0.119846
+mlp_sigmoid,MLP sigmoid,I.6.2,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.293293,0.28799,0.309691,0.293439,0.021016
+kan_bspline,KAN B-spline,I.6.2,40,kan_bspline_h5_p150,150,5,0.214305,0.21232,0.249444,0.231753,0.030878
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,40,kan_gaussrbf_h2x2_p95,95,5,0.173044,0.154132,0.338353,0.268501,0.169929
+mlp_relu,MLP ReLU,I.6.2,40,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.301762,0.26503,0.313843,0.292169,0.033859
+mlp_sigmoid,MLP sigmoid,I.6.2,40,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.334777,0.321745,0.36409,0.351512,0.06444
+kan_bspline,KAN B-spline,I.6.2,50,kan_bspline_h3x3_p180,180,5,0.123175,0.114125,0.130672,0.131496,0.037586
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,50,kan_gaussrbf_h3x3_p169,169,5,0.166913,0.138909,0.193028,0.168101,0.036625
+mlp_relu,MLP ReLU,I.6.2,50,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.246436,0.216702,0.261687,0.247967,0.037933
+mlp_sigmoid,MLP sigmoid,I.6.2,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.346312,0.332267,0.347813,0.365938,0.072777
+kan_bspline,KAN B-spline,I.6.2,100,kan_bspline_h3x3_p180,180,5,0.101654,0.101176,0.110492,0.106137,0.007795
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,100,kan_gaussrbf_h3x3_p169,169,5,0.078535,0.077145,0.079165,0.076057,0.00588
+mlp_relu,MLP ReLU,I.6.2,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.203445,0.199462,0.217631,0.208514,0.018039
+mlp_sigmoid,MLP sigmoid,I.6.2,100,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.352431,0.351407,0.357782,0.385007,0.07888
+kan_bspline,KAN B-spline,I.6.2,200,kan_bspline_h3x3_p180,180,5,0.121529,0.1198,0.124879,0.126706,0.015178
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,200,kan_gaussrbf_h3x3_p169,169,5,0.086636,0.085082,0.09609,0.08874,0.010528
+mlp_relu,MLP ReLU,I.6.2,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.194384,0.185537,0.225841,0.204832,0.036207
+mlp_sigmoid,MLP sigmoid,I.6.2,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.542697,0.528392,0.557276,0.543664,0.027831
+kan_bspline,KAN B-spline,I.6.2,500,kan_bspline_h2x2_p100,100,5,0.120026,0.118343,0.122799,0.120754,0.010373
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,500,kan_gaussrbf_h3x3_p169,169,5,0.072484,0.071896,0.073451,0.073619,0.007314
+mlp_relu,MLP ReLU,I.6.2,500,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,5,0.184217,0.16942,0.187582,0.175553,0.031373
+mlp_sigmoid,MLP sigmoid,I.6.2,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.577502,0.549202,0.629938,0.588846,0.044101
+kan_bspline,KAN B-spline,I.6.2,1000,kan_bspline_h3x3_p180,180,5,0.116103,0.098898,0.132397,0.115519,0.019588
+kan_gaussrbf,KAN Gaussian RBF,I.6.2,1000,kan_gaussrbf_h3x3_p169,169,5,0.064711,0.058816,0.06861,0.065801,0.009007
+mlp_relu,MLP ReLU,I.6.2,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,5,0.182038,0.172272,0.193145,0.172856,0.037556
+mlp_sigmoid,MLP sigmoid,I.6.2,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.584777,0.576139,0.642308,0.606036,0.042928
+kan_bspline,KAN B-spline,I.6.2b,10,kan_bspline_h1_p30,40,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,10,kan_gaussrbf_h1_p29,38,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,10,mlp_relu_for_kan_bspline_h1_p30_h7_p29,36,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,10,mlp_sigmoid_for_kan_bspline_h1_p30_h7_p29,36,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,20,kan_bspline_h1_p30,40,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,20,kan_gaussrbf_h1_p29,38,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,20,mlp_relu_for_kan_bspline_h1_p30_h7_p29,36,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,20,mlp_sigmoid_for_kan_bspline_h1_p30_h7_p29,36,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,30,kan_bspline_h2x2_p100,120,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,30,kan_gaussrbf_h5_p141,186,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,30,mlp_relu_for_kan_bspline_h2_p60_h15_p61,76,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,30,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,40,kan_bspline_h1x1_p40,50,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,40,kan_gaussrbf_h3x3_p169,196,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,40,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,40,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,50,kan_bspline_h2x2_p100,120,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,50,kan_gaussrbf_h3_p85,112,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,50,mlp_relu_for_kan_gaussrbf_h1x1_p39_h4x4_p37,41,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,50,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,100,kan_bspline_h5_p150,200,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,100,kan_gaussrbf_h4_p113,149,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,100,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,200,kan_bspline_h3x3_p180,210,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,200,kan_gaussrbf_h3x3_p169,196,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_relu,MLP ReLU,I.6.2b,200,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,5,1.000882,1.000882,1.000882,1.000882,0.0
+mlp_sigmoid,MLP sigmoid,I.6.2b,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,1.000882,1.000882,1.000882,1.000882,0.0
+kan_bspline,KAN B-spline,I.6.2b,500,kan_bspline_h3x3_p180,210,5,0.976271,0.97188,0.980933,0.97703,0.005785
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,500,kan_gaussrbf_h3x3_p169,196,5,0.980104,0.970154,0.983029,0.977728,0.007212
+mlp_relu,MLP ReLU,I.6.2b,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.990207,0.98923,0.991679,0.990685,0.002927
+mlp_sigmoid,MLP sigmoid,I.6.2b,500,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,151,5,0.999478,0.999015,1.000453,0.999635,0.001037
+kan_bspline,KAN B-spline,I.6.2b,1000,kan_bspline_h3x3_p180,210,5,0.989398,0.987573,0.99026,0.989738,0.002736
+kan_gaussrbf,KAN Gaussian RBF,I.6.2b,1000,kan_gaussrbf_h3x3_p169,196,5,0.991394,0.98949,0.993832,0.991401,0.002866
+mlp_relu,MLP ReLU,I.6.2b,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.996112,0.99535,0.996451,0.995721,0.000967
+mlp_sigmoid,MLP sigmoid,I.6.2b,1000,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,151,5,1.000003,0.999917,1.000212,1.000011,0.000323
+kan_bspline,KAN B-spline,I.9.18,10,kan_bspline_h3_p90,210,5,0.940585,0.939661,0.947541,0.94226,0.026366
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,10,kan_gaussrbf_h1x1_p39,75,5,0.974113,0.964406,1.026469,0.991664,0.058055
+mlp_relu,MLP ReLU,I.9.18,10,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,113,5,0.840799,0.826903,0.865605,0.887069,0.108361
+mlp_sigmoid,MLP sigmoid,I.9.18,10,mlp_sigmoid_for_kan_gaussrbf_h1x1_p39_h4x4_p37,53,5,0.911954,0.898994,0.931438,0.914916,0.018667
+kan_bspline,KAN B-spline,I.9.18,20,kan_bspline_h4_p120,280,5,0.847604,0.807459,0.867528,0.843938,0.065604
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,20,kan_gaussrbf_h2x2_p95,167,5,0.877275,0.86068,0.924836,0.898168,0.059417
+mlp_relu,MLP ReLU,I.9.18,20,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.794086,0.793286,0.893087,0.833482,0.075313
+mlp_sigmoid,MLP sigmoid,I.9.18,20,mlp_sigmoid_for_kan_bspline_h1x1_p40_h4x4_p37,53,5,0.731241,0.72902,0.740064,0.73655,0.028753
+kan_bspline,KAN B-spline,I.9.18,30,kan_bspline_h5_p150,350,5,0.800569,0.78263,0.80593,0.797188,0.016691
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,30,kan_gaussrbf_h5_p141,321,5,0.820414,0.788549,0.860972,0.830763,0.050928
+mlp_relu,MLP ReLU,I.9.18,30,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,221,5,0.677649,0.673683,0.69811,0.68049,0.063458
+mlp_sigmoid,MLP sigmoid,I.9.18,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.600819,0.595778,0.610311,0.603182,0.01135
+kan_bspline,KAN B-spline,I.9.18,40,kan_bspline_h3x3_p180,300,5,0.769979,0.703973,0.771869,0.744084,0.070188
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,40,kan_gaussrbf_h5_p141,321,5,0.838626,0.830634,0.897069,0.86313,0.069635
+mlp_relu,MLP ReLU,I.9.18,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,221,5,0.644124,0.618078,0.652579,0.630035,0.034427
+mlp_sigmoid,MLP sigmoid,I.9.18,40,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,241,5,0.601375,0.594362,0.605368,0.600665,0.023211
+kan_bspline,KAN B-spline,I.9.18,50,kan_bspline_h3x3_p180,300,5,0.699473,0.684255,0.768731,0.726803,0.062157
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,50,kan_gaussrbf_h5_p141,321,5,0.74431,0.740692,0.766585,0.752121,0.028149
+mlp_relu,MLP ReLU,I.9.18,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,221,5,0.550716,0.542473,0.564825,0.552644,0.043097
+mlp_sigmoid,MLP sigmoid,I.9.18,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.519031,0.486327,0.571451,0.523292,0.055286
+kan_bspline,KAN B-spline,I.9.18,100,kan_bspline_h5_p150,350,5,0.651771,0.605473,0.686865,0.647891,0.044329
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,100,kan_gaussrbf_h2x2_p95,167,5,0.739287,0.722834,0.830495,0.772223,0.070142
+mlp_relu,MLP ReLU,I.9.18,100,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,137,5,0.402965,0.387709,0.427727,0.411173,0.032763
+mlp_sigmoid,MLP sigmoid,I.9.18,100,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,281,5,0.639592,0.631819,0.646831,0.641478,0.011293
+kan_bspline,KAN B-spline,I.9.18,200,kan_bspline_h5_p150,350,5,0.639044,0.634766,0.643392,0.625648,0.038458
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,200,kan_gaussrbf_h5_p141,321,5,0.659661,0.655586,0.667898,0.659668,0.013793
+mlp_relu,MLP ReLU,I.9.18,200,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,221,5,0.352044,0.328592,0.384979,0.360138,0.035781
+mlp_sigmoid,MLP sigmoid,I.9.18,200,mlp_sigmoid_for_kan_bspline_h2x2_p100_h8x8_p105,137,5,0.69128,0.680495,0.695884,0.686982,0.018327
+kan_bspline,KAN B-spline,I.9.18,500,kan_bspline_h4_p120,280,5,0.501518,0.480156,0.52187,0.509475,0.035269
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,500,kan_gaussrbf_h5_p141,321,5,0.533063,0.517515,0.533893,0.520832,0.025061
+mlp_relu,MLP ReLU,I.9.18,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.25037,0.248821,0.279671,0.261049,0.020538
+mlp_sigmoid,MLP sigmoid,I.9.18,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.660919,0.65034,0.661411,0.660487,0.013617
+kan_bspline,KAN B-spline,I.9.18,1000,kan_bspline_h5_p150,350,5,0.486939,0.473021,0.524766,0.491814,0.035281
+kan_gaussrbf,KAN Gaussian RBF,I.9.18,1000,kan_gaussrbf_h3x3_p169,277,5,0.459586,0.431988,0.539644,0.477786,0.061849
+mlp_relu,MLP ReLU,I.9.18,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.22447,0.214904,0.236903,0.237296,0.034037
+mlp_sigmoid,MLP sigmoid,I.9.18,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,221,5,0.674036,0.663599,0.676562,0.669717,0.012493
+kan_bspline,KAN B-spline,II.11.27,10,kan_bspline_h3_p90,90,4,0.648105,0.622319,0.677678,0.651893,0.042064
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,10,kan_gaussrbf_h4_p113,113,4,0.695525,0.656323,0.744985,0.705783,0.06198
+mlp_relu,MLP ReLU,II.11.27,10,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,4,0.418244,0.410835,0.428542,0.421133,0.012881
+mlp_sigmoid,MLP sigmoid,II.11.27,10,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,4,0.397383,0.392814,0.403104,0.398535,0.00758
+kan_bspline,KAN B-spline,II.11.27,20,kan_bspline_h2_p60,60,4,0.201848,0.189921,0.250009,0.238081,0.088216
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,20,kan_gaussrbf_h5_p141,141,4,0.265685,0.254923,0.284011,0.273248,0.03264
+mlp_relu,MLP ReLU,II.11.27,20,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.184318,0.176846,0.193987,0.186516,0.023596
+mlp_sigmoid,MLP sigmoid,II.11.27,20,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.235394,0.231303,0.241785,0.237694,0.015249
+kan_bspline,KAN B-spline,II.11.27,30,kan_bspline_h3x3_p180,180,4,0.15885,0.148083,0.186444,0.175676,0.048777
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,30,kan_gaussrbf_h2x2_p95,95,4,0.247095,0.240756,0.254315,0.247976,0.011161
+mlp_relu,MLP ReLU,II.11.27,30,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.168735,0.152308,0.182895,0.166467,0.030091
+mlp_sigmoid,MLP sigmoid,II.11.27,30,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.262954,0.258062,0.2717,0.266808,0.01572
+kan_bspline,KAN B-spline,II.11.27,40,kan_bspline_h4_p120,120,4,0.146145,0.141086,0.153351,0.148292,0.010379
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,40,kan_gaussrbf_h3x3_p169,169,4,0.197538,0.184914,0.214567,0.201943,0.022245
+mlp_relu,MLP ReLU,II.11.27,40,mlp_relu_for_kan_bspline_h2_p60_h15_p61,61,4,0.160008,0.134587,0.190149,0.164728,0.045158
+mlp_sigmoid,MLP sigmoid,II.11.27,40,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.222566,0.213977,0.235092,0.226503,0.017135
+kan_bspline,KAN B-spline,II.11.27,50,kan_bspline_h3x3_p180,180,4,0.062022,0.055082,0.065539,0.058599,0.011624
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,50,kan_gaussrbf_h3x3_p169,169,4,0.102217,0.090776,0.107817,0.096377,0.017698
+mlp_relu,MLP ReLU,II.11.27,50,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.074082,0.07286,0.077434,0.076211,0.006618
+mlp_sigmoid,MLP sigmoid,II.11.27,50,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.116764,0.105688,0.133239,0.122163,0.025875
+kan_bspline,KAN B-spline,II.11.27,100,kan_bspline_h3x3_p180,180,4,0.042598,0.040245,0.045901,0.043548,0.006836
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,100,kan_gaussrbf_h5_p141,141,4,0.060073,0.056635,0.061202,0.057764,0.006704
+mlp_relu,MLP ReLU,II.11.27,100,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.065756,0.064816,0.069847,0.068908,0.00783
+mlp_sigmoid,MLP sigmoid,II.11.27,100,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.10769,0.092858,0.127567,0.112736,0.025583
+kan_bspline,KAN B-spline,II.11.27,200,kan_bspline_h3x3_p180,180,4,0.035111,0.03018,0.036877,0.031947,0.00858
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,200,kan_gaussrbf_h3x3_p169,169,4,0.033185,0.032649,0.033629,0.033092,0.001196
+mlp_relu,MLP ReLU,II.11.27,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.06261,0.06113,0.071325,0.069845,0.017279
+mlp_sigmoid,MLP sigmoid,II.11.27,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.341843,0.312171,0.377577,0.347906,0.042945
+kan_bspline,KAN B-spline,II.11.27,500,kan_bspline_h3x3_p180,180,4,0.021833,0.02034,0.02295,0.021456,0.003588
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,500,kan_gaussrbf_h3x3_p169,169,4,0.021233,0.020251,0.021467,0.020484,0.002062
+mlp_relu,MLP ReLU,II.11.27,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.046835,0.044316,0.054764,0.052244,0.0142
+mlp_sigmoid,MLP sigmoid,II.11.27,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.18117,0.171626,0.192359,0.182815,0.014651
+kan_bspline,KAN B-spline,II.11.27,1000,kan_bspline_h3x3_p180,180,4,0.020274,0.01987,0.020825,0.02042,0.001497
+kan_gaussrbf,KAN Gaussian RBF,II.11.27,1000,kan_gaussrbf_h3x3_p169,169,4,0.018845,0.016352,0.021139,0.018647,0.003114
+mlp_relu,MLP ReLU,II.11.27,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.049797,0.045917,0.058434,0.054554,0.017665
+mlp_sigmoid,MLP sigmoid,II.11.27,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.186285,0.175737,0.19768,0.187132,0.014017
+kan_bspline,KAN B-spline,II.11.7,10,kan_bspline_h4_p120,160,4,0.936285,0.905249,0.970121,0.939085,0.065836
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,10,kan_gaussrbf_h5_p141,186,4,0.846183,0.823481,0.862293,0.839591,0.032322
+mlp_relu,MLP ReLU,II.11.7,10,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.814377,0.77734,0.866989,0.829951,0.066239
+mlp_sigmoid,MLP sigmoid,II.11.7,10,mlp_sigmoid_for_kan_gaussrbf_h4_p113_h28_p113,141,5,0.893999,0.864962,0.928697,0.892106,0.040524
+kan_bspline,KAN B-spline,II.11.7,20,kan_bspline_h4_p120,160,4,0.948695,0.890767,1.022306,0.964378,0.101518
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,20,kan_gaussrbf_h3x3_p169,196,4,0.861435,0.853457,0.917334,0.909356,0.116482
+mlp_relu,MLP ReLU,II.11.7,20,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,4,0.807135,0.790331,0.823847,0.807043,0.045787
+mlp_sigmoid,MLP sigmoid,II.11.7,20,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,106,5,0.666916,0.653823,0.695775,0.671035,0.030272
+kan_bspline,KAN B-spline,II.11.7,30,kan_bspline_h4_p120,160,4,0.592231,0.459841,0.713353,0.580963,0.188808
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,30,kan_gaussrbf_h5_p141,186,4,0.506845,0.496929,0.51562,0.505703,0.030127
+mlp_relu,MLP ReLU,II.11.7,30,mlp_relu_for_kan_bspline_h4_p120_h30_p121,151,4,0.432262,0.419927,0.444192,0.431856,0.033369
+mlp_sigmoid,MLP sigmoid,II.11.7,30,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.346292,0.336646,0.360321,0.357082,0.036639
+kan_bspline,KAN B-spline,II.11.7,40,kan_bspline_h5_p150,200,4,0.431414,0.396341,0.479679,0.444606,0.097674
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,40,kan_gaussrbf_h4_p113,149,4,0.382721,0.337628,0.466845,0.421752,0.117388
+mlp_relu,MLP ReLU,II.11.7,40,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,141,4,0.312298,0.303457,0.332685,0.323844,0.036391
+mlp_sigmoid,MLP sigmoid,II.11.7,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.256069,0.255595,0.277372,0.270728,0.029466
+kan_bspline,KAN B-spline,II.11.7,50,kan_bspline_h2x2_p100,120,4,0.307281,0.2722,0.313592,0.278511,0.070319
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,50,kan_gaussrbf_h3_p85,112,4,0.335496,0.307192,0.368596,0.340292,0.041249
+mlp_relu,MLP ReLU,II.11.7,50,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.279274,0.259813,0.300618,0.281157,0.035427
+mlp_sigmoid,MLP sigmoid,II.11.7,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.24607,0.231184,0.291625,0.261018,0.037786
+kan_bspline,KAN B-spline,II.11.7,100,kan_bspline_h5_p150,200,4,0.208581,0.194938,0.237007,0.223364,0.056559
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,100,kan_gaussrbf_h3_p85,112,4,0.188168,0.167175,0.243776,0.222783,0.088547
+mlp_relu,MLP ReLU,II.11.7,100,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.210636,0.195506,0.229617,0.214486,0.032422
+mlp_sigmoid,MLP sigmoid,II.11.7,100,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.406345,0.402746,0.414389,0.41079,0.014162
+kan_bspline,KAN B-spline,II.11.7,200,kan_bspline_h3x3_p180,210,4,0.20174,0.145558,0.339825,0.283643,0.213293
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,200,kan_gaussrbf_h3x3_p169,196,4,0.107659,0.105843,0.121578,0.119762,0.029246
+mlp_relu,MLP ReLU,II.11.7,200,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.203467,0.184568,0.218508,0.199609,0.023596
+mlp_sigmoid,MLP sigmoid,II.11.7,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,186,4,0.570717,0.562393,0.576969,0.568645,0.014892
+kan_bspline,KAN B-spline,II.11.7,500,kan_bspline_h3x3_p180,210,4,0.083081,0.077836,0.118257,0.113012,0.066913
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,500,kan_gaussrbf_h3x3_p169,196,4,0.06714,0.059434,0.075426,0.06772,0.016543
+mlp_relu,MLP ReLU,II.11.7,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.177627,0.154826,0.193708,0.170907,0.034152
+mlp_sigmoid,MLP sigmoid,II.11.7,500,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.568804,0.554323,0.579342,0.564861,0.018755
+kan_bspline,KAN B-spline,II.11.7,1000,kan_bspline_h5_p150,200,4,0.127622,0.110958,0.150458,0.133794,0.042945
+kan_gaussrbf,KAN Gaussian RBF,II.11.7,1000,kan_gaussrbf_h3x3_p169,196,4,0.055593,0.051296,0.059901,0.055605,0.005607
+mlp_relu,MLP ReLU,II.11.7,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.165784,0.15066,0.177066,0.161942,0.025827
+mlp_sigmoid,MLP sigmoid,II.11.7,1000,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.563668,0.556011,0.573267,0.56561,0.015254
+kan_bspline,KAN B-spline,II.2.42,10,kan_bspline_h5_p150,150,4,0.541028,0.518184,0.572663,0.54982,0.047636
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,10,kan_gaussrbf_h2x2_p95,95,4,0.609659,0.579281,0.659473,0.629095,0.067428
+mlp_relu,MLP ReLU,II.2.42,10,mlp_relu_for_kan_gaussrbf_h1_p29_h7_p29,29,5,0.331651,0.328402,0.366534,0.344159,0.024424
+mlp_sigmoid,MLP sigmoid,II.2.42,10,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.497442,0.489273,0.538014,0.511599,0.028775
+kan_bspline,KAN B-spline,II.2.42,20,kan_bspline_h5_p150,150,4,0.401854,0.38798,0.415406,0.401532,0.02047
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,20,kan_gaussrbf_h4_p113,113,4,0.459934,0.445547,0.507557,0.49317,0.084459
+mlp_relu,MLP ReLU,II.2.42,20,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,113,5,0.246841,0.24094,0.268455,0.252633,0.015035
+mlp_sigmoid,MLP sigmoid,II.2.42,20,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.46154,0.458764,0.507267,0.476677,0.041741
+kan_bspline,KAN B-spline,II.2.42,30,kan_bspline_h5_p150,150,4,0.170965,0.160805,0.187072,0.176912,0.022606
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,30,kan_gaussrbf_h3x3_p169,169,4,0.205805,0.191773,0.228552,0.214519,0.044513
+mlp_relu,MLP ReLU,II.2.42,30,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,113,5,0.12838,0.124449,0.160146,0.137904,0.022733
+mlp_sigmoid,MLP sigmoid,II.2.42,30,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.169576,0.164745,0.201614,0.186976,0.033021
+kan_bspline,KAN B-spline,II.2.42,40,kan_bspline_h5_p150,150,4,0.085578,0.081948,0.087063,0.083434,0.008313
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,40,kan_gaussrbf_h2x2_p95,95,4,0.124081,0.11989,0.15422,0.150028,0.062133
+mlp_relu,MLP ReLU,II.2.42,40,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.102904,0.090158,0.109274,0.100831,0.011971
+mlp_sigmoid,MLP sigmoid,II.2.42,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.135421,0.132648,0.147284,0.140256,0.012538
+kan_bspline,KAN B-spline,II.2.42,50,kan_bspline_h5_p150,150,4,0.069934,0.062923,0.080802,0.073791,0.014554
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,50,kan_gaussrbf_h3x3_p169,169,4,0.116199,0.112987,0.117922,0.11471,0.007962
+mlp_relu,MLP ReLU,II.2.42,50,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.104227,0.098476,0.105588,0.099296,0.012527
+mlp_sigmoid,MLP sigmoid,II.2.42,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,5,0.139257,0.133465,0.176933,0.156923,0.034819
+kan_bspline,KAN B-spline,II.2.42,100,kan_bspline_h3x3_p180,180,4,0.047399,0.043524,0.04866,0.044786,0.006833
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,100,kan_gaussrbf_h3x3_p169,169,4,0.0486,0.042464,0.051659,0.045522,0.010455
+mlp_relu,MLP ReLU,II.2.42,100,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.080214,0.078305,0.082655,0.080746,0.003342
+mlp_sigmoid,MLP sigmoid,II.2.42,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.346425,0.336358,0.367305,0.354116,0.033105
+kan_bspline,KAN B-spline,II.2.42,200,kan_bspline_h3x3_p180,180,4,0.03749,0.035107,0.046494,0.044111,0.017265
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,200,kan_gaussrbf_h3x3_p169,169,4,0.04855,0.044195,0.055873,0.051518,0.016738
+mlp_relu,MLP ReLU,II.2.42,200,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,4,0.086222,0.080878,0.09044,0.085096,0.006648
+mlp_sigmoid,MLP sigmoid,II.2.42,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.411688,0.411282,0.446103,0.427044,0.035561
+kan_bspline,KAN B-spline,II.2.42,500,kan_bspline_h3x3_p180,180,4,0.029064,0.025639,0.032867,0.029442,0.004939
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,500,kan_gaussrbf_h3x3_p169,169,4,0.029014,0.02357,0.037033,0.031589,0.012956
+mlp_relu,MLP ReLU,II.2.42,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.075945,0.06796,0.090246,0.082262,0.023225
+mlp_sigmoid,MLP sigmoid,II.2.42,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.356347,0.34601,0.422988,0.382411,0.046896
+kan_bspline,KAN B-spline,II.2.42,1000,kan_bspline_h3x3_p180,180,4,0.027361,0.025828,0.028604,0.02707,0.002077
+kan_gaussrbf,KAN Gaussian RBF,II.2.42,1000,kan_gaussrbf_h3x3_p169,169,4,0.021139,0.01861,0.024227,0.021698,0.004506
+mlp_relu,MLP ReLU,II.2.42,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.068827,0.060645,0.077264,0.069082,0.010034
+mlp_sigmoid,MLP sigmoid,II.2.42,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,5,0.408251,0.398009,0.454085,0.424341,0.036324
+kan_bspline,KAN B-spline,II.35.18,10,kan_bspline_h5_p150,150,4,0.614201,0.604133,0.636839,0.626771,0.045966
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,10,kan_gaussrbf_h2_p57,57,4,0.721512,0.678387,0.761471,0.718346,0.084115
+mlp_relu,MLP ReLU,II.35.18,10,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,105,4,0.652935,0.644128,0.701675,0.692868,0.094977
+mlp_sigmoid,MLP sigmoid,II.35.18,10,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.605064,0.571599,0.656882,0.623417,0.083827
+kan_bspline,KAN B-spline,II.35.18,20,kan_bspline_h4_p120,120,4,0.151316,0.146531,0.190791,0.186006,0.07279
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,20,kan_gaussrbf_h5_p141,141,4,0.165583,0.158444,0.174554,0.167416,0.01308
+mlp_relu,MLP ReLU,II.35.18,20,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.198606,0.177135,0.251086,0.229615,0.088899
+mlp_sigmoid,MLP sigmoid,II.35.18,20,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.26427,0.255498,0.284533,0.275761,0.040549
+kan_bspline,KAN B-spline,II.35.18,30,kan_bspline_h3x3_p180,180,4,0.121109,0.112953,0.145695,0.137539,0.039604
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,30,kan_gaussrbf_h1x1_p39,39,4,0.152989,0.142593,0.169228,0.158832,0.037306
+mlp_relu,MLP ReLU,II.35.18,30,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.15053,0.134298,0.173555,0.157322,0.03962
+mlp_sigmoid,MLP sigmoid,II.35.18,30,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.26223,0.256514,0.287493,0.281778,0.051622
+kan_bspline,KAN B-spline,II.35.18,40,kan_bspline_h3x3_p180,180,4,0.116586,0.110725,0.124458,0.118597,0.012737
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,40,kan_gaussrbf_h4_p113,113,4,0.140054,0.120449,0.163499,0.143894,0.030756
+mlp_relu,MLP ReLU,II.35.18,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.14063,0.125702,0.15899,0.144063,0.030157
+mlp_sigmoid,MLP sigmoid,II.35.18,40,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.255277,0.250301,0.272881,0.267905,0.037723
+kan_bspline,KAN B-spline,II.35.18,50,kan_bspline_h3x3_p180,180,4,0.099695,0.088137,0.110368,0.09881,0.015384
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,50,kan_gaussrbf_h1x1_p39,39,4,0.085977,0.070773,0.111262,0.096058,0.041951
+mlp_relu,MLP ReLU,II.35.18,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.099474,0.095359,0.103877,0.099762,0.010987
+mlp_sigmoid,MLP sigmoid,II.35.18,50,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.221911,0.193594,0.251696,0.223379,0.034539
+kan_bspline,KAN B-spline,II.35.18,100,kan_bspline_h3x3_p180,180,4,0.056952,0.049396,0.06578,0.058224,0.011023
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,100,kan_gaussrbf_h3x3_p169,169,4,0.037045,0.036118,0.055558,0.054631,0.036627
+mlp_relu,MLP ReLU,II.35.18,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.091934,0.084995,0.100505,0.093566,0.016159
+mlp_sigmoid,MLP sigmoid,II.35.18,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.247695,0.242719,0.253055,0.24808,0.012729
+kan_bspline,KAN B-spline,II.35.18,200,kan_bspline_h3x3_p180,180,4,0.049157,0.044485,0.051323,0.046652,0.007972
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,200,kan_gaussrbf_h3x3_p169,169,4,0.03435,0.029772,0.04166,0.037082,0.01104
+mlp_relu,MLP ReLU,II.35.18,200,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,4,0.080285,0.057948,0.106294,0.083958,0.03904
+mlp_sigmoid,MLP sigmoid,II.35.18,200,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,4,0.379033,0.361551,0.417761,0.400279,0.080531
+kan_bspline,KAN B-spline,II.35.18,500,kan_bspline_h3x3_p180,180,4,0.041418,0.038818,0.043978,0.041378,0.003954
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,500,kan_gaussrbf_h3x3_p169,169,4,0.026546,0.025978,0.027611,0.027043,0.002109
+mlp_relu,MLP ReLU,II.35.18,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.066285,0.045749,0.092101,0.071565,0.035108
+mlp_sigmoid,MLP sigmoid,II.35.18,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.259542,0.25081,0.286233,0.277501,0.051992
+kan_bspline,KAN B-spline,II.35.18,1000,kan_bspline_h3x3_p180,180,4,0.041168,0.03862,0.042175,0.039627,0.005043
+kan_gaussrbf,KAN Gaussian RBF,II.35.18,1000,kan_gaussrbf_h3x3_p169,169,4,0.025297,0.024033,0.026021,0.024757,0.001776
+mlp_relu,MLP ReLU,II.35.18,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.050138,0.043939,0.063889,0.05769,0.025416
+mlp_sigmoid,MLP sigmoid,II.35.18,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.293859,0.280358,0.327825,0.314324,0.067177
+kan_bspline,KAN B-spline,II.36.38,10,kan_bspline_h3x3_p180,210,4,0.895406,0.868876,0.960113,0.933582,0.147238
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,10,kan_gaussrbf_h5_p141,186,4,0.870908,0.778059,0.941497,0.848648,0.120349
+mlp_relu,MLP ReLU,II.36.38,10,mlp_relu_for_kan_bspline_h5_p150_h37_p149,186,4,0.396391,0.348521,0.470809,0.422939,0.108599
+mlp_sigmoid,MLP sigmoid,II.36.38,10,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.386275,0.373449,0.457955,0.445129,0.130638
+kan_bspline,KAN B-spline,II.36.38,20,kan_bspline_h3x3_p180,210,4,0.459862,0.446967,0.469412,0.456517,0.028338
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,20,kan_gaussrbf_h4_p113,149,4,0.598292,0.519368,0.771188,0.692264,0.270518
+mlp_relu,MLP ReLU,II.36.38,20,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.174795,0.16776,0.184111,0.177077,0.013696
+mlp_sigmoid,MLP sigmoid,II.36.38,20,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.22582,0.211498,0.240608,0.226285,0.02003
+kan_bspline,KAN B-spline,II.36.38,30,kan_bspline_h3x3_p180,210,4,0.362231,0.300359,0.501256,0.439383,0.217004
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,30,kan_gaussrbf_h5_p141,186,4,0.47209,0.426646,0.550231,0.504786,0.128081
+mlp_relu,MLP ReLU,II.36.38,30,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.172698,0.169634,0.176579,0.173514,0.007922
+mlp_sigmoid,MLP sigmoid,II.36.38,30,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.221374,0.209416,0.229522,0.217564,0.018961
+kan_bspline,KAN B-spline,II.36.38,40,kan_bspline_h3x3_p180,210,4,0.24985,0.234549,0.412682,0.39738,0.31996
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,40,kan_gaussrbf_h4_p113,149,4,0.381186,0.359872,0.406283,0.384969,0.039824
+mlp_relu,MLP ReLU,II.36.38,40,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,141,4,0.152554,0.139768,0.169967,0.15718,0.021722
+mlp_sigmoid,MLP sigmoid,II.36.38,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.181404,0.171696,0.191493,0.181785,0.012189
+kan_bspline,KAN B-spline,II.36.38,50,kan_bspline_h2x2_p100,120,4,0.204442,0.195947,0.21114,0.202645,0.013189
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,50,kan_gaussrbf_h5_p141,186,4,0.328225,0.302759,0.329155,0.303688,0.050144
+mlp_relu,MLP ReLU,II.36.38,50,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.133562,0.131075,0.137036,0.134549,0.006079
+mlp_sigmoid,MLP sigmoid,II.36.38,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.166228,0.158708,0.177182,0.169662,0.014847
+kan_bspline,KAN B-spline,II.36.38,100,kan_bspline_h3x3_p180,210,4,0.097153,0.087492,0.113647,0.103986,0.02512
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,100,kan_gaussrbf_h3x3_p169,196,4,0.091302,0.079976,0.101395,0.090069,0.014644
+mlp_relu,MLP ReLU,II.36.38,100,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.106573,0.102855,0.113285,0.109567,0.011212
+mlp_sigmoid,MLP sigmoid,II.36.38,100,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.216039,0.19704,0.234937,0.215938,0.022385
+kan_bspline,KAN B-spline,II.36.38,200,kan_bspline_h3x3_p180,210,4,0.074225,0.065156,0.090193,0.081124,0.024364
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,200,kan_gaussrbf_h3x3_p169,196,4,0.072292,0.060467,0.102791,0.090966,0.049874
+mlp_relu,MLP ReLU,II.36.38,200,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.111657,0.103226,0.121044,0.112613,0.011978
+mlp_sigmoid,MLP sigmoid,II.36.38,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.332597,0.304597,0.377207,0.349207,0.070538
+kan_bspline,KAN B-spline,II.36.38,500,kan_bspline_h3x3_p180,210,4,0.039012,0.035015,0.043701,0.039704,0.005863
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,500,kan_gaussrbf_h3x3_p169,196,4,0.038388,0.037656,0.04069,0.039957,0.004647
+mlp_relu,MLP ReLU,II.36.38,500,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.080692,0.074736,0.085939,0.079983,0.008317
+mlp_sigmoid,MLP sigmoid,II.36.38,500,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.233673,0.221645,0.25325,0.241223,0.042594
+kan_bspline,KAN B-spline,II.36.38,1000,kan_bspline_h3x3_p180,210,4,0.046615,0.04065,0.057451,0.051486,0.017794
+kan_gaussrbf,KAN Gaussian RBF,II.36.38,1000,kan_gaussrbf_h3x3_p169,196,4,0.041131,0.03574,0.044553,0.039163,0.007368
+mlp_relu,MLP ReLU,II.36.38,1000,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.082266,0.075346,0.088475,0.081554,0.008553
+mlp_sigmoid,MLP sigmoid,II.36.38,1000,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.29533,0.273114,0.317377,0.295161,0.049509
+kan_bspline,KAN B-spline,II.38.3,10,kan_bspline_h3x3_p180,180,4,0.917715,0.85911,0.951767,0.893162,0.097428
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,10,kan_gaussrbf_h4_p113,113,4,0.892263,0.836762,0.965544,0.910043,0.100644
+mlp_relu,MLP ReLU,II.38.3,10,mlp_relu_for_kan_bspline_h3_p90_h22_p89,89,4,0.602954,0.588305,0.640467,0.625819,0.060391
+mlp_sigmoid,MLP sigmoid,II.38.3,10,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,4,0.793243,0.785628,0.798932,0.791316,0.011513
+kan_bspline,KAN B-spline,II.38.3,20,kan_bspline_h5_p150,150,4,0.68263,0.602795,0.762428,0.682593,0.201257
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,20,kan_gaussrbf_h4_p113,113,4,0.687205,0.59197,0.855233,0.759998,0.233881
+mlp_relu,MLP ReLU,II.38.3,20,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,4,0.272781,0.260562,0.282299,0.27008,0.021205
+mlp_sigmoid,MLP sigmoid,II.38.3,20,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.349654,0.322851,0.375585,0.348782,0.044063
+kan_bspline,KAN B-spline,II.38.3,30,kan_bspline_h2x2_p100,100,4,0.320551,0.305846,0.436749,0.422044,0.235312
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,30,kan_gaussrbf_h2x2_p95,95,4,0.376253,0.313481,0.532251,0.46948,0.267068
+mlp_relu,MLP ReLU,II.38.3,30,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,4,0.186948,0.172214,0.19745,0.182716,0.022355
+mlp_sigmoid,MLP sigmoid,II.38.3,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,4,0.255177,0.250555,0.262356,0.257733,0.010501
+kan_bspline,KAN B-spline,II.38.3,40,kan_bspline_h2x2_p100,100,4,0.128139,0.122377,0.13876,0.132999,0.016727
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,40,kan_gaussrbf_h4_p113,113,4,0.203812,0.176582,0.287892,0.260662,0.13709
+mlp_relu,MLP ReLU,II.38.3,40,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.140758,0.137064,0.14596,0.142266,0.007036
+mlp_sigmoid,MLP sigmoid,II.38.3,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.186979,0.181421,0.199134,0.193576,0.019724
+kan_bspline,KAN B-spline,II.38.3,50,kan_bspline_h3x3_p180,180,4,0.077387,0.066086,0.091726,0.080425,0.028064
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,50,kan_gaussrbf_h3x3_p169,169,4,0.080906,0.078193,0.08743,0.084717,0.012038
+mlp_relu,MLP ReLU,II.38.3,50,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.082519,0.080269,0.085585,0.083335,0.006157
+mlp_sigmoid,MLP sigmoid,II.38.3,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.151456,0.142964,0.18076,0.172267,0.053936
+kan_bspline,KAN B-spline,II.38.3,100,kan_bspline_h3x3_p180,180,4,0.059874,0.052912,0.069153,0.062192,0.01221
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,100,kan_gaussrbf_h3x3_p169,169,4,0.077397,0.065405,0.091667,0.079675,0.022526
+mlp_relu,MLP ReLU,II.38.3,100,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.089193,0.087004,0.093628,0.091438,0.007263
+mlp_sigmoid,MLP sigmoid,II.38.3,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.212293,0.204281,0.218692,0.21068,0.015654
+kan_bspline,KAN B-spline,II.38.3,200,kan_bspline_h3x3_p180,180,4,0.040174,0.037127,0.049153,0.046106,0.015321
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,200,kan_gaussrbf_h3x3_p169,169,4,0.035323,0.032618,0.039578,0.036874,0.007989
+mlp_relu,MLP ReLU,II.38.3,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.084825,0.081367,0.0887,0.085243,0.009744
+mlp_sigmoid,MLP sigmoid,II.38.3,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.331839,0.321819,0.362192,0.352173,0.05496
+kan_bspline,KAN B-spline,II.38.3,500,kan_bspline_h3x3_p180,180,4,0.029223,0.02699,0.033469,0.031236,0.005982
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,500,kan_gaussrbf_h3x3_p169,169,4,0.027456,0.025191,0.029922,0.027657,0.003971
+mlp_relu,MLP ReLU,II.38.3,500,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,4,0.070924,0.069297,0.072436,0.070809,0.004234
+mlp_sigmoid,MLP sigmoid,II.38.3,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.227336,0.218071,0.237833,0.228568,0.017428
+kan_bspline,KAN B-spline,II.38.3,1000,kan_bspline_h3x3_p180,180,4,0.027372,0.025723,0.028375,0.026726,0.002292
+kan_gaussrbf,KAN Gaussian RBF,II.38.3,1000,kan_gaussrbf_h3x3_p169,169,4,0.027091,0.026811,0.028106,0.027826,0.002169
+mlp_relu,MLP ReLU,II.38.3,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.082509,0.078473,0.08702,0.082984,0.007879
+mlp_sigmoid,MLP sigmoid,II.38.3,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.264253,0.255337,0.280132,0.271216,0.031239
+kan_bspline,KAN B-spline,II.6.15a,10,kan_bspline_h2_p60,80,4,1.149934,1.081311,1.340725,1.272102,0.340639
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,10,kan_gaussrbf_h2x2_p95,113,4,1.230924,1.184735,1.323778,1.277589,0.175385
+mlp_relu,MLP ReLU,II.6.15a,10,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,113,4,0.751512,0.726988,0.785103,0.76058,0.068616
+mlp_sigmoid,MLP sigmoid,II.6.15a,10,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.847197,0.835001,0.862517,0.848311,0.019301
+kan_bspline,KAN B-spline,II.6.15a,20,kan_bspline_h3x3_p180,210,4,0.791703,0.73152,0.855522,0.795339,0.131211
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,20,kan_gaussrbf_h5_p141,186,4,0.95019,0.906743,0.984969,0.941521,0.092617
+mlp_relu,MLP ReLU,II.6.15a,20,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,4,0.525978,0.502114,0.552436,0.528571,0.071946
+mlp_sigmoid,MLP sigmoid,II.6.15a,20,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,5,0.659869,0.659299,0.66624,0.663659,0.011515
+kan_bspline,KAN B-spline,II.6.15a,30,kan_bspline_h3x3_p180,210,4,0.407403,0.380871,0.436078,0.409546,0.033576
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,30,kan_gaussrbf_h3x3_p169,196,4,0.447919,0.427388,0.473147,0.452616,0.033564
+mlp_relu,MLP ReLU,II.6.15a,30,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.325362,0.311695,0.344303,0.330635,0.040784
+mlp_sigmoid,MLP sigmoid,II.6.15a,30,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.467755,0.462751,0.479164,0.463788,0.027039
+kan_bspline,KAN B-spline,II.6.15a,40,kan_bspline_h2x2_p100,120,4,0.335369,0.302617,0.369754,0.337003,0.06097
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,40,kan_gaussrbf_h4_p113,149,4,0.40204,0.369827,0.457995,0.425782,0.076131
+mlp_relu,MLP ReLU,II.6.15a,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.285567,0.271882,0.307928,0.294244,0.029472
+mlp_sigmoid,MLP sigmoid,II.6.15a,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.43398,0.432791,0.444724,0.432963,0.021643
+kan_bspline,KAN B-spline,II.6.15a,50,kan_bspline_h4_p120,160,4,0.267738,0.265725,0.272947,0.270934,0.009982
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,50,kan_gaussrbf_h5_p141,186,4,0.401433,0.373733,0.43228,0.404581,0.039139
+mlp_relu,MLP ReLU,II.6.15a,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.263166,0.2551,0.278427,0.270361,0.025841
+mlp_sigmoid,MLP sigmoid,II.6.15a,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.44465,0.427561,0.450452,0.435637,0.028345
+kan_bspline,KAN B-spline,II.6.15a,100,kan_bspline_h3x3_p180,210,4,0.194649,0.178178,0.208444,0.191973,0.021542
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,100,kan_gaussrbf_h3x3_p169,196,4,0.21623,0.198957,0.230026,0.212753,0.024474
+mlp_relu,MLP ReLU,II.6.15a,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.258325,0.25095,0.2666,0.259225,0.018081
+mlp_sigmoid,MLP sigmoid,II.6.15a,100,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.563448,0.559158,0.564344,0.562767,0.007462
+kan_bspline,KAN B-spline,II.6.15a,200,kan_bspline_h3x3_p180,210,4,0.202518,0.195344,0.209245,0.202071,0.009874
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,200,kan_gaussrbf_h3x3_p169,196,4,0.218937,0.205891,0.22867,0.215624,0.019843
+mlp_relu,MLP ReLU,II.6.15a,200,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.267119,0.264683,0.275108,0.272672,0.013496
+mlp_sigmoid,MLP sigmoid,II.6.15a,200,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,5,0.626746,0.625238,0.629502,0.625259,0.008863
+kan_bspline,KAN B-spline,II.6.15a,500,kan_bspline_h3x3_p180,210,4,0.121283,0.117244,0.124859,0.120819,0.005989
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,500,kan_gaussrbf_h3x3_p169,196,4,0.141717,0.134115,0.151923,0.14432,0.013817
+mlp_relu,MLP ReLU,II.6.15a,500,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.212882,0.20699,0.219978,0.214086,0.02004
+mlp_sigmoid,MLP sigmoid,II.6.15a,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.52647,0.525338,0.561877,0.534897,0.029013
+kan_bspline,KAN B-spline,II.6.15a,1000,kan_bspline_h3x3_p180,210,4,0.126664,0.121598,0.131232,0.126166,0.006356
+kan_gaussrbf,KAN Gaussian RBF,II.6.15a,1000,kan_gaussrbf_h3x3_p169,196,4,0.122601,0.115172,0.131737,0.124307,0.010967
+mlp_relu,MLP ReLU,II.6.15a,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.212086,0.208826,0.220084,0.216824,0.0183
+mlp_sigmoid,MLP sigmoid,II.6.15a,1000,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,5,0.554408,0.541091,0.570534,0.553473,0.022588
+kan_bspline,KAN B-spline,III.10.19,10,kan_bspline_h5_p150,150,4,0.260115,0.245853,0.290312,0.27605,0.043775
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,10,kan_gaussrbf_h3_p85,85,4,0.420216,0.39543,0.436755,0.411969,0.053133
+mlp_relu,MLP ReLU,III.10.19,10,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.386888,0.366158,0.429339,0.408609,0.064405
+mlp_sigmoid,MLP sigmoid,III.10.19,10,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.665877,0.640975,0.738882,0.713981,0.117478
+kan_bspline,KAN B-spline,III.10.19,20,kan_bspline_h5_p150,150,4,0.207082,0.195271,0.218427,0.206617,0.019979
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,20,kan_gaussrbf_h1_p29,29,4,0.258713,0.223571,0.320546,0.285404,0.101542
+mlp_relu,MLP ReLU,III.10.19,20,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.185012,0.166153,0.202825,0.183966,0.042955
+mlp_sigmoid,MLP sigmoid,III.10.19,20,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.235774,0.218826,0.269263,0.252314,0.06372
+kan_bspline,KAN B-spline,III.10.19,30,kan_bspline_h2x2_p100,100,4,0.119702,0.115427,0.144573,0.140298,0.04659
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,30,kan_gaussrbf_h3x3_p169,169,4,0.186115,0.172242,0.228694,0.214821,0.080507
+mlp_relu,MLP ReLU,III.10.19,30,mlp_relu_for_kan_bspline_h3_p90_h22_p89,89,4,0.1399,0.132972,0.151548,0.14462,0.025932
+mlp_sigmoid,MLP sigmoid,III.10.19,30,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,4,0.146799,0.133445,0.16316,0.149806,0.027596
+kan_bspline,KAN B-spline,III.10.19,40,kan_bspline_h3x3_p180,180,4,0.105375,0.092301,0.121799,0.108725,0.022507
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,40,kan_gaussrbf_h3_p85,85,4,0.162323,0.160336,0.183593,0.181606,0.041173
+mlp_relu,MLP ReLU,III.10.19,40,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,4,0.081083,0.079345,0.102308,0.100569,0.041021
+mlp_sigmoid,MLP sigmoid,III.10.19,40,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.160949,0.147295,0.192066,0.178412,0.048105
+kan_bspline,KAN B-spline,III.10.19,50,kan_bspline_h2x2_p100,100,4,0.086432,0.080538,0.095252,0.089357,0.020042
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,50,kan_gaussrbf_h1x1_p39,39,4,0.129045,0.115852,0.270423,0.25723,0.269968
+mlp_relu,MLP ReLU,III.10.19,50,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.068223,0.06369,0.076836,0.072303,0.013277
+mlp_sigmoid,MLP sigmoid,III.10.19,50,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,4,0.142705,0.118769,0.16472,0.140784,0.035321
+kan_bspline,KAN B-spline,III.10.19,100,kan_bspline_h3x3_p180,180,4,0.060979,0.053871,0.067666,0.060557,0.010635
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,100,kan_gaussrbf_h2x2_p95,95,4,0.048508,0.041003,0.065706,0.058202,0.026734
+mlp_relu,MLP ReLU,III.10.19,100,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,4,0.067784,0.056214,0.082753,0.071184,0.019165
+mlp_sigmoid,MLP sigmoid,III.10.19,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.32257,0.260685,0.433367,0.371481,0.15243
+kan_bspline,KAN B-spline,III.10.19,200,kan_bspline_h3x3_p180,180,4,0.05093,0.047301,0.056361,0.052732,0.008335
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,200,kan_gaussrbf_h3x3_p169,169,4,0.031025,0.027402,0.035599,0.031976,0.007381
+mlp_relu,MLP ReLU,III.10.19,200,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.056328,0.054318,0.059591,0.057581,0.005384
+mlp_sigmoid,MLP sigmoid,III.10.19,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.456476,0.352332,0.566832,0.462688,0.13592
+kan_bspline,KAN B-spline,III.10.19,500,kan_bspline_h3x3_p180,180,4,0.034339,0.030004,0.036202,0.031868,0.007759
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,500,kan_gaussrbf_h3x3_p169,169,4,0.022711,0.021854,0.025563,0.024706,0.005237
+mlp_relu,MLP ReLU,III.10.19,500,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.047206,0.04453,0.048948,0.046272,0.003897
+mlp_sigmoid,MLP sigmoid,III.10.19,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.472073,0.362541,0.608734,0.499201,0.172199
+kan_bspline,KAN B-spline,III.10.19,1000,kan_bspline_h2x2_p100,100,4,0.030691,0.025531,0.038779,0.03362,0.010573
+kan_gaussrbf,KAN Gaussian RBF,III.10.19,1000,kan_gaussrbf_h3x3_p169,169,4,0.022108,0.021671,0.0243,0.023863,0.003976
+mlp_relu,MLP ReLU,III.10.19,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,4,0.042286,0.039167,0.046068,0.042949,0.004749
+mlp_sigmoid,MLP sigmoid,III.10.19,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,4,0.542604,0.452646,0.668588,0.57863,0.158792
+kan_bspline,KAN B-spline,III.17.37,10,kan_bspline_h5_p150,200,4,0.71341,0.710824,0.718464,0.715878,0.00885
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,10,kan_gaussrbf_h2_p57,75,4,0.739888,0.722463,0.80989,0.792466,0.128003
+mlp_relu,MLP ReLU,III.17.37,10,mlp_relu_for_kan_bspline_h5_p150_h37_p149,186,4,0.695573,0.692029,0.700618,0.697073,0.011705
+mlp_sigmoid,MLP sigmoid,III.17.37,10,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.675082,0.670335,0.682155,0.677408,0.012216
+kan_bspline,KAN B-spline,III.17.37,20,kan_bspline_h5_p150,200,4,0.653819,0.564149,0.740282,0.650612,0.13139
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,20,kan_gaussrbf_h5_p141,186,4,0.668213,0.606424,0.725944,0.664154,0.078455
+mlp_relu,MLP ReLU,III.17.37,20,mlp_relu_for_kan_bspline_h4_p120_h30_p121,151,4,0.504239,0.502515,0.509451,0.507727,0.008955
+mlp_sigmoid,MLP sigmoid,III.17.37,20,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.424526,0.408178,0.452119,0.435772,0.046715
+kan_bspline,KAN B-spline,III.17.37,30,kan_bspline_h3_p90,120,4,0.447535,0.42812,0.462914,0.443499,0.025625
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,30,kan_gaussrbf_h4_p113,149,4,0.618467,0.611539,0.637883,0.630955,0.041864
+mlp_relu,MLP ReLU,III.17.37,30,mlp_relu_for_kan_bspline_h4_p120_h30_p121,151,4,0.409194,0.39533,0.43511,0.421245,0.040295
+mlp_sigmoid,MLP sigmoid,III.17.37,30,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.415622,0.404719,0.420364,0.409461,0.019199
+kan_bspline,KAN B-spline,III.17.37,40,kan_bspline_h2x2_p100,120,4,0.352148,0.283925,0.527911,0.459689,0.297577
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,40,kan_gaussrbf_h2x2_p95,113,4,0.512369,0.35362,0.64099,0.482242,0.194321
+mlp_relu,MLP ReLU,III.17.37,40,mlp_relu_for_kan_bspline_h4_p120_h30_p121,151,4,0.316812,0.311197,0.33104,0.325425,0.029082
+mlp_sigmoid,MLP sigmoid,III.17.37,40,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.374063,0.371313,0.385515,0.382765,0.022291
+kan_bspline,KAN B-spline,III.17.37,50,kan_bspline_h2x2_p100,120,4,0.299045,0.255356,0.467552,0.423863,0.289923
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,50,kan_gaussrbf_h5_p141,186,4,0.419511,0.382534,0.478687,0.44171,0.090616
+mlp_relu,MLP ReLU,III.17.37,50,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.31761,0.304158,0.3284,0.314948,0.019937
+mlp_sigmoid,MLP sigmoid,III.17.37,50,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.406933,0.398891,0.419931,0.41189,0.019804
+kan_bspline,KAN B-spline,III.17.37,100,kan_bspline_h4_p120,160,4,0.26339,0.231138,0.322334,0.290082,0.09422
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,100,kan_gaussrbf_h4_p113,149,4,0.272787,0.21881,0.323865,0.269888,0.06915
+mlp_relu,MLP ReLU,III.17.37,100,mlp_relu_for_kan_bspline_h5_p150_h37_p149,186,4,0.271636,0.26062,0.301557,0.290541,0.051667
+mlp_sigmoid,MLP sigmoid,III.17.37,100,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,186,4,0.54096,0.53549,0.547857,0.542387,0.012557
+kan_bspline,KAN B-spline,III.17.37,200,kan_bspline_h2x2_p100,120,4,0.154309,0.132263,0.178501,0.156456,0.050418
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,200,kan_gaussrbf_h3x3_p169,196,4,0.083841,0.075607,0.105848,0.097614,0.04628
+mlp_relu,MLP ReLU,III.17.37,200,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,4,0.230402,0.226649,0.258098,0.254346,0.052753
+mlp_sigmoid,MLP sigmoid,III.17.37,200,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,186,4,0.577,0.575493,0.579722,0.578216,0.004774
+kan_bspline,KAN B-spline,III.17.37,500,kan_bspline_h4_p120,160,4,0.176412,0.150896,0.219488,0.193972,0.07099
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,500,kan_gaussrbf_h3x3_p169,196,4,0.079229,0.068484,0.093741,0.082996,0.019668
+mlp_relu,MLP ReLU,III.17.37,500,mlp_relu_for_kan_bspline_h5_p150_h37_p149,186,4,0.220431,0.21176,0.235083,0.226412,0.023976
+mlp_sigmoid,MLP sigmoid,III.17.37,500,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,186,4,0.564517,0.56176,0.569892,0.567135,0.009812
+kan_bspline,KAN B-spline,III.17.37,1000,kan_bspline_h2x2_p100,120,4,0.134659,0.105766,0.268093,0.2392,0.23494
+kan_gaussrbf,KAN Gaussian RBF,III.17.37,1000,kan_gaussrbf_h3x3_p169,196,4,0.066899,0.058982,0.082717,0.0748,0.026065
+mlp_relu,MLP ReLU,III.17.37,1000,mlp_relu_for_kan_bspline_h5_p150_h37_p149,186,4,0.199703,0.189271,0.215138,0.204705,0.028661
+mlp_sigmoid,MLP sigmoid,III.17.37,1000,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,186,4,0.556532,0.55536,0.560647,0.559476,0.007729
+kan_bspline,KAN B-spline,III.9.52,10,kan_bspline_h5_p150,200,4,0.718157,0.710273,0.727515,0.71963,0.017544
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,10,kan_gaussrbf_h2x2_p95,113,4,0.804249,0.738894,0.886493,0.821138,0.124706
+mlp_relu,MLP ReLU,III.9.52,10,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,4,0.774821,0.736409,0.833047,0.794636,0.086395
+mlp_sigmoid,MLP sigmoid,III.9.52,10,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.507978,0.497404,0.525293,0.514719,0.035467
+kan_bspline,KAN B-spline,III.9.52,20,kan_bspline_h1_p30,40,4,0.560112,0.549243,0.577176,0.566307,0.024349
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,20,kan_gaussrbf_h2_p57,75,4,0.568299,0.501614,0.655182,0.588496,0.144488
+mlp_relu,MLP ReLU,III.9.52,20,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,4,0.524427,0.502827,0.623521,0.601921,0.185766
+mlp_sigmoid,MLP sigmoid,III.9.52,20,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.528938,0.501891,0.552261,0.525215,0.032269
+kan_bspline,KAN B-spline,III.9.52,30,kan_bspline_h3x3_p180,210,4,0.478235,0.41819,0.52902,0.468975,0.082254
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,30,kan_gaussrbf_h3_p85,112,4,0.54,0.521159,0.595125,0.576284,0.096914
+mlp_relu,MLP ReLU,III.9.52,30,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,113,4,0.485275,0.476027,0.55179,0.542543,0.126066
+mlp_sigmoid,MLP sigmoid,III.9.52,30,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.493828,0.487429,0.502305,0.495906,0.018353
+kan_bspline,KAN B-spline,III.9.52,40,kan_bspline_h3x3_p180,210,4,0.456796,0.4468,0.480518,0.470522,0.036318
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,40,kan_gaussrbf_h3x3_p169,196,4,0.482588,0.471515,0.507652,0.496579,0.060207
+mlp_relu,MLP ReLU,III.9.52,40,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.457661,0.422242,0.510906,0.475486,0.068161
+mlp_sigmoid,MLP sigmoid,III.9.52,40,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,4,0.50837,0.504951,0.510963,0.507544,0.005738
+kan_bspline,KAN B-spline,III.9.52,50,kan_bspline_h2x2_p100,120,4,0.329257,0.301365,0.360849,0.332957,0.039422
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,50,kan_gaussrbf_h1x1_p39,48,4,0.399094,0.347579,0.875869,0.824354,0.902118
+mlp_relu,MLP ReLU,III.9.52,50,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.359088,0.352598,0.369184,0.362694,0.021059
+mlp_sigmoid,MLP sigmoid,III.9.52,50,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.39726,0.387822,0.418545,0.409107,0.032163
+kan_bspline,KAN B-spline,III.9.52,100,kan_bspline_h3x3_p180,210,4,0.21341,0.20175,0.22149,0.209829,0.023434
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,100,kan_gaussrbf_h3x3_p169,196,4,0.266286,0.251042,0.306995,0.291751,0.082825
+mlp_relu,MLP ReLU,III.9.52,100,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.336783,0.29787,0.377505,0.338591,0.051077
+mlp_sigmoid,MLP sigmoid,III.9.52,100,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.427954,0.420371,0.435328,0.427745,0.01235
+kan_bspline,KAN B-spline,III.9.52,200,kan_bspline_h3x3_p180,210,4,0.167131,0.157763,0.181902,0.172533,0.022363
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,200,kan_gaussrbf_h3x3_p169,196,4,0.200808,0.192971,0.212148,0.204311,0.023376
+mlp_relu,MLP ReLU,III.9.52,200,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.253357,0.230434,0.273782,0.25086,0.034627
+mlp_sigmoid,MLP sigmoid,III.9.52,200,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.467469,0.453903,0.488137,0.47457,0.029774
+kan_bspline,KAN B-spline,III.9.52,500,kan_bspline_h3x3_p180,210,4,0.121814,0.118273,0.123431,0.119889,0.00599
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,500,kan_gaussrbf_h3x3_p169,196,4,0.110174,0.102279,0.118149,0.110255,0.016084
+mlp_relu,MLP ReLU,III.9.52,500,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,4,0.225252,0.214901,0.244343,0.233992,0.027853
+mlp_sigmoid,MLP sigmoid,III.9.52,500,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.438837,0.432848,0.449899,0.44391,0.022769
+kan_bspline,KAN B-spline,III.9.52,1000,kan_bspline_h3x3_p180,210,4,0.105342,0.102239,0.110062,0.10696,0.008692
+kan_gaussrbf,KAN Gaussian RBF,III.9.52,1000,kan_gaussrbf_h3x3_p169,196,4,0.100983,0.084348,0.120799,0.104164,0.026607
+mlp_relu,MLP ReLU,III.9.52,1000,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,4,0.195046,0.190122,0.202793,0.197869,0.012734
+mlp_sigmoid,MLP sigmoid,III.9.52,1000,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,4,0.433078,0.424942,0.447571,0.439434,0.024948

@@ -269,6 +269,8 @@ def make_model(model_type: str, model_dims: list[int]) -> nn.Module:
         return MLP(model_dims, base_function="relu")
     if model_type == "mlp_sigmoid":
         return MLP(model_dims, base_function="sigmoid")
+    if model_type == "mlp_gauss":
+        return MLP(model_dims, base_function="gauss")
     if model_type == "mlp_silu":
         return MLP(model_dims, base_function="silu")
     if model_type == "kan_bspline":

@@ -1,0 +1,145 @@
+model_type,label,model_setup_id,model_n_parameters,rows,feynman_functions,train_sample_sizes,random_seeds,test_eval_nrmse_median,test_eval_nrmse_q25,test_eval_nrmse_q75,test_eval_nrmse_mean,runtime_seconds_median
+kan_bspline,KAN B-spline,kan_bspline_h1_p30,30,718,19,9,5,0.429274,0.232505,0.588412,0.452476,717.11225
+kan_bspline,KAN B-spline,kan_bspline_h1_p30,40,261,7,9,5,0.854427,0.614235,1.000882,0.825931,699.427198
+kan_bspline,KAN B-spline,kan_bspline_h1_p30,70,45,1,9,5,0.93321,0.709537,1.083682,0.897726,682.184017
+kan_bspline,KAN B-spline,kan_bspline_h1x1_p40,40,716,19,9,5,0.408004,0.212524,0.584767,0.450047,999.014173
+kan_bspline,KAN B-spline,kan_bspline_h1x1_p40,50,261,7,9,5,0.873772,0.621903,1.000882,0.834743,990.681214
+kan_bspline,KAN B-spline,kan_bspline_h1x1_p40,80,45,1,9,5,0.937754,0.71977,1.044858,0.89891,982.187283
+kan_bspline,KAN B-spline,kan_bspline_h2_p60,60,717,19,9,5,0.188559,0.102813,0.336701,0.271571,715.993675
+kan_bspline,KAN B-spline,kan_bspline_h2_p60,80,261,7,9,5,0.636382,0.328044,0.995491,0.652601,708.839195
+kan_bspline,KAN B-spline,kan_bspline_h2_p60,140,45,1,9,5,0.857185,0.72644,0.95042,0.835183,715.544841
+kan_bspline,KAN B-spline,kan_bspline_h2x2_p100,100,716,19,9,5,0.14536,0.06558,0.323914,0.252639,1013.680703
+kan_bspline,KAN B-spline,kan_bspline_h2x2_p100,120,261,7,9,5,0.623308,0.240408,1.000882,0.628494,999.137433
+kan_bspline,KAN B-spline,kan_bspline_h2x2_p100,180,45,1,9,5,0.766131,0.659701,0.897218,0.7892,1159.259782
+kan_bspline,KAN B-spline,kan_bspline_h3_p90,90,717,19,9,5,0.16337,0.079217,0.313186,0.251402,712.439708
+kan_bspline,KAN B-spline,kan_bspline_h3_p90,120,261,7,9,5,0.531378,0.275182,0.993602,0.602386,703.107614
+kan_bspline,KAN B-spline,kan_bspline_h3_p90,210,45,1,9,5,0.777048,0.669818,0.872598,0.774002,686.969335
+kan_bspline,KAN B-spline,kan_bspline_h3x3_p180,180,716,19,9,5,0.114463,0.050615,0.283852,0.218435,1020.060515
+kan_bspline,KAN B-spline,kan_bspline_h3x3_p180,210,261,7,9,5,0.482723,0.20253,0.987347,0.563286,1001.313215
+kan_bspline,KAN B-spline,kan_bspline_h3x3_p180,300,45,1,9,5,0.72062,0.634701,0.828299,0.735796,1143.157148
+kan_bspline,KAN B-spline,kan_bspline_h4_p120,120,717,19,9,5,0.144161,0.072893,0.305635,0.237547,719.304649
+kan_bspline,KAN B-spline,kan_bspline_h4_p120,160,261,7,9,5,0.48219,0.237938,0.953293,0.556325,707.776024
+kan_bspline,KAN B-spline,kan_bspline_h4_p120,280,45,1,9,5,0.736576,0.646555,0.845798,0.737185,704.969435
+kan_bspline,KAN B-spline,kan_bspline_h5_p150,150,717,19,9,5,0.138551,0.064198,0.27702,0.224925,710.838325
+kan_bspline,KAN B-spline,kan_bspline_h5_p150,200,261,7,9,5,0.447974,0.22013,0.928486,0.540198,706.817043
+kan_bspline,KAN B-spline,kan_bspline_h5_p150,350,45,1,9,5,0.74475,0.600099,0.8163,0.718652,731.798985
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h1_p29,29,718,19,9,5,0.45363,0.260878,0.63056,0.47618,388.657481
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h1_p29,38,261,7,9,5,0.857053,0.629464,1.000882,0.858204,392.426689
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h1_p29,65,45,1,9,5,0.93219,0.722451,1.022299,0.899565,402.009468
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h1x1_p39,39,717,19,9,5,0.43229,0.233159,0.638846,0.467945,512.889344
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h1x1_p39,48,261,7,9,5,0.876601,0.621809,1.033678,0.875305,503.948755
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h1x1_p39,75,45,1,9,5,0.921936,0.775334,1.019415,0.938414,523.804378
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h2_p57,57,718,19,9,5,0.214956,0.121247,0.414055,0.30983,391.447714
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h2_p57,75,261,7,9,5,0.696983,0.344989,1.000882,0.675877,389.33631
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h2_p57,129,45,1,9,5,0.892415,0.734499,1.025349,0.876382,410.885289
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h2x2_p95,95,717,19,9,5,0.147452,0.069325,0.37842,0.265624,515.254544
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h2x2_p95,113,261,7,9,5,0.671338,0.244939,1.000882,0.638865,503.005717
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h2x2_p95,167,45,1,9,5,0.839641,0.722834,0.954852,0.831321,591.982562
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h3_p85,85,718,19,9,5,0.172134,0.080705,0.341692,0.267208,393.560463
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h3_p85,112,261,7,9,5,0.566015,0.291301,0.982922,0.610433,390.380198
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h3_p85,193,45,1,9,5,0.851071,0.727859,0.903672,0.815034,406.387541
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h3x3_p169,169,717,19,9,5,0.124059,0.046964,0.348298,0.242392,506.31384
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h3x3_p169,196,261,7,9,5,0.602729,0.197352,1.000882,0.589608,496.572339
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h3x3_p169,277,45,1,9,5,0.806838,0.732629,0.908395,0.794005,590.226739
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h4_p113,113,718,19,9,5,0.15342,0.071656,0.357469,0.251403,396.84424
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h4_p113,149,261,7,9,5,0.523498,0.244008,0.935554,0.563715,393.334909
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h4_p113,257,45,1,9,5,0.821978,0.694521,0.889144,0.787232,406.926592
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h5_p141,141,718,19,9,5,0.138758,0.056744,0.343214,0.25038,394.280015
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h5_p141,186,261,7,9,5,0.488595,0.223039,0.914541,0.54494,389.98301
+kan_gaussrbf,KAN Gaussian RBF,kan_gaussrbf_h5_p141,321,45,1,9,5,0.773519,0.655586,0.87723,0.749254,402.721072
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h1_p30_h7_p29,29,815,19,9,5,0.304042,0.166069,0.470092,0.340386,145.549251
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h1_p30_h7_p29,36,270,7,9,5,0.633569,0.482543,0.903693,0.665836,142.051363
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h1_p30_h7_p29,57,45,1,9,5,0.651347,0.597345,0.829272,0.727496,132.049403
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h1x1_p40_h4x4_p37,37,815,19,9,5,0.460772,0.264744,0.668277,0.496781,175.970106
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h1x1_p40_h4x4_p37,41,270,7,9,5,0.685,0.510164,1.000488,0.715349,174.102989
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h1x1_p40_h4x4_p37,53,45,1,9,5,0.627652,0.542786,0.802356,0.684371,166.081421
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h2_p60_h15_p61,61,815,19,9,5,0.219154,0.123708,0.395011,0.281483,142.355714
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h2_p60_h15_p61,76,270,7,9,5,0.542122,0.362685,0.906464,0.591285,140.812283
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h2_p60_h15_p61,121,45,1,9,5,0.612196,0.561765,0.808747,0.693891,132.296504
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,105,815,19,9,5,0.185822,0.10552,0.344179,0.254897,176.894455
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,113,270,7,9,5,0.429781,0.298349,0.848822,0.548813,175.046457
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h2x2_p100_h8x8_p105,137,45,1,9,5,0.562788,0.371922,0.737409,0.585556,167.774933
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h3_p90_h22_p89,89,815,19,9,5,0.199346,0.112913,0.380239,0.26364,143.333434
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h3_p90_h22_p89,111,270,7,9,5,0.47878,0.311417,0.96466,0.574973,140.473275
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h3_p90_h22_p89,177,45,1,9,5,0.672871,0.544419,0.79672,0.688245,131.687528
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,177,815,19,9,5,0.158277,0.07975,0.294473,0.223328,178.299944
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,188,270,7,9,5,0.391441,0.23829,0.82444,0.515839,175.016252
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h3x3_p180_h11x11_p177,221,45,1,9,5,0.564825,0.352044,0.701561,0.543549,171.353986
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h4_p120_h30_p121,121,815,19,9,5,0.175327,0.095459,0.35499,0.244159,143.409834
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h4_p120_h30_p121,151,270,7,9,5,0.437546,0.28855,0.953225,0.556272,140.813453
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h4_p120_h30_p121,241,45,1,9,5,0.647123,0.499642,0.817674,0.667479,131.296337
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h5_p150_h37_p149,149,815,19,9,5,0.16997,0.086763,0.338874,0.234806,144.405501
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h5_p150_h37_p149,186,270,7,9,5,0.439378,0.268346,0.921947,0.54974,140.247801
+mlp_relu,MLP ReLU,mlp_relu_for_kan_bspline_h5_p150_h37_p149,297,45,1,9,5,0.646146,0.51518,0.819983,0.648482,133.557351
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h1_p29_h7_p29,29,815,19,9,5,0.306371,0.166122,0.467508,0.339972,144.35255
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h1_p29_h7_p29,36,270,7,9,5,0.634418,0.49222,0.902809,0.667892,140.562729
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h1_p29_h7_p29,57,45,1,9,5,0.651347,0.60129,0.845438,0.735148,135.803331
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h1x1_p39_h4x4_p37,37,814,19,9,5,0.468638,0.267973,0.674285,0.500768,176.879764
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h1x1_p39_h4x4_p37,41,270,7,9,5,0.659201,0.516126,1.000188,0.712495,172.363573
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h1x1_p39_h4x4_p37,53,45,1,9,5,0.662683,0.559096,0.802356,0.693232,165.728185
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h2_p57_h14_p57,57,815,19,9,5,0.224012,0.12943,0.39982,0.2841,142.780652
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h2_p57_h14_p57,71,270,7,9,5,0.53857,0.374011,0.938163,0.605046,139.658841
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h2_p57_h14_p57,113,45,1,9,5,0.63477,0.561901,0.826461,0.693792,130.992085
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,814,19,9,5,0.20221,0.109923,0.350303,0.263815,175.341632
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,270,7,9,5,0.508861,0.306761,0.837433,0.565725,174.99551
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h2x2_p95_h7x7_p85,113,45,1,9,5,0.604951,0.422082,0.779765,0.601866,167.440029
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h3_p85_h21_p85,85,815,19,9,5,0.201788,0.112238,0.381745,0.265176,143.466811
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h3_p85_h21_p85,106,270,7,9,5,0.478511,0.318851,0.930513,0.575361,140.042516
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h3_p85_h21_p85,169,45,1,9,5,0.638882,0.532651,0.80581,0.675615,129.510163
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,814,19,9,5,0.157167,0.079733,0.288636,0.224489,176.961169
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,270,7,9,5,0.408863,0.238141,0.82444,0.516122,174.762921
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h3x3_p169_h11x11_p177,221,45,1,9,5,0.550716,0.352044,0.69811,0.547853,168.989725
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,113,815,19,9,5,0.179219,0.101114,0.359381,0.248538,143.247224
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,141,270,7,9,5,0.465262,0.291732,0.935203,0.553465,140.616462
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h4_p113_h28_p113,225,45,1,9,5,0.641497,0.525092,0.787319,0.661612,134.060751
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,141,815,19,9,5,0.171805,0.092324,0.345624,0.240015,143.12276
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,176,270,7,9,5,0.443876,0.265966,0.909226,0.537564,140.700429
+mlp_relu,MLP ReLU,mlp_relu_for_kan_gaussrbf_h5_p141_h35_p141,281,45,1,9,5,0.63372,0.516186,0.776607,0.651048,131.797284
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h1_p30_h7_p29,29,819,19,9,5,0.620146,0.3724,0.830795,0.599023,141.794784
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h1_p30_h7_p29,36,285,7,9,5,0.693072,0.618932,0.895759,0.752828,140.746398
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h1_p30_h7_p29,57,45,1,9,5,0.707268,0.697802,0.727518,0.728882,127.477445
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h1x1_p40_h4x4_p37,37,819,19,9,5,0.739698,0.464684,0.922041,0.68311,171.95025
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h1x1_p40_h4x4_p37,41,285,7,9,5,0.710242,0.627275,0.9122,0.758158,173.241544
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h1x1_p40_h4x4_p37,53,45,1,9,5,0.706618,0.660431,0.724846,0.713678,139.086467
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h2_p60_h15_p61,61,819,19,9,5,0.502984,0.28263,0.665639,0.494748,140.609915
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h2_p60_h15_p61,76,285,7,9,5,0.617216,0.55977,0.822778,0.674991,140.742708
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h2_p60_h15_p61,121,45,1,9,5,0.696763,0.648902,0.731742,0.724662,127.303045
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h2x2_p100_h8x8_p105,105,819,19,9,5,0.447619,0.240721,0.721163,0.491335,171.48402
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h2x2_p100_h8x8_p105,113,285,7,9,5,0.623991,0.535763,0.868706,0.688123,172.485159
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h2x2_p100_h8x8_p105,137,45,1,9,5,0.6742,0.633563,0.699789,0.699559,135.230166
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h3_p90_h22_p89,89,819,19,9,5,0.428524,0.222545,0.595406,0.431686,140.735872
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h3_p90_h22_p89,111,285,7,9,5,0.605295,0.512619,0.817036,0.656875,138.972435
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h3_p90_h22_p89,177,45,1,9,5,0.694455,0.656027,0.729965,0.729672,127.533007
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,177,819,19,9,5,0.38067,0.194552,0.606525,0.42896,171.959914
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,188,285,7,9,5,0.618293,0.482787,0.859618,0.658307,171.734104
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h3x3_p180_h11x11_p177,221,45,1,9,5,0.660919,0.61548,0.704551,0.687704,133.773832
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,121,819,19,9,5,0.381919,0.177509,0.548755,0.388175,140.617595
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,151,285,7,9,5,0.597947,0.476919,0.818809,0.643326,138.036614
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h4_p120_h30_p121,241,45,1,9,5,0.684747,0.638056,0.755171,0.727818,126.029963
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,149,819,19,9,5,0.358158,0.172407,0.535668,0.373405,141.100926
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,186,285,7,9,5,0.586443,0.472191,0.81986,0.637552,138.598752
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_bspline_h5_p150_h37_p149,297,45,1,9,5,0.677357,0.645087,0.784971,0.732637,127.161955
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h1_p29_h7_p29,29,819,19,9,5,0.622487,0.376415,0.833566,0.59985,141.093155
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h1_p29_h7_p29,36,284,7,9,5,0.696406,0.619928,0.896843,0.755721,139.700768
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h1_p29_h7_p29,57,45,1,9,5,0.706853,0.697802,0.727518,0.729684,127.097063
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h1x1_p39_h4x4_p37,37,819,19,9,5,0.741287,0.459066,0.922711,0.683513,170.677375
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h1x1_p39_h4x4_p37,41,284,7,9,5,0.709389,0.627222,0.901987,0.75609,172.866416
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h1x1_p39_h4x4_p37,53,45,1,9,5,0.707669,0.661094,0.72902,0.714308,134.809496
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h2_p57_h14_p57,57,819,19,9,5,0.489024,0.273191,0.650341,0.480601,140.908026
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h2_p57_h14_p57,71,284,7,9,5,0.626057,0.566472,0.834629,0.680058,137.873851
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h2_p57_h14_p57,113,45,1,9,5,0.699503,0.675572,0.728227,0.72131,126.889279
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,85,819,19,9,5,0.45992,0.249652,0.731189,0.496261,170.087142
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,92,284,7,9,5,0.635177,0.561692,0.866282,0.696422,169.868453
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h2x2_p95_h7x7_p85,113,45,1,9,5,0.684266,0.64438,0.713796,0.708666,135.473713
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,85,819,19,9,5,0.422014,0.217739,0.596256,0.430059,141.26685
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,106,284,7,9,5,0.60828,0.517057,0.84265,0.655198,138.459906
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h3_p85_h21_p85,169,45,1,9,5,0.697384,0.680237,0.736116,0.735706,126.496108
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,177,819,19,9,5,0.376504,0.197926,0.606525,0.430218,170.239169
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,188,284,7,9,5,0.618332,0.490917,0.860674,0.662614,171.079116
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h3x3_p169_h11x11_p177,221,45,1,9,5,0.661411,0.618652,0.704551,0.691876,138.181422
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h4_p113_h28_p113,113,819,19,9,5,0.402195,0.20206,0.565858,0.404608,140.180936
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h4_p113_h28_p113,141,284,7,9,5,0.600817,0.484437,0.834265,0.648399,139.37046
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h4_p113_h28_p113,225,45,1,9,5,0.682871,0.648754,0.741492,0.725912,127.392325
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,141,819,19,9,5,0.374745,0.18039,0.54281,0.381148,140.067508
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,176,284,7,9,5,0.586467,0.433683,0.822244,0.629685,139.76589
+mlp_sigmoid,MLP sigmoid,mlp_sigmoid_for_kan_gaussrbf_h5_p141_h35_p141,281,45,1,9,5,0.68393,0.643312,0.773571,0.739211,127.34661

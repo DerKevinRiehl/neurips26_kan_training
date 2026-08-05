@@ -42,9 +42,9 @@ if os.environ.get("KAN_PROTOCOL_NO_AUTORUN") == "1":
 if os.environ.get("KAN_PROTOCOL_RUN") == "1":
     RUN_PROTOCOL_NOW = True
 
-# Start with KAN only.
-# Add "mlp_matched" after the KAN capacity sweep has run cleanly.
-ACTIVE_MODEL_GROUPS = ["kan"]
+# This file now defaults to the MLP companion run.
+# The KAN setup list below is still used as the matching reference.
+ACTIVE_MODEL_GROUPS = ["mlp_matched"]
 
 KAN_HIDDEN_DIMS = [
     [1],
@@ -57,12 +57,12 @@ KAN_HIDDEN_DIMS = [
     [3, 3],
 ]
 KAN_MODEL_TYPES = ["kan_bspline", "kan_gaussrbf"]
-MLP_MODEL_TYPES = ["mlp_relu", "mlp_sigmoid"]
+MLP_MATCHED_MODEL_TYPE = "mlp_relu"
+MLP_MODEL_TYPES = [MLP_MATCHED_MODEL_TYPE]
 
 REPRESENTATIVE_INPUT_DIM = 2
 REPRESENTATIVE_OUTPUT_DIM = 1
-MLP_RELATIVE_TOLERANCE = 0.25
-MLP_MAX_MATCHES_PER_TARGET = 2
+MLP_CANDIDATE_MAX_WIDTH = 256
 
 protocol_parameters = {
     "io": {
@@ -118,6 +118,8 @@ def estimate_n_parameters(model_type: str, hidden_dims: list[int]) -> int:
         return MLP(model_dims, base_function="relu").get_n_parameters()
     if model_type == "mlp_sigmoid":
         return MLP(model_dims, base_function="sigmoid").get_n_parameters()
+    if model_type == "mlp_gauss":
+        return MLP(model_dims, base_function="gauss").get_n_parameters()
     if model_type == "kan_bspline":
         return KAN(
             model_dims,
@@ -153,6 +155,30 @@ def make_setup(model_type: str, hidden_dims: list[int], group: str) -> dict[str,
     }
 
 
+def make_matched_mlp_setup(
+    model_type: str,
+    hidden_dims: list[int],
+    target_setup: dict[str, object],
+) -> dict[str, object]:
+    n_parameters = estimate_n_parameters(model_type, hidden_dims)
+    target_id = str(target_setup["model_setup_id"])
+    target_n_parameters = int(target_setup["representative_n_parameters"])
+    return {
+        "model_setup_id": (
+            f"{model_type}_for_{target_id}_"
+            f"h{hidden_label(hidden_dims)}_p{n_parameters}"
+        ),
+        "model_type": model_type,
+        "hidden_dims": hidden_dims,
+        "group": "mlp_matched",
+        "matched_kan_setup_id": target_id,
+        "matched_kan_representative_n_parameters": target_n_parameters,
+        "representative_input_dim": REPRESENTATIVE_INPUT_DIM,
+        "representative_output_dim": REPRESENTATIVE_OUTPUT_DIM,
+        "representative_n_parameters": n_parameters,
+    }
+
+
 KAN_MODEL_SETUPS = [
     make_setup(model_type, hidden_dims, "kan")
     for model_type in KAN_MODEL_TYPES
@@ -160,66 +186,45 @@ KAN_MODEL_SETUPS = [
 ]
 
 
-def candidate_mlp_hidden_dims() -> list[list[int]]:
-    candidates: list[list[int]] = []
-    candidates.extend([[width] for width in range(1, 65)])
-    candidates.extend([[width, width] for width in range(1, 65)])
-    candidates.extend([[width, width, width] for width in range(1, 33)])
-    candidates.extend([[max(1, width // 2), width] for width in range(2, 65)])
-    candidates.extend([[width, max(1, width // 2)] for width in range(2, 65)])
-
-    unique: dict[tuple[int, ...], list[int]] = {}
-    for dims in candidates:
-        unique.setdefault(tuple(dims), dims)
-    return list(unique.values())
+def candidate_mlp_hidden_dims(n_hidden_layers: int) -> list[list[int]]:
+    return [
+        [width] * n_hidden_layers
+        for width in range(1, MLP_CANDIDATE_MAX_WIDTH + 1)
+    ]
 
 
 def select_parameter_matched_mlp_setups() -> list[dict[str, object]]:
-    target_counts = sorted(
-        {int(setup["representative_n_parameters"]) for setup in KAN_MODEL_SETUPS}
-    )
-    selected_dims: dict[tuple[str, tuple[int, ...]], list[int]] = {}
+    setups: list[dict[str, object]] = []
 
-    for mlp_model_type in MLP_MODEL_TYPES:
-        candidates = [
-            (
-                hidden_dims,
-                estimate_n_parameters(mlp_model_type, hidden_dims),
-            )
-            for hidden_dims in candidate_mlp_hidden_dims()
-        ]
-        for target_count in target_counts:
-            ranked = sorted(
+    for target_setup in KAN_MODEL_SETUPS:
+        target_hidden_dims = list(target_setup["hidden_dims"])
+        target_count = int(target_setup["representative_n_parameters"])
+        n_hidden_layers = len(target_hidden_dims)
+
+        for mlp_model_type in MLP_MODEL_TYPES:
+            candidates = [
+                (
+                    hidden_dims,
+                    estimate_n_parameters(mlp_model_type, hidden_dims),
+                )
+                for hidden_dims in candidate_mlp_hidden_dims(n_hidden_layers)
+            ]
+            best_hidden_dims, _ = min(
                 candidates,
                 key=lambda item: (
-                    abs(item[1] - target_count) / max(target_count, 1),
-                    len(item[0]),
+                    abs(item[1] - target_count),
                     sum(item[0]),
                 ),
             )
-            matches = [
-                item
-                for item in ranked
-                if abs(item[1] - target_count) / max(target_count, 1)
-                <= MLP_RELATIVE_TOLERANCE
-            ]
-            if not matches:
-                matches = ranked[:1]
-            for hidden_dims, _ in matches[:MLP_MAX_MATCHES_PER_TARGET]:
-                selected_dims[(mlp_model_type, tuple(hidden_dims))] = hidden_dims
+            setups.append(
+                make_matched_mlp_setup(
+                    mlp_model_type,
+                    best_hidden_dims,
+                    target_setup,
+                )
+            )
 
-    setups = [
-        make_setup(mlp_model_type, hidden_dims, "mlp_matched")
-        for (mlp_model_type, _), hidden_dims in selected_dims.items()
-    ]
-    return sorted(
-        setups,
-        key=lambda setup: (
-            str(setup["model_type"]),
-            int(setup["representative_n_parameters"]),
-            str(setup["model_setup_id"]),
-        ),
-    )
+    return setups
 
 
 MLP_MATCHED_MODEL_SETUPS = select_parameter_matched_mlp_setups()
@@ -308,11 +313,17 @@ def print_protocol_summary() -> None:
     print("")
     print("First model setups:")
     for setup in ALL_MODEL_SETUPS[:12]:
-        print(
+        line = (
             f"  {setup['model_setup_id']}: "
             f"{setup['model_type']} hidden={setup['hidden_dims']} "
             f"representative_params={setup['representative_n_parameters']}"
         )
+        if "matched_kan_setup_id" in setup:
+            line += (
+                f" matched_to={setup['matched_kan_setup_id']} "
+                f"target_params={setup['matched_kan_representative_n_parameters']}"
+            )
+        print(line)
     if len(ALL_MODEL_SETUPS) > 12:
         print(f"  ... {len(ALL_MODEL_SETUPS) - 12} more")
 

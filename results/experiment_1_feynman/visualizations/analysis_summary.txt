@@ -1,0 +1,47 @@
+Experiment 1 result visualization summary
+
+CSV files: 3
+Raw rows: 792,761
+Rows after deduplication: 792,761
+Duplicate rows removed: 0
+Model types: kan_bspline,kan_gaussrbf,mlp_relu,mlp_sigmoid
+Feynman functions: 27
+Random seeds: 5
+Training sample sizes: 10,20,30,40,50,100,200,500,1000
+Final checkpoint used: 1500
+Rows at final checkpoint: 52,824
+
+Overall best setup-selected model type:
+  KAN B-spline with median test_eval_nrmse 0.1811
+
+Best model type by training-sample size:
+    10: MLP ReLU (test_eval_nrmse median 0.5712)
+    20: MLP ReLU (test_eval_nrmse median 0.3679)
+    30: MLP ReLU (test_eval_nrmse median 0.2702)
+    40: MLP ReLU (test_eval_nrmse median 0.2087)
+    50: KAN B-spline (test_eval_nrmse median 0.1763)
+   100: KAN Gaussian RBF (test_eval_nrmse median 0.0941)
+   200: KAN Gaussian RBF (test_eval_nrmse median 0.0709)
+   500: KAN Gaussian RBF (test_eval_nrmse median 0.04944)
+  1000: KAN Gaussian RBF (test_eval_nrmse median 0.04515)
+
+Best KAN family vs best MLP family:
+  paired comparisons: 1,023
+  KAN family win share: 64.1%
+  median KAN-minus-MLP gap: -0.02314
+  q25/q75 KAN-minus-MLP gap: -0.06024 / 0.03861
+    10: KAN family win share 10.5%, median gap 0.1133
+    20: KAN family win share 25.4%, median gap 0.06041
+    30: KAN family win share 42.1%, median gap 0.0104
+    40: KAN family win share 58.8%, median gap -0.01152
+    50: KAN family win share 65.8%, median gap -0.02172
+   100: KAN family win share 92.1%, median gap -0.03974
+   200: KAN family win share 93.8%, median gap -0.04867
+   500: KAN family win share 93.8%, median gap -0.04696
+  1000: KAN family win share 95.6%, median gap -0.0505
+
+Interpretation note:
+  Architecture selection is done on the final test metric within each
+  model type, Feynman function, and sample size. Treat these plots as
+  exploratory diagnostics, not a held-out model-selection estimate.
+  Learning curves use the selected setup at 100 samples.
