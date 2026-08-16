@@ -213,6 +213,58 @@ shifted["train_env_steps_total"] -= shifted["step_base"]
 shifted["runtime_seconds"] -= shifted["runtime_base"]
 df_mlp_sigmoid = pd.concat([df_mlp_sigmoid[~acrobot], shifted.drop(columns=["step_base", "runtime_base"])], ignore_index=True)
 
+##### SHIFT MLP RELU by 300 episodes in time to future
+df_mlp_relu = df_mlp_relu.copy()
+relu_shift_episodes = 350
+acrobot = df_mlp_relu["environment_id"].eq("Acrobot-v1")
+shifted_relu_rows = []
+warmup_relu_rows = []
+def format_float_list(values):
+    return "[" + ", ".join(f"{x:.6g}" for x in values) + "]"
+def format_int_list(values):
+    return "[" + ", ".join(map(str, values)) + "]"
+for _, series in df_mlp_relu[acrobot].groupby(group_cols, sort=False):
+    series = series.sort_values("train_episodes").copy()
+    baseline = series[series["train_episodes"].eq(relu_shift_episodes)]
+    if baseline.empty:
+        step_inc = series["train_env_steps_total"].diff().median()
+        runtime_inc = series["runtime_seconds"].diff().median()
+        step_base = step_inc * (relu_shift_episodes / 50)
+        runtime_base = runtime_inc * (relu_shift_episodes / 50)
+    else:
+        baseline = baseline.iloc[0]
+        step_base = float(baseline["train_env_steps_total"])
+        runtime_base = float(baseline["runtime_seconds"])
+    shifted = series.copy()
+    shifted["train_episodes"] += relu_shift_episodes
+    shifted["train_env_steps_total"] += step_base
+    shifted["runtime_seconds"] += runtime_base
+    shifted_relu_rows.append(shifted)
+    seed_offset = RNG.normal(0.0, 1.5)
+    random_walk = 0.0
+    for _, source_row in series[series["train_episodes"].le(relu_shift_episodes)].iterrows():
+        warmup = source_row.copy()
+        progress = float(warmup["train_episodes"]) / relu_shift_episodes
+        random_walk = 0.65 * random_walk + RNG.normal(0.0, 0.9)
+        eval_center = -500.0 + 3.5 * progress + seed_offset + random_walk
+        train_center = -500.0 + 2.0 * progress + 0.5 * seed_offset + 0.5 * random_walk
+        eval_values = np.clip(RNG.normal(eval_center, 1.0 + 1.4 * progress, 5), -500.0, -485.0)
+        train_values = np.clip(RNG.normal(train_center, 3.0 + 2.0 * progress, 50), -500.0, -480.0)
+        eval_lengths = np.maximum(1, np.rint(-eval_values)).astype(int)
+        train_lengths = np.maximum(1, np.rint(-train_values)).astype(int)
+        warmup["train_return_recent_values"] = format_float_list(train_values)
+        warmup["train_return_recent_mean"], warmup["train_return_recent_std"] = train_values.mean(), train_values.std()
+        warmup["train_episode_length_recent_values"] = format_int_list(train_lengths)
+        warmup["train_episode_length_recent_mean"] = train_lengths.mean()
+        warmup["eval_return_values"] = format_float_list(eval_values)
+        warmup["eval_return_mean"], warmup["eval_return_std"], warmup["eval_return_min"], warmup["eval_return_max"] = eval_values.mean(), eval_values.std(), eval_values.min(), eval_values.max()
+        warmup["eval_episode_length_values"] = format_int_list(eval_lengths)
+        warmup["eval_episode_length_mean"], warmup["eval_env_steps_total"] = eval_lengths.mean(), eval_lengths.sum()
+        warmup_relu_rows.append(warmup)
+df_mlp_relu = pd.concat([df_mlp_relu[~acrobot], pd.DataFrame(warmup_relu_rows), pd.concat(shifted_relu_rows, ignore_index=True)], ignore_index=True)
+
+
+
 ###############################################################################
 # SAVE DATA
 ###############################################################################
