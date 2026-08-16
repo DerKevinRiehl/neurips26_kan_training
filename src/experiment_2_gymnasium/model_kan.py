@@ -1,4 +1,4 @@
-"""Configurable KAN wrapper for Feynman experiments.
+"""Configurable KAN wrapper for Gymnasium experiments.
 
 This module wraps selected models from the cloned All-KAN repository:
 https://github.com/hoangthangta/All-KAN
@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from torch import nn
 
 
-_ALL_KAN_MODELS = Path(__file__).resolve().parent / "external" / "All-KAN" / "models"
+_ALL_KAN_MODELS = Path(__file__).resolve().parent.parent / "external" / "All-KAN" / "models"
 if _ALL_KAN_MODELS.exists() and str(_ALL_KAN_MODELS) not in sys.path:
     sys.path.insert(0, str(_ALL_KAN_MODELS))
 
@@ -28,7 +28,7 @@ except ImportError as exc:  # pragma: no cover - clearer error for missing clone
         "Could not import All-KAN models. Expected the repository at "
         f"{_ALL_KAN_MODELS.parent}. Clone it with: "
         "git clone https://github.com/hoangthangta/All-KAN.git "
-        "src/experiment_1_feynman/external/All-KAN"
+        "src/external/All-KAN"
     ) from exc
 
 

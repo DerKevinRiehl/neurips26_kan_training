@@ -1,0 +1,43 @@
+Data source: 20260805_2212_experiment_classic_result.csv
+Clean experiment rows: 132,000
+Environments: Acrobot-v1, CartPole-v1, MountainCar-v0, MountainCarContinuous-v0, Pendulum-v1
+Model setups: 22
+Random seeds: 10
+Final checkpoint: 6000 training episodes
+Full actor-critic comparison: True
+
+Best final setup per environment and model type:
+- Acrobot-v1: KAN B-spline, kan_bspline_h16x16, return -94.360 +/- 27.656, parameters 7680, seeds 10
+- Acrobot-v1: KAN RBF, kan_gaussrbf_h8, return -423.800 +/- 126.753, parameters 1172, seeds 10
+- Acrobot-v1: MLP ReLU, mlp_relu_h64, return -86.820 +/- 10.572, parameters 1156, seeds 10
+- Acrobot-v1: MLP Sigmoid, mlp_sigmoid_h64, return -163.860 +/- 97.769, parameters 1156, seeds 10
+- CartPole-v1: KAN B-spline, kan_bspline_h16x16, return 500.000 +/- 0.000, parameters 6880, seeds 10
+- CartPole-v1: KAN RBF, kan_gaussrbf_h16x16, return 500.000 +/- 0.000, parameters 6259, seeds 10
+- CartPole-v1: MLP ReLU, mlp_relu_h64x64, return 495.720 +/- 13.535, parameters 9155, seeds 10
+- CartPole-v1: MLP Sigmoid, mlp_sigmoid_h16, return 469.540 +/- 29.621, parameters 211, seeds 10
+- MountainCar-v0: KAN B-spline, kan_bspline_h16x16, return -200.000 +/- 0.000, parameters 6400, seeds 10
+- MountainCar-v0: KAN RBF, kan_gaussrbf_h16x16, return -200.000 +/- 0.000, parameters 5828, seeds 10
+- MountainCar-v0: MLP ReLU, mlp_relu_h16, return -200.000 +/- 0.000, parameters 164, seeds 10
+- MountainCar-v0: MLP Sigmoid, mlp_sigmoid_h16, return -200.000 +/- 0.000, parameters 164, seeds 10
+- MountainCarContinuous-v0: KAN B-spline, kan_bspline_h16x16, return 74.883 +/- 39.467, parameters 6081, seeds 10
+- MountainCarContinuous-v0: KAN RBF, kan_gaussrbf_h8x8, return 93.679 +/- 1.214, parameters 1619, seeds 10
+- MountainCarContinuous-v0: MLP ReLU, mlp_relu_h64x64, return 93.600 +/- 0.210, parameters 8835, seeds 10
+- MountainCarContinuous-v0: MLP Sigmoid, mlp_sigmoid_h64x64, return -0.002 +/- 0.002, parameters 8835, seeds 10
+- Pendulum-v1: KAN B-spline, kan_bspline_h4x4, return -930.324 +/- 179.328, parameters 641, seeds 10
+- Pendulum-v1: KAN RBF, kan_gaussrbf_h16x16, return -356.592 +/- 244.830, parameters 5827, seeds 10
+- Pendulum-v1: MLP ReLU, mlp_relu_h32x32, return -244.526 +/- 97.882, parameters 2435, seeds 10
+- Pendulum-v1: MLP Sigmoid, mlp_sigmoid_h32, return -1109.561 +/- 34.852, parameters 323, seeds 10
+
+Best KAN family versus best MLP family at the final checkpoint:
+- Acrobot-v1: best KAN kan_bspline_h16x16 (-94.360) vs best MLP mlp_relu_h64 (-86.820); gap KAN-MLP -7.540, winner MLP
+- CartPole-v1: best KAN kan_bspline_h16x16 (500.000) vs best MLP mlp_relu_h64x64 (495.720); gap KAN-MLP 4.280, winner KAN
+- MountainCar-v0: best KAN kan_bspline_h16x16 (-200.000) vs best MLP mlp_relu_h16 (-200.000); gap KAN-MLP 0.000, winner tie
+- MountainCarContinuous-v0: best KAN kan_gaussrbf_h8x8 (93.679) vs best MLP mlp_relu_h64x64 (93.600); gap KAN-MLP 0.079, winner KAN
+- Pendulum-v1: best KAN kan_gaussrbf_h16x16 (-356.592) vs best MLP mlp_relu_h32x32 (-244.526); gap KAN-MLP -112.066, winner MLP
+
+Quick reading:
+- CartPole-v1 is solved by both KAN families; the best MLP ReLU is almost saturated as well.
+- MountainCar-v0 stays at the failure floor for every family in this run.
+- MountainCarContinuous-v0 is strongest for KAN RBF and MLP ReLU, with KAN RBF using fewer parameters in the best final setup.
+- Pendulum-v1 favors MLP ReLU in this protocol; KAN RBF learns but remains worse at the final checkpoint.
+- Acrobot-v1 favors MLP ReLU at the final checkpoint, while KAN B-spline is close and KAN RBF struggles.
