@@ -207,3 +207,13 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+.codex_tmp/classic_process_smoke/latest_result_path.txt
+.codex_tmp/classic_process_smoke/smoke.csv
+.codex_tmp/classic_smoke/latest_result_path.txt
+.codex_tmp/classic_smoke/smoke.csv
+.codex_tmp/classic_smoke2/latest_result_path.txt
+.codex_tmp/classic_smoke2/smoke.csv
+.codex_tmp/classic_smoke3/latest_result_path.txt
+.codex_tmp/classic_smoke3/smoke.csv
+.codex_tmp/classic_smoke_fullkan/latest_result_path.txt
+.codex_tmp/classic_smoke_fullkan/smoke.csv

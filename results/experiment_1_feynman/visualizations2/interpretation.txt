@@ -11,6 +11,13 @@
 	even on a heterogenoeus dataset such as Feynman
 	yet, KAN-B SPLINE has slightly higher variance
 	
+- NRMSE: Normalized Root Mean Square Error (the samller the better)
+- Figure 1: shows that for all models best performance (NRMSE) when num params around 150 
+- Figure 2: shows that for all models best performance (NRMSE) when num iterations around 1500 steps
+- Figure 3: shows that KAN is better than MLP after 4 samples
+- Figure 4: shows all models in one diagram
+	
+	
 FIGURES TODO:
 - MainPaper Figure (maybe just showing KAN B and MLP RELU), maybe xlim or smoothen data that it is always better)
 	if we nust compare two, maybe their difference better, or ylog, lets see 
