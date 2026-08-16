@@ -14,6 +14,7 @@ plt.figure(figsize=(FIG_RES * 2, FIG_RES), constrained_layout=True)
 HERE = Path(__file__).resolve().parent
 RESULTS_DIR = HERE.parent
 CSV_FILE = max(RESULTS_DIR.glob("*_experiment_classic_result.csv"), key=lambda path: path.stat().st_size)
+# CSV_FILE = max(RESULTS_DIR.glob("*_experiment_classic_result_synthetic.csv"), key=lambda path: path.stat().st_size)
 
 USECOLS = [
     "random_seed",
