@@ -183,18 +183,36 @@ for _, series in df_mlp_sigmoid[df_mlp_sigmoid["environment_id"] == "Acrobot-v1"
         extra_rows.append(last)
 df_mlp_sigmoid = pd.concat([df_mlp_sigmoid, pd.DataFrame(extra_rows)], ignore_index=True)
 
-##### SHIFT old 2000 episodes out for extended timeseries
-extended_frames = {"kan_bspline": df_kan_bspline, "kan_gaussrbf": df_kan_rbf, "mlp_sigmoid": df_mlp_sigmoid}
-for model_type, frame in extended_frames.items():
-    acrobot = frame["environment_id"].eq("Acrobot-v1")
-    baseline = frame[acrobot & frame["train_episodes"].eq(2000)][group_cols + ["train_env_steps_total", "runtime_seconds"]]
-    baseline = baseline.rename(columns={"train_env_steps_total": "step_base", "runtime_seconds": "runtime_base"})
-    shifted = frame[acrobot & frame["train_episodes"].gt(2000)].merge(baseline, on=group_cols, how="left")
-    shifted["train_episodes"] -= 2000
-    shifted["train_env_steps_total"] -= shifted["step_base"]
-    shifted["runtime_seconds"] -= shifted["runtime_base"]
-    extended_frames[model_type] = pd.concat([frame[~acrobot], shifted.drop(columns=["step_base", "runtime_base"])], ignore_index=True)
-   
+##### SHIFT old 2000 episodes out for extended timeseries KAN BSPLINE
+acrobot = df_kan_bspline["environment_id"].eq("Acrobot-v1")
+baseline = df_kan_bspline[acrobot & df_kan_bspline["train_episodes"].eq(2000)][group_cols + ["train_env_steps_total", "runtime_seconds"]]
+baseline = baseline.rename(columns={"train_env_steps_total": "step_base", "runtime_seconds": "runtime_base"})
+shifted = df_kan_bspline[acrobot & df_kan_bspline["train_episodes"].gt(2000)].merge(baseline, on=group_cols, how="left")
+shifted["train_episodes"] -= 2000
+shifted["train_env_steps_total"] -= shifted["step_base"]
+shifted["runtime_seconds"] -= shifted["runtime_base"]
+df_kan_bspline = pd.concat([df_kan_bspline[~acrobot], shifted.drop(columns=["step_base", "runtime_base"])], ignore_index=True)
+
+##### SHIFT old 2000 episodes out for extended timeseries KAN RBF
+acrobot = df_kan_rbf["environment_id"].eq("Acrobot-v1")
+baseline = df_kan_rbf[acrobot & df_kan_rbf["train_episodes"].eq(2000)][group_cols + ["train_env_steps_total", "runtime_seconds"]]
+baseline = baseline.rename(columns={"train_env_steps_total": "step_base", "runtime_seconds": "runtime_base"})
+shifted = df_kan_rbf[acrobot & df_kan_rbf["train_episodes"].gt(2000)].merge(baseline, on=group_cols, how="left")
+shifted["train_episodes"] -= 2000
+shifted["train_env_steps_total"] -= shifted["step_base"]
+shifted["runtime_seconds"] -= shifted["runtime_base"]
+df_kan_rbf = pd.concat([df_kan_rbf[~acrobot], shifted.drop(columns=["step_base", "runtime_base"])], ignore_index=True)
+
+##### SHIFT old 2000 episodes out for extended timeseries MLP SIGMOID
+acrobot = df_mlp_sigmoid["environment_id"].eq("Acrobot-v1")
+baseline = df_mlp_sigmoid[acrobot & df_mlp_sigmoid["train_episodes"].eq(2000)][group_cols + ["train_env_steps_total", "runtime_seconds"]]
+baseline = baseline.rename(columns={"train_env_steps_total": "step_base", "runtime_seconds": "runtime_base"})
+shifted = df_mlp_sigmoid[acrobot & df_mlp_sigmoid["train_episodes"].gt(2000)].merge(baseline, on=group_cols, how="left")
+shifted["train_episodes"] -= 2000
+shifted["train_env_steps_total"] -= shifted["step_base"]
+shifted["runtime_seconds"] -= shifted["runtime_base"]
+df_mlp_sigmoid = pd.concat([df_mlp_sigmoid[~acrobot], shifted.drop(columns=["step_base", "runtime_base"])], ignore_index=True)
+
 ###############################################################################
 # SAVE DATA
 ###############################################################################
