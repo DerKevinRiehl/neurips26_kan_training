@@ -1,5 +1,0 @@
-model_type,label,rows,test_eval_nrmse_median,test_eval_nrmse_q25,test_eval_nrmse_q75,runtime_seconds_median
-kan_bspline,KAN B-spline,1022,0.181111,0.06797,0.476094,917.044697
-kan_gaussrbf,KAN Gaussian RBF,1023,0.186191,0.063204,0.521146,468.2185
-mlp_relu,MLP ReLU,1130,0.207209,0.091433,0.361356,163.493915
-mlp_sigmoid,MLP sigmoid,1148,0.39976,0.217505,0.571985,147.619453

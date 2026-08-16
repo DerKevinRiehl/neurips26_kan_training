@@ -1,5 +1,0 @@
-model_type,label,rows,feynman_functions,random_seeds,model_setups,min_parameters,max_parameters,train_sample_sizes,train_steps,source_files
-kan_bspline,KAN B-spline,122889,27,5,8,30,350,"10,20,30,40,50,100,200,500,1000","100,200,300,400,500,600,700,800,900,1000,1100,1200,...(+3)",20260626_1704_feynman_protocol_result_1.csv
-kan_gaussrbf,KAN Gaussian RBF,122912,27,5,8,29,321,"10,20,30,40,50,100,200,500,1000","100,200,300,400,500,600,700,800,900,1000,1100,1200,...(+3)",20260626_1704_feynman_protocol_result_1.csv
-mlp_relu,MLP ReLU,271244,27,5,16,29,297,"10,20,30,40,50,100,200,500,1000","100,200,300,400,500,600,700,800,900,1000,1100,1200,...(+3)",20260627_2057_feynman_protocol_result_3.csv
-mlp_sigmoid,MLP sigmoid,275716,27,5,16,29,297,"10,20,30,40,50,100,200,500,1000","100,200,300,400,500,600,700,800,900,1000,1100,1200,...(+3)",20260627_2059_feynman_protocol_result_2.csv
