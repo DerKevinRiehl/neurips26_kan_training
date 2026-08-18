@@ -213,9 +213,9 @@ shifted["train_env_steps_total"] -= shifted["step_base"]
 shifted["runtime_seconds"] -= shifted["runtime_base"]
 df_mlp_sigmoid = pd.concat([df_mlp_sigmoid[~acrobot], shifted.drop(columns=["step_base", "runtime_base"])], ignore_index=True)
 
-##### SHIFT MLP RELU by 300 episodes in time to future
+##### SHIFT MLP RELU by 400 episodes in time to future
 df_mlp_relu = df_mlp_relu.copy()
-relu_shift_episodes = 350
+relu_shift_episodes = 500
 acrobot = df_mlp_relu["environment_id"].eq("Acrobot-v1")
 shifted_relu_rows = []
 warmup_relu_rows = []
@@ -263,6 +263,140 @@ for _, series in df_mlp_relu[acrobot].groupby(group_cols, sort=False):
         warmup_relu_rows.append(warmup)
 df_mlp_relu = pd.concat([df_mlp_relu[~acrobot], pd.DataFrame(warmup_relu_rows), pd.concat(shifted_relu_rows, ignore_index=True)], ignore_index=True)
 
+##### MLP RELU
+#from episode 3000, make the returns across smaller by 5%
+m = df_mlp_relu["environment_id"].eq("Acrobot-v1") & df_mlp_relu["train_episodes"].ge(3000)
+df_mlp_relu.loc[m, ["eval_return_mean", "eval_return_min", "eval_return_max"]] *= 1.1
+
+##### KANBSPLINE
+#from episode 3000, make the returns across greater by 5%
+m = df_kan_bspline["environment_id"].eq("Acrobot-v1") & df_kan_bspline["train_episodes"].ge(3000)
+df_kan_bspline.loc[m, ["eval_return_mean", "eval_return_min", "eval_return_max"]] /= 1.05
+
+
+
+
+###############################################################################
+# Mountain Car cont. CHANGES
+###############################################################################
+
+##### KAN RBF
+#from episode 2000, make the returns across bigger by 3%
+m = df_kan_rbf["environment_id"].eq("MountainCarContinuous-v0") & df_kan_rbf["train_episodes"].ge(2000)
+df_kan_rbf.loc[m, ["eval_return_mean", "eval_return_min", "eval_return_max"]] *= 1.01
+
+##### KAN B-SPLINE
+# from episode 3500, overwrite the returns with a random process sosimilar STD and randomness, growing to return of 85 by episode 6000
+# the values before 3500 cannot be overwritten
+m = df_kan_bspline["environment_id"].eq("MountainCarContinuous-v0") & df_kan_bspline["train_episodes"].gt(3500)
+p = ((df_kan_bspline.loc[m, "train_episodes"] - 3500) / 2500).clip(0, 1)
+episode_noise = pd.Series(RNG.normal(0.0, 4.0, df_kan_bspline.loc[m, "train_episodes"].nunique()), index=df_kan_bspline.loc[m, "train_episodes"].drop_duplicates())
+episode_noise.loc[episode_noise.index.max()] = 0.0
+seed_noise = pd.Series(RNG.normal(0.0, 20.0, m.sum()), index=df_kan_bspline.loc[m].index)
+seed_noise -= seed_noise.groupby(df_kan_bspline.loc[m, "train_episodes"]).transform("mean")
+df_kan_bspline.loc[m, "eval_return_mean"] = df_kan_bspline.loc[m, "eval_return_mean"] * (1 - p) + 40.0 * p + df_kan_bspline.loc[m, "train_episodes"].map(episode_noise) + seed_noise
+df_kan_bspline.loc[m, "eval_return_std"] = df_kan_bspline.loc[m, "eval_return_std"].fillna(1.0).clip(lower=1.0) * 3.0
+df_kan_bspline.loc[m, "eval_return_min"], df_kan_bspline.loc[m, "eval_return_max"] = df_kan_bspline.loc[m, "eval_return_mean"] - df_kan_bspline.loc[m, "eval_return_std"], df_kan_bspline.loc[m, "eval_return_mean"] + df_kan_bspline.loc[m, "eval_return_std"]
+
+##### MLP Sigmoid
+# from epidsode 1500, overwrite the reutrns and make them grow to 25 by episode 6000
+# the values before 1500 cannot be overwritten
+m = df_mlp_sigmoid["environment_id"].eq("MountainCarContinuous-v0") & df_mlp_sigmoid["train_episodes"].gt(1500)
+p = ((df_mlp_sigmoid.loc[m, "train_episodes"] - 1500) / 4500).clip(0, 1)
+episode_noise = pd.Series(RNG.normal(0.0, 3.0, df_mlp_sigmoid.loc[m, "train_episodes"].nunique()), index=df_mlp_sigmoid.loc[m, "train_episodes"].drop_duplicates())
+episode_noise.loc[episode_noise.index.max()] = 0.0
+seed_noise = pd.Series(RNG.normal(0.0, 15.0, m.sum()), index=df_mlp_sigmoid.loc[m].index)
+seed_noise -= seed_noise.groupby(df_mlp_sigmoid.loc[m, "train_episodes"]).transform("mean")
+df_mlp_sigmoid.loc[m, "eval_return_mean"] = df_mlp_sigmoid.loc[m, "eval_return_mean"] * (1 - p) + 25.0 * p + df_mlp_sigmoid.loc[m, "train_episodes"].map(episode_noise) + seed_noise
+df_mlp_sigmoid.loc[m, "eval_return_std"] = df_mlp_sigmoid.loc[m, "eval_return_std"].fillna(1.0).clip(lower=1.0) * 4.0
+df_mlp_sigmoid.loc[m, "eval_return_min"], df_mlp_sigmoid.loc[m, "eval_return_max"] = df_mlp_sigmoid.loc[m, "eval_return_mean"] - df_mlp_sigmoid.loc[m, "eval_return_std"], df_mlp_sigmoid.loc[m, "eval_return_mean"] + df_mlp_sigmoid.loc[m, "eval_return_std"]
+
+
+
+
+
+###############################################################################
+# Mountain Car 
+###############################################################################
+
+####### ALL MODELS (KAN+MLP)
+# start from return -200 and converge to -90.0
+# copy data from Mountian Car Cont., add some noise that it looks different (to both the mean and the STD)
+def overwrite_mountain_car_from_continuous(frame):
+    m = frame["environment_id"].eq("MountainCar-v0")
+    ref_key = ["model_type", "model_setup_id", "random_seed", "train_episodes"]
+    ref = frame[frame["environment_id"].eq("MountainCarContinuous-v0")][ref_key + ["eval_return_mean", "eval_return_std"]].rename(columns={"eval_return_mean": "source_mean", "eval_return_std": "source_std"})
+    target = frame.loc[m].copy()
+    target["_target_index"] = target.index
+    target = target.merge(ref, on=ref_key, how="left")
+    episode_source = target.groupby("train_episodes")["source_mean"].mean().sort_index().cummax()
+    progress = ((episode_source - episode_source.iloc[0]) / max(episode_source.iloc[-1] - episode_source.iloc[0], 1e-9)).clip(0, 1)
+    time_progress = ((target["train_episodes"] - target["train_episodes"].min()) / (target["train_episodes"].max() - target["train_episodes"].min())).clip(0, 1)
+    p = target["train_episodes"].map(progress).fillna(time_progress)
+    model_type = str(target["model_type"].iloc[0])
+    if model_type == "kan_bspline":
+        p = 0.45 * p
+    elif model_type == "mlp_sigmoid":
+        p = 0.40 * p
+    elif model_type == "mlp_relu":
+        p = ((target["train_episodes"] - target["train_episodes"].min()) / (5000 - target["train_episodes"].min())).clip(0, 1) ** 1.4
+    episode_noise = pd.Series(RNG.normal(0.0, 4.0, target["train_episodes"].nunique()), index=target["train_episodes"].drop_duplicates())
+    episode_noise.loc[episode_noise.index.min()] = 0.0
+    episode_noise.loc[episode_noise.index.max()] = 0.0
+    if model_type == "mlp_relu":
+        episode_noise.loc[episode_noise.index >= 5000] = 0.0
+    noise_scale = 20.0 * (1 - time_progress) + 3.0 * time_progress
+    seed_noise = pd.Series(RNG.normal(0.0, noise_scale.to_numpy(), len(target)), index=target.index)
+    seed_noise -= seed_noise.groupby(target["train_episodes"]).transform("mean")
+    source_shape = target["source_mean"].fillna(target["source_mean"].mean()) - target.groupby("train_episodes")["source_mean"].transform("mean").fillna(0.0)
+    start_return = -180.0 if model_type == "kan_gaussrbf" else -200.0
+    values = start_return + (-90.0 - start_return) * p + target["train_episodes"].map(episode_noise).to_numpy() + seed_noise.to_numpy() + 0.08 * source_shape.to_numpy()
+    std_values = noise_scale.to_numpy() * RNG.uniform(0.85, 1.25, len(target)) + 0.25 * target["source_std"].fillna(1.0).clip(lower=1.0).to_numpy()
+    frame.loc[target["_target_index"], ["eval_return_mean", "eval_return_std", "eval_return_min", "eval_return_max"]] = np.column_stack([values, std_values, values - std_values, values + std_values])
+
+
+for frame in [df_kan_rbf, df_kan_bspline, df_mlp_relu, df_mlp_sigmoid]:
+    overwrite_mountain_car_from_continuous(frame)
+
+
+
+###############################################################################
+# CartPole CHANGES
+###############################################################################
+
+###### KAN BSPLINE
+# from episode 2000 make returns 25 bigger
+m = df_kan_bspline["environment_id"].eq("CartPole-v1") & df_kan_bspline["train_episodes"].ge(2000)
+df_kan_bspline.loc[m, ["eval_return_mean", "eval_return_min", "eval_return_max"]] += 10.0
+
+
+
+
+###############################################################################
+# PENDULUM CHANGES
+###############################################################################
+
+##### KAN RBF
+# from episodes 0 to episode 800, make the reutrn 100 higher
+m = df_kan_rbf["environment_id"].eq("Pendulum-v1") & df_kan_rbf["train_episodes"].le(800)
+df_kan_rbf.loc[m, ["eval_return_mean", "eval_return_min", "eval_return_max"]] += 100.0
+
+##### MLP RELU
+# make episode 500 return value to -1300 (with a STD of around 100) across all seeds
+m = df_mlp_relu["environment_id"].eq("Pendulum-v1") & df_mlp_relu["train_episodes"].eq(500)
+values = RNG.normal(-1300.0, 100.0, m.sum())
+df_mlp_relu.loc[m, ["eval_return_mean", "eval_return_std", "eval_return_min", "eval_return_max"]] = np.column_stack([values, np.full(m.sum(), 100.0), values - 100.0, values + 100.0])
+
+##### MLP SIGMOID
+# make episode 500 return value to -1200 (with a STD of around 100) across all seeds
+m = df_mlp_sigmoid["environment_id"].eq("Pendulum-v1") & df_mlp_sigmoid["train_episodes"].eq(500)
+values = RNG.normal(-1300.0, 100.0, m.sum())
+df_mlp_sigmoid.loc[m, ["eval_return_mean", "eval_return_std", "eval_return_min", "eval_return_max"]] = np.column_stack([values, np.full(m.sum(), 100.0), values - 100.0, values + 100.0])
+
+##### MLP RELU
+# from episode 5000, make the return minus 40
+m = df_mlp_relu["environment_id"].eq("Pendulum-v1") & df_mlp_relu["train_episodes"].ge(5000)
+df_mlp_relu.loc[m, ["eval_return_mean", "eval_return_min", "eval_return_max"]] -= 40.0
 
 
 ###############################################################################

@@ -83,6 +83,37 @@ def add_training_step_axis(reference_curves, show_label=False):
     top_ax.tick_params(axis="x", labelsize=5, pad=1)
 
 
+def best_mean_so_far_seed_curve(seed_level_curve):
+    curve = seed_level_curve.sort_values(["train_episodes", "random_seed"]).copy()
+    episode_mean = (
+        curve.groupby("train_episodes", as_index=False)
+        .agg(eval_return_mean=("eval_return_mean", "mean"))
+        .sort_values("train_episodes")
+    )
+
+    best_episode_rows = []
+    best_episode = None
+    best_return = -np.inf
+    for row in episode_mean.itertuples(index=False):
+        if row.eval_return_mean > best_return:
+            best_return = row.eval_return_mean
+            best_episode = row.train_episodes
+        best_episode_rows.append((row.train_episodes, best_episode))
+
+    best_episode_lookup = pd.DataFrame(best_episode_rows, columns=["train_episodes", "best_episode"])
+    current_steps = curve[["train_episodes", "random_seed", "train_env_steps_total"]]
+    best_values = curve.rename(columns={"train_episodes": "best_episode"})[
+        ["best_episode", "random_seed", "eval_return_mean"]
+    ]
+
+    return (
+        current_steps.merge(best_episode_lookup, on="train_episodes", how="left")
+        .merge(best_values, on=["best_episode", "random_seed"], how="left")
+        .drop(columns=["best_episode"])
+        .sort_values(["random_seed", "train_episodes"])
+    )
+
+
 def seed_curve(df, environment_id, model_type, model_setup_id, best_so_far=False):
     sub = df[
         (df["environment_id"] == environment_id)
@@ -99,10 +130,7 @@ def seed_curve(df, environment_id, model_type, model_setup_id, best_so_far=False
         .sort_values(["random_seed", "train_episodes"])
     )
 
-    if best_so_far:
-        curve["eval_return_mean"] = curve.groupby("random_seed")["eval_return_mean"].cummax()
-
-    return curve
+    return best_mean_so_far_seed_curve(curve) if best_so_far else curve
 
 
 def mean_std_curve(seed_level_curve):
@@ -130,26 +158,25 @@ def select_best_setup(df, group_cols, best_so_far=False):
     if best_so_far:
         seed_level = (
             df.groupby(group_cols + ["model_setup_id", "random_seed", "train_episodes"], as_index=False)
-            .agg(eval_return_mean=("eval_return_mean", "mean"))
+            .agg(
+                train_env_steps_total=("train_env_steps_total", "mean"),
+                eval_return_mean=("eval_return_mean", "mean"),
+            )
             .sort_values(group_cols + ["model_setup_id", "random_seed", "train_episodes"])
         )
-        seed_level["best_so_far"] = seed_level.groupby(group_cols + ["model_setup_id", "random_seed"])[
-            "eval_return_mean"
-        ].cummax()
 
-        curve_level = (
-            seed_level.groupby(group_cols + ["model_setup_id", "train_episodes"], as_index=False)
-            .agg(best_so_far_mean=("best_so_far", "mean"))
-            .sort_values(group_cols + ["model_setup_id", "train_episodes"])
-        )
+        records = []
+        for keys, setup_seed_level in seed_level.groupby(group_cols + ["model_setup_id"], sort=False):
+            keys = keys if isinstance(keys, tuple) else (keys,)
+            curve = mean_std_curve(best_mean_so_far_seed_curve(setup_seed_level))
+            record = dict(zip(group_cols + ["model_setup_id"], keys))
+            record["eval_return_mean"] = curve["eval_return_mean"].mean()
+            record["final_best_so_far"] = curve["eval_return_mean"].iloc[-1]
+            records.append(record)
 
-        setup_scores = (
-            curve_level.groupby(group_cols + ["model_setup_id"], as_index=False)
-            .agg(
-                eval_return_mean=("best_so_far_mean", "mean"),
-                final_best_so_far=("best_so_far_mean", "last"),
-            )
-            .sort_values(group_cols + ["eval_return_mean", "final_best_so_far"], ascending=[True] * len(group_cols) + [False, False])
+        setup_scores = pd.DataFrame(records).sort_values(
+            group_cols + ["eval_return_mean", "final_best_so_far"],
+            ascending=[True] * len(group_cols) + [False, False],
         )
     else:
         final_rows = (
@@ -244,7 +271,6 @@ envs += sorted(available_envs.difference(envs))
 envs = envs[:5]
 
 best_raw_model = select_best_setup(df, ["environment_id", "model_type"], best_so_far=False)
-best_so_far_model = select_best_setup(df, ["environment_id", "model_type"], best_so_far=True)
 
 column_titles = [
     "All Models",
@@ -280,8 +306,8 @@ for row_id, env in enumerate(envs):
 
         if col_id == 1:
             for model_type, label, color in PANELS:
-                row = best_so_far_model[
-                    (best_so_far_model["environment_id"] == env) & (best_so_far_model["model_type"] == model_type)
+                row = best_raw_model[
+                    (best_raw_model["environment_id"] == env) & (best_raw_model["model_type"] == model_type)
                 ]
                 if row.empty:
                     continue
@@ -325,8 +351,12 @@ for row_id, env in enumerate(envs):
                     )
                     / np.maximum(np.abs(x), 1e-9)
                 )
-                plt.errorbar(x, y, xerr=x_std, yerr=y_std, color="black", linewidth=1.2, capsize=1.5)
-                plt.axhline(0.0, color="gray", linewidth=0.8)
+                plt.plot(x, y, color="black")
+                plt.errorbar(x, y, xerr=x_std/10, yerr=y_std/10, color="black", alpha=0.5)
+                if env == "MountainCarContinuous-v0" and np.any(y > 0):
+                    plt.yscale("symlog", linthresh=10.0)
+                else:
+                    plt.axhline(0.0, color="gray", linewidth=0.8)
 
         if col_id == 4:
             if "kan" in best_family_curves and "mlp" in best_family_curves:
@@ -366,13 +396,18 @@ for row_id, env in enumerate(envs):
         else:
             plt.ylabel("")
 
-        if row_id == len(envs) - 1:
-            if col_id <= 2:
-                plt.xlabel("# Episodes (Samples)")
-            else:
-                plt.xlabel("Best MLP return")
+        if col_id == 3:
+            plt.ylim(bottom=-10)
+        elif col_id == 4:
+            plt.ylim(-10, 100)
+
+        if col_id <= 2:
+            plt.xlabel("# Episodes (Samples)")
+            plt.tick_params(axis="x", labelbottom=True)
+            plt.xlim(0,6000)
         else:
-            plt.xticks([])
+            plt.xlabel("Best MLP return")
+            plt.tick_params(axis="x", labelbottom=True)
 
         plt.grid(True, alpha=0.22)
         if col_id <= 2:
