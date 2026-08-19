@@ -8,8 +8,8 @@ from matplotlib.lines import Line2D
 
 FIG_RES = 5.5
 plt.rcParams["font.family"] = "Arial"
-plt.rcParams["font.size"] = 7
-plt.figure(figsize=(FIG_RES * 2, FIG_RES * 0.7), constrained_layout=True)
+plt.rcParams["font.size"] = 9
+fig = plt.figure(figsize=(FIG_RES * 2, FIG_RES * 0.7), constrained_layout=False)
 
 HERE = Path(__file__).resolve().parent
 RESULTS_DIR = HERE.parent
@@ -40,11 +40,11 @@ ENV_ORDER = [
 EXCLUDED_ENVS = {"MountainCarContinuous-v0"}
 
 ENV_LABELS = {
-    "Acrobot-v1": "Acrobot-v1",
-    "CartPole-v1": "CartPole-v1",
-    "MountainCarContinuous-v0": "MountainCarContinuous-v0",
-    "MountainCar-v0": "MountainCar-v0",
-    "Pendulum-v1": "Pendulum-v1",
+    "Acrobot-v1": "Acrobot",
+    "CartPole-v1": "CartPole",
+    "MountainCar-v0": "Mt.Car",
+    "MountainCarContinuous-v0": "Mt.Car (cont.)",
+    "Pendulum-v1": "Pendulum",
 }
 
 ENV_COLORS = {
@@ -273,7 +273,7 @@ for env in envs:
 terminal_grid = np.linspace(0.0, 100.0, 201)
 
 for panel_id, title in enumerate(
-    ["Relative improvement (%)", "Improvement vs. terminal distance", "Sample reduction (%)"],
+    ["(a) Relative improvement (%)", "(b) Improvement vs. terminal distance", "(c) Sample reduction (%)"],
     start=1,
 ):
     plt.subplot(1, 3, panel_id)
@@ -311,7 +311,7 @@ for panel_id, title in enumerate(
             linewidth=2.2,
             label="Mean (across experiments)",
         )
-        plt.xlabel("# Episodes (Samples)")
+        plt.xlabel("# Episodes (samples)")
         plt.ylabel("Relative improvement (%)")
         plt.axhline(0.0, color="gray", linewidth=0.8)
     elif panel_id == 2:
@@ -351,22 +351,35 @@ for panel_id, title in enumerate(
     plt.ylim(-5, 100)
     plt.grid(True, alpha=0.22)
 
-plt.subplot(1, 3, 1)
+legend_envs = list(envs)
+for excluded_env in sorted(EXCLUDED_ENVS):
+    if excluded_env in legend_envs:
+        continue
+    insert_at = len(legend_envs)
+    if excluded_env == "MountainCarContinuous-v0" and "MountainCar-v0" in legend_envs:
+        insert_at = legend_envs.index("MountainCar-v0") + 1
+    legend_envs.insert(insert_at, excluded_env)
+
 legend_handles = [
-    Line2D([0], [0], color=ENV_COLORS.get(env, "black"), linewidth=1.3, label=ENV_LABELS.get(env, env))
-    for env in envs
-]
-legend_handles += [
     Line2D(
         [0],
         [0],
         color=ENV_COLORS.get(env, "black"),
         linewidth=1.3,
-        alpha=0.35,
-        label=f"{ENV_LABELS.get(env, env)} (excluded)",
+        alpha=0.35 if env in EXCLUDED_ENVS else 1.0,
+        label=ENV_LABELS.get(env, env),
     )
-    for env in sorted(EXCLUDED_ENVS)
+    for env in legend_envs
 ]
-legend_handles.append(Line2D([0], [0], color="black", linestyle="--", linewidth=2.2, label="Mean"))
-plt.legend(handles=legend_handles, fontsize=5, frameon=False, loc="best")
+legend_handles.append(Line2D([0], [0], color="black", linestyle="--", linewidth=2.2, label="Average"))
+plt.tight_layout(rect=(0.0, 0.12, 1.0, 1.0))
+fig.legend(
+    handles=legend_handles,
+    frameon=False,
+    loc="lower center",
+    bbox_to_anchor=(0.5, 0.055),
+    ncol=len(legend_handles),
+    handlelength=1.9,
+    columnspacing=1.0,
+)
 plt.show()

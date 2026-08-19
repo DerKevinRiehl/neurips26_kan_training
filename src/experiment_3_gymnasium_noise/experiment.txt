@@ -47,6 +47,7 @@ Training rewards are replaced by
 
 where epsilon is standard Gaussian noise.
 The default protocol uses `reward_noise_scale_mode = "unit"`, so `alpha` is directly the reward-noise standard deviation in raw environment reward units.
+The main sweep uses `alpha` values 0, 0.25, 0.5, 1, 2, 4, 7, and 10.
 
 The runner also supports `reward_noise_scale_mode = "environment"`, in which case `alpha` is multiplied by a per-environment scale from `reward_noise_scale_by_environment`.
 That mode is useful if we later want one dimensionless noise severity across environments with different reward magnitudes.
@@ -120,7 +121,7 @@ For example, CartPole-v1 and Acrobot-v1 can run up to 500 environment steps per 
 
 The CSV therefore records both training episodes and cumulative environment steps.
 
-The current planned long run is 600 training episodes per model setup and random seed.
+The current planned long run is 6000 training episodes per model setup and random seed.
 
 Results are logged every 10 episodes.
 
@@ -128,21 +129,25 @@ Each CSV row stores environment, seed, model setup, reward-noise setting, parame
 
 The CSV also stores the raw training returns and episode lengths for the most recent 10-episode block as JSON lists.
 
-Together, the checkpoint rows therefore preserve all training episode returns for the full 0-to-600 trajectory.
+Together, the checkpoint rows therefore preserve all training episode returns for the full 0-to-6000 trajectory.
 
 Evaluation returns are also stored as JSON lists for the deterministic evaluation episodes.
 
 Resume is handled at the full-job level.
 
-If a job already has the final 600-episode row, it is skipped.
+If a job already has the final 6000-episode row, it is skipped.
 
-If a job was interrupted before episode 600, its partial rows are removed and the job restarts from episode 0.
+If a job was interrupted before episode 6000, its partial rows are removed and the job restarts from episode 0.
 
 This avoids mixing checkpoint rows from two different RL learning trajectories.
+The runner does not currently save model checkpoints, so a completed 600-episode pilot cannot be extended to 6000 episodes without restarting the training job.
 
 Cluster parallelism uses process workers, not Python threads.
 
 This is important because Gymnasium stepping and Python-side KAN computation do not utilize CPU cores well through threads.
+
+The protocol runs Pendulum-v1 first, then Acrobot-v1, followed by the remaining Classic Control environments.
+Within each environment, jobs interleave reward-noise levels across model setups and seeds so early cluster output includes multiple noise severities instead of only the lowest-noise block.
 
 The protocol interleaves KAN and MLP model setups in the job order.
 

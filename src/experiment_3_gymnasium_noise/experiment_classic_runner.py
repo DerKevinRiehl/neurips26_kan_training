@@ -931,16 +931,16 @@ def finalize_results_csv(path: Path = RESULTS_CSV_PATH) -> None:
 def build_experiment_jobs() -> list[ExperimentJob]:
     jobs = []
     for environment_id in ENVIRONMENT_IDS:
-        for reward_noise_alpha in REWARD_NOISE_ALPHAS:
-            reward_noise_std = reward_noise_std_for(environment_id, float(reward_noise_alpha))
-            reward_noise_id = reward_noise_id_for(
-                noise_type=str(REWARD_NOISE_TYPE),
-                scale_mode=str(REWARD_NOISE_SCALE_MODE),
-                alpha=float(reward_noise_alpha),
-                noise_std=reward_noise_std,
-            )
-            for setup in MODEL_SETUPS:
-                for random_seed in RANDOM_SEEDS:
+        for setup in MODEL_SETUPS:
+            for random_seed in RANDOM_SEEDS:
+                for reward_noise_alpha in REWARD_NOISE_ALPHAS:
+                    reward_noise_std = reward_noise_std_for(environment_id, float(reward_noise_alpha))
+                    reward_noise_id = reward_noise_id_for(
+                        noise_type=str(REWARD_NOISE_TYPE),
+                        scale_mode=str(REWARD_NOISE_SCALE_MODE),
+                        alpha=float(reward_noise_alpha),
+                        noise_std=reward_noise_std,
+                    )
                     jobs.append(
                         ExperimentJob(
                             random_seed=int(random_seed),

@@ -7,8 +7,8 @@ import pandas as pd
 
 FIG_RES = 5.5
 plt.rcParams["font.family"] = "Arial"
-plt.rcParams["font.size"] = 6
-plt.figure(figsize=(FIG_RES * 2.85, FIG_RES * 1.9), constrained_layout=True)
+plt.rcParams["font.size"] = 9
+plt.figure(figsize=(FIG_RES * 3.0, FIG_RES * 1.9), constrained_layout=True)
 
 HERE = Path(__file__).resolve().parent
 RESULTS_DIR = HERE.parent

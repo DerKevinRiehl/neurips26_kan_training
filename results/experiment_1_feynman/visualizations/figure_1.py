@@ -22,8 +22,8 @@ from experiment1_common import (
 
 FIG_RES = 5.5
 plt.rcParams["font.family"] = "Arial"
-plt.rcParams["font.size"] = 8
-fig = plt.figure(figsize=(FIG_RES * 2.12, FIG_RES * 1.55), constrained_layout=True)
+plt.rcParams["font.size"] = 9
+fig = plt.figure(figsize=(FIG_RES * 2, FIG_RES * 1.50), constrained_layout=True)
 
 rows_all = load_rows()
 rows_fixed_steps = load_rows(train_steps=TRAIN_STEPS)
@@ -75,7 +75,7 @@ for panel_id, (model, title, _) in enumerate(PANELS, start=1):
 param_sm = ScalarMappable(norm=param_norm, cmap=param_cmap)
 param_sm.set_array([])
 param_cbar = fig.colorbar(param_sm, ax=row1_axes, pad=0.018, fraction=0.035, aspect=16)
-param_cbar.set_label("# parameters", rotation=270, labelpad=11)
+param_cbar.set_label("# parameters", rotation=90, labelpad=11)
 
 
 all_steps = sorted({key[1] for key in iterations})
@@ -109,7 +109,7 @@ for panel_id, (model, title, _) in enumerate(PANELS, start=5):
 step_sm = ScalarMappable(norm=step_norm, cmap=step_cmap)
 step_sm.set_array([])
 step_cbar = fig.colorbar(step_sm, ax=row2_axes, pad=0.018, fraction=0.035, aspect=16)
-step_cbar.set_label("# training steps", rotation=270, labelpad=13)
+step_cbar.set_label("# training steps", rotation=90, labelpad=13)
 
 
 for panel_id, (model, title, color) in enumerate(PANELS, start=9):

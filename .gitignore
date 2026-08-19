@@ -218,3 +218,4 @@ __marimo__/
 .codex_tmp/classic_smoke_fullkan/latest_result_path.txt
 .codex_tmp/classic_smoke_fullkan/smoke.csv
 results/experiment_2_gymnasium/20260805_2212_experiment_classic_result_synthetic.csv
+results/experiment_3_gymnasium_noise/20260818_2120_experiment_noise_result.csv

@@ -37,11 +37,11 @@ if os.environ.get("KAN_CLASSIC_RUN") == "1" and __name__ == "__main__":
     RUN_PROTOCOL_NOW = True
 
 CLASSIC_CONTROL_ENVS = [
-    "CartPole-v1",
+    "Pendulum-v1",
     "Acrobot-v1",
+    "CartPole-v1",
     "MountainCar-v0",
     "MountainCarContinuous-v0",
-    "Pendulum-v1",
 ]
 
 ACTIVE_MODEL_GROUPS = ["kan", "mlp"]
@@ -64,14 +64,14 @@ protocol_parameters = {
         "environment_ids": CLASSIC_CONTROL_ENVS,
         "render_mode": None,
         "random_seeds": list(range(10)),
-        "max_train_episodes": 600,
+        "max_train_episodes": 6000,
         "eval_every_episodes": 10,
         "eval_episodes": 5,
         "eval_seed_base": 100000,
     },
     "noise": {
         "reward_noise_type": "gaussian",
-        "reward_noise_alphas": [0.0, 0.25, 0.5, 1.0, 2.0],
+        "reward_noise_alphas": [0.0, 0.25, 0.5, 1.0, 2.0, 4.0, 7.0, 10.0],
         "reward_noise_scale_mode": "unit",
         "reward_noise_scale_by_environment": {},
     },
@@ -99,7 +99,7 @@ protocol_parameters = {
     },
     "technical": {
         "device": "cpu",
-        "n_threads": 15,
+        "n_threads": 36,
         "parallel_backend": "process",
         "torch_num_threads_per_worker": 1,
         "run_experiments_now": False,
