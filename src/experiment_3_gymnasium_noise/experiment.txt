@@ -1,0 +1,151 @@
+Experiment 3: Noisy-Reward Gymnasium Classic Control
+====================================================
+
+Goal
+----
+
+This experiment studies whether Kolmogorov-Arnold Networks remain more sample-efficient than multilayer perceptrons when PPO learns from noisy reward feedback.
+
+The central question is not merely whether KANs can be used in RL.
+
+The central question is whether KAN-based agents still reach higher clean evaluation return with the same number of observed environment samples, or reach a target clean return with fewer environment samples, after their training rewards have been corrupted.
+
+The benchmark family is Gymnasium Classic Control.
+
+The initial environments are Acrobot-v1, CartPole-v1, MountainCar-v0, MountainCarContinuous-v0, and Pendulum-v1.
+
+The later Box2D extension can use LunarLander, BipedalWalker, and CarRacing, but CarRacing is image-based and will need a convolutional or feature-extraction front end.
+
+
+Why PPO
+-------
+
+We use PPO because it is a standard, robust policy-gradient method for continuous and discrete control.
+
+PPO is also a better experimental basis than the initial REINFORCE demo because it uses a critic, advantage estimation, and a clipped policy update.
+
+This makes learning curves less noisy and makes the sample-efficiency comparison between KAN and MLP agents more meaningful.
+
+The current implementation uses an episodic PPO variant for simplicity.
+
+For each training job, the runner collects full episodes, adds configurable Gaussian noise to the rewards used for generalized advantage estimation, and performs a clipped PPO update.
+
+The main score reported in the CSV is still the clean Gymnasium episode return.
+The noisy reward sum is logged separately as `train_noisy_return_recent_*` so we can inspect the amount of training-signal corruption without changing the interpretation of clean return.
+
+For CartPole-v1, this is the number of survived time steps, with reward +1 per step and a maximum return of 500.
+
+For the other environments, we use the native Gymnasium reward and episode return.
+
+
+Reward Noise Protocol
+---------------------
+
+Training rewards are replaced by
+
+    noisy_reward = clean_reward + alpha * epsilon
+
+where epsilon is standard Gaussian noise.
+The default protocol uses `reward_noise_scale_mode = "unit"`, so `alpha` is directly the reward-noise standard deviation in raw environment reward units.
+
+The runner also supports `reward_noise_scale_mode = "environment"`, in which case `alpha` is multiplied by a per-environment scale from `reward_noise_scale_by_environment`.
+That mode is useful if we later want one dimensionless noise severity across environments with different reward magnitudes.
+
+Evaluation remains clean and deterministic.
+This makes the experiment a test of learning robustness under noisy feedback, not merely a test of noisy evaluation metrics.
+
+
+Fairness Decisions
+------------------
+
+The main comparison uses full KAN actor-critic agents against full MLP actor-critic agents.
+
+For a KAN model setup, both the policy actor and the value critic are KANs.
+
+For an MLP model setup, both the policy actor and the value critic are MLPs.
+
+This is the cleanest setting for the claim that KAN neural networks can learn faster or better from the same RL samples.
+
+The code also keeps an actor-only ablation switch.
+
+In that ablation, KAN and MLP agents share the same MLP critic, so differences are concentrated in the policy network.
+
+This ablation is useful diagnostically, but it is not the main paper comparison.
+
+Both KAN and MLP actors are initialized so their output layer starts at zero.
+
+For discrete action spaces, this means the initial logits are zero and the first action distribution is uniform.
+
+For continuous action spaces, this means the initial action mean is zero with a shared trainable log standard deviation.
+
+The hidden layers still use their library-specific random initialization, but the initial visible policy behavior is much closer.
+
+Training and evaluation seeds are fixed and paired across model families wherever possible.
+
+Evaluation uses deterministic actions: argmax for discrete policies and mean action for continuous policies.
+
+
+Initial Model Sizes
+-------------------
+
+The initial KAN actor and critic sizes are:
+
+[2], [4], [8], [4, 4], [8, 8], [16, 16].
+
+The initial MLP actor and critic sizes are:
+
+[16], [32], [64], [32, 32], [64, 64].
+
+These are not yet perfect parameter matches across every environment because observation and action dimensions differ by task.
+
+The runner records the actual actor, critic, and total trainable parameter counts in every CSV row.
+
+This allows later filtering by actor, critic, or total parameter budget.
+
+The main plots should show return as a function of environment samples.
+
+Useful summaries include best return at a fixed sample budget, area under the learning curve, and samples needed to reach a fixed return threshold.
+
+
+Logging Plan
+------------
+
+The protocol is episode-based.
+
+One episode means one Gymnasium reset followed by environment steps until the environment terminates or truncates.
+
+Thus one episode contains many environment steps.
+
+For example, CartPole-v1 and Acrobot-v1 can run up to 500 environment steps per episode, while MountainCar-v0 and Pendulum-v1 use shorter default time limits.
+
+The CSV therefore records both training episodes and cumulative environment steps.
+
+The current planned long run is 600 training episodes per model setup and random seed.
+
+Results are logged every 10 episodes.
+
+Each CSV row stores environment, seed, model setup, reward-noise setting, parameter counts, training episode checkpoint, recent clean and noisy training return, deterministic clean evaluation return, and PPO losses.
+
+The CSV also stores the raw training returns and episode lengths for the most recent 10-episode block as JSON lists.
+
+Together, the checkpoint rows therefore preserve all training episode returns for the full 0-to-600 trajectory.
+
+Evaluation returns are also stored as JSON lists for the deterministic evaluation episodes.
+
+Resume is handled at the full-job level.
+
+If a job already has the final 600-episode row, it is skipped.
+
+If a job was interrupted before episode 600, its partial rows are removed and the job restarts from episode 0.
+
+This avoids mixing checkpoint rows from two different RL learning trajectories.
+
+Cluster parallelism uses process workers, not Python threads.
+
+This is important because Gymnasium stepping and Python-side KAN computation do not utilize CPU cores well through threads.
+
+The protocol interleaves KAN and MLP model setups in the job order.
+
+This makes early cluster output comparative instead of producing only KAN rows for a long time.
+
+The short CartPole demo starts with 50 episodes per model so we can inspect whether KAN and MLP begin from comparable behavior.
