@@ -7,6 +7,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 
 
 FIG_RES = 5.5
@@ -52,6 +53,7 @@ FIXED_ENV_ROWS = [
     "CartPole-v1",
     "MountainCarContinuous-v0",
     "MountainCar-v0",
+    "Pendulum-v1",
 ]
 
 FIXED_RETURN_YLIMS = {
@@ -369,18 +371,17 @@ def steps_to_reach_return(step_values, return_values, target_return):
 
 def plot_noise_level(df_noise: pd.DataFrame, alpha: float, max_episode: float) -> Path:
     plt.rcParams["font.family"] = "Arial"
-    plt.rcParams["font.size"] = 6
+    plt.rcParams["font.size"] = 9
 
     envs = FIXED_ENV_ROWS
 
     fig, axes = plt.subplots(
         len(envs),
         5,
-        figsize=(FIG_RES * 2.85, FIG_RES * 0.38 * len(envs)),
+        figsize=(FIG_RES * 3.0, FIG_RES * 1.9),
         constrained_layout=True,
         squeeze=False,
     )
-    fig.suptitle(f"Experiment 3: clean evaluation after reward noise alpha={alpha:g}", fontweight="bold", fontsize=8)
 
     best_raw_model = select_best_setup(df_noise, ["environment_id", "model_type"], best_so_far=False)
     max_episode = max(float(max_episode), 1.0)
@@ -408,7 +409,15 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float, max_episode: float) -
                     reference_curves.append(curve[["train_episodes", "train_env_steps_total"]])
                     plot_curve(ax, curve, color, label=label if row_id == 0 else None)
                 if row_id == 0:
-                    ax.legend(fontsize=5, frameon=False, loc="best")
+                    ax.legend(
+                        handles=[
+                            Line2D([0], [0], color=color, linewidth=1.2, label=label)
+                            for _, label, color in PANELS
+                        ],
+                        fontsize=5,
+                        frameon=False,
+                        loc="best",
+                    )
 
             if col_id == 1:
                 for model_type, _, color in PANELS:
@@ -430,7 +439,15 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float, max_episode: float) -
                     reference_curves.append(curve[["train_episodes", "train_env_steps_total"]])
                     plot_curve(ax, curve, color, label=label if row_id == 0 else None, linewidth=1.4)
                 if row_id == 0:
-                    ax.legend(fontsize=5, frameon=False, loc="best")
+                    ax.legend(
+                        handles=[
+                            Line2D([0], [0], color=color, linewidth=1.4, label=label)
+                            for _, label, color in FAMILIES
+                        ],
+                        fontsize=5,
+                        frameon=False,
+                        loc="best",
+                    )
 
             if col_id == 3:
                 if (
@@ -464,7 +481,10 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float, max_episode: float) -
                         )
                         ax.plot(x, y, color="black")
                         ax.errorbar(x, y, xerr=x_std / 10, yerr=y_std / 10, color="black", alpha=0.5)
-                ax.axhline(0.0, color="gray", linewidth=0.8)
+                        if env == "MountainCarContinuous-v0" and np.any(y > 0):
+                            ax.set_yscale("symlog", linthresh=10.0)
+                        else:
+                            ax.axhline(0.0, color="gray", linewidth=0.8)
 
             if col_id == 4:
                 if (
@@ -498,7 +518,7 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float, max_episode: float) -
                         x_values = np.asarray(x_values)[order]
                         y_values = np.asarray(y_values)[order]
                         ax.plot(x_values, y_values, color="black", marker="o", markersize=1.8, linewidth=1.2)
-                ax.axhline(0.0, color="gray", linewidth=0.8)
+                        ax.axhline(0.0, color="gray", linewidth=0.8)
 
             if not has_env_data:
                 ax.text(
@@ -522,15 +542,18 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float, max_episode: float) -
                 ax.set_ylabel("")
 
             if col_id <= 2:
-                ax.set_xlabel("# Episodes")
+                ax.set_xlabel("# Episodes (Samples)")
                 ax.tick_params(axis="x", labelbottom=True)
-                ax.set_xlim(0, max_episode * 1.02)
-                add_training_step_axis(ax, reference_curves, show_label=(row_id == 0))
+                ax.set_xlim(0, 6000)
+                add_training_step_axis(ax, reference_curves, show_label=True)
             else:
                 ax.set_xlabel("Best MLP return")
                 ax.tick_params(axis="x", labelbottom=True)
 
-            apply_fixed_ylim(ax, env, col_id)
+            if col_id == 3:
+                ax.set_ylim(bottom=-10)
+            elif col_id == 4:
+                ax.set_ylim(-10, 100)
             ax.grid(True, alpha=0.22)
 
     output_path = RESULTS_DIR / f"Figure_X3_1_reward_noise_{noise_slug(alpha)}.pdf"

@@ -9,7 +9,6 @@ from matplotlib.lines import Line2D
 
 from figure_1 import (
     CSV_FILE,
-    ENV_LABELS,
     ENV_ORDER,
     FAMILIES,
     FIG_RES,
@@ -22,6 +21,14 @@ from figure_1 import (
 
 
 EXCLUDED_ENVS = {"MountainCarContinuous-v0"}
+
+ENV_LABELS = {
+    "Acrobot-v1": "Acrobot",
+    "CartPole-v1": "CartPole",
+    "MountainCar-v0": "Mt.Car",
+    "MountainCarContinuous-v0": "Mt.Car (cont.)",
+    "Pendulum-v1": "Pendulum",
+}
 
 ENV_COLORS = {
     "Acrobot-v1": "#1f77b4",
@@ -152,18 +159,17 @@ def plot_empty(alpha: float):
 
 def plot_noise_level(df_noise: pd.DataFrame, alpha: float):
     plt.rcParams["font.family"] = "Arial"
-    plt.rcParams["font.size"] = 7
+    plt.rcParams["font.size"] = 9
 
     envs, summary_curves = summarize_noise_level(df_noise)
     if not summary_curves:
         return plot_empty(alpha)
 
     terminal_grid = np.linspace(0.0, 100.0, 201)
-    fig, axes = plt.subplots(1, 3, figsize=(FIG_RES * 2, FIG_RES * 0.7), constrained_layout=True)
-    fig.suptitle(f"Experiment 3 summary: reward noise alpha={alpha:g}", fontweight="bold", fontsize=8)
+    fig, axes = plt.subplots(1, 3, figsize=(FIG_RES * 2, FIG_RES * 0.7), constrained_layout=False)
 
     for panel_id, title in enumerate(
-        ["Relative improvement (%)", "Improvement vs. terminal distance", "Sample reduction (%)"],
+        ["(a) Relative improvement (%)", "(b) Improvement vs. terminal distance", "(c) Sample reduction (%)"],
     ):
         ax = axes[panel_id]
         if panel_id == 0:
@@ -197,9 +203,9 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float):
                 color="black",
                 linestyle="--",
                 linewidth=2.2,
-                label="Mean",
+                label="Mean (across experiments)",
             )
-            ax.set_xlabel("# Episodes")
+            ax.set_xlabel("# Episodes (samples)")
             ax.set_ylabel("Relative improvement (%)")
             ax.axhline(0.0, color="gray", linewidth=0.8)
         elif panel_id == 1:
@@ -236,31 +242,40 @@ def plot_noise_level(df_noise: pd.DataFrame, alpha: float):
             ax.axhline(0.0, color="gray", linewidth=0.8)
 
         ax.set_title(title, fontweight="bold")
-        if panel_id in {0, 1}:
-            ax.set_ylim(-20, 80)
-        else:
-            ax.set_ylim(-200, 200)
+        ax.set_ylim(-5, 100)
         ax.grid(True, alpha=0.22)
 
+    legend_envs = list(envs)
+    for excluded_env in sorted(EXCLUDED_ENVS):
+        if excluded_env in legend_envs:
+            continue
+        insert_at = len(legend_envs)
+        if excluded_env == "MountainCarContinuous-v0" and "MountainCar-v0" in legend_envs:
+            insert_at = legend_envs.index("MountainCar-v0") + 1
+        legend_envs.insert(insert_at, excluded_env)
+
     legend_handles = [
-        Line2D([0], [0], color=ENV_COLORS.get(env, "black"), linewidth=1.3, label=ENV_LABELS.get(env, env))
-        for env in envs
-        if env in summary_curves
-    ]
-    excluded_handles = [
         Line2D(
             [0],
             [0],
             color=ENV_COLORS.get(env, "black"),
             linewidth=1.3,
-            alpha=0.35,
-            label=f"{ENV_LABELS.get(env, env)} (excluded)",
+            alpha=0.35 if env in EXCLUDED_ENVS else 1.0,
+            label=ENV_LABELS.get(env, env),
         )
-        for env in sorted(EXCLUDED_ENVS.intersection(set(df_noise["environment_id"].unique())))
+        for env in legend_envs
     ]
-    legend_handles += excluded_handles
-    legend_handles.append(Line2D([0], [0], color="black", linestyle="--", linewidth=2.2, label="Mean"))
-    axes[0].legend(handles=legend_handles, fontsize=5, frameon=False, loc="best")
+    legend_handles.append(Line2D([0], [0], color="black", linestyle="--", linewidth=2.2, label="Average"))
+    plt.tight_layout(rect=(0.0, 0.12, 1.0, 1.0))
+    fig.legend(
+        handles=legend_handles,
+        frameon=False,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.055),
+        ncol=len(legend_handles),
+        handlelength=1.9,
+        columnspacing=1.0,
+    )
     return fig
 
 
