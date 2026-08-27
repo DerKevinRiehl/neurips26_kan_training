@@ -55,9 +55,10 @@
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{xcolor}         % colors
+\usepackage{graphicx}
 
 % Note. For the workshop paper template, both \title{} and \workshoptitle{} are required, with the former indicating the paper title shown in the title and the latter indicating the workshop title displayed in the footnote. 
-\title{Sample-Efficient Learning of Control Using Kolmogorov–Arnold Networks}
+\title{Sample-Efficiency of DeepRL Using Kolmogorov–Arnold Networks}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -68,34 +69,27 @@
 % \AND instead of \And before the third author name.
 
 \author{%
-  David S.~Hippocampus\thanks{Use footnote for providing further information
-    about author (webpage, alternative address)---\emph{not} for acknowledging
-    funding agencies.} \\
-  Department of Computer Science\\
-  Cranberry-Lemon University\\
-  Pittsburgh, PA 15213 \\
-  \texttt{hippo@cs.cranberry-lemon.edu} \\
+  % David S.~Hippocampus\thanks{Use footnote for providing further information
+  %   about author (webpage, alternative address)---\emph{not} for acknowledging
+  %   funding agencies.} \\
+  % Department of Computer Science\\
+  % Cranberry-Lemon University\\
+  % Pittsburgh, PA 15213 \\
+  % \texttt{hippo@cs.cranberry-lemon.edu} \\
   % examples of more authors
   % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \AND
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
-  % \And
-  % Coauthor \\
-  % Affiliation \\
-  % Address \\
-  % \texttt{email} \\
+  Kevin Riehl \\
+  ETH Zürich, IVT \& \\
+  Agentic Systems Lab (ASL) \\
+  \texttt{kriehl@ethz.ch} \\
+  \And
+  Shaimaa K. El-Baklish \\
+  ETH Zürich, IVT \\
+  \texttt{selbaklish@ethz.ch} \\
+  \And
+  Anastasios Kouvelas \\
+  ETH Zürich, IVT \\
+  \texttt{kouvelas@ethz.ch} \\
 }
 
 \begin{document}
@@ -105,14 +99,14 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
-  both the left- and right-hand margins. Use 10~point type, with a vertical
-  spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
-  bold, and in point size 12. Two line spaces precede the abstract. The abstract
-  must be limited to one paragraph.
+Deep reinforcement learning has achieved substantial performance gains over classical control approaches.
+Yet, a central challenge to learning in real-world applications is acquiring costly samples.
+Kolmogorov-Arnold Networks are a recently proposed architecture, that can particularly well learn physical relationships for control problems, with significantly higher parameter efficiency and interpretability when compared to Multi-Layer-Perceptron architectures.
+In this work, we systematically study sample-efficiency using computational experiments, covering the Feynman dataset and the Gymnasium RL benchmark.
+The results show, that similar performance can be achieved with 40\% less samples using the Kolmogorov-Arnold architecture, and that relative performance improvements up to 50\% during the training process.
+The observed gains are robust to varying levels of noise in rewards.
+These results highlight the potential of the Kolmogorov-Arnold architectures for more sample-efficient reinforcement learning.
 \end{abstract}
-
-
 
 
 
@@ -120,13 +114,13 @@
 \section{Introduction}
 
 %%% PARAGRAPH 01: RL-based control (using Neural Networks) is great and outperforms
-Reinforcement learning (RL) has become a powerful paradigm for learning feedback controllers directly from interaction with a system \cite{sutton2018reinforcement}.
-Classical control methods, including model-based and model predictive control, can be highly effective when accurate dynamics models and tractable objectives are available, but these assumptions are often difficult to satisfy in complex, nonlinear, or noisy environments~\cite{kiumarsi2017optimal}.
-Value-based RL methods such as Q-learning instead learn an action-value function that estimates the long-term return of taking an action in a given state \cite{watkins1992qlearning}.
-Deep RL extends this idea by replacing tabular value functions or policies with neural networks, enabling controllers to approximate high-dimensional and nonlinear state-action relationships \cite{mnih2015humanlevel,schulman2017ppo}.
+Reinforcement learning (RL) has become a powerful paradigm for learning feedback controllers directly from system interactions~\cite{sutton2018reinforcement}.
+Classical control methods, including model-based and model predictive control, can be highly effective when accurate models dynamics and tractable objectives are available, but these assumptions are often difficult to satisfy in complex, nonlinear, and noisy environments~\cite{kiumarsi2017optimal}.
+Value-based RL methods such as Q-learning instead learn an action-value function that estimates the long-term return of taking an action in a given state~\cite{watkins1992qlearning}.
+Deep RL extends this idea by replacing tabular value functions or policies with neural networks, enabling controllers to approximate high-dimensional and nonlinear state-action relationships~\cite{mnih2015humanlevel,schulman2017ppo}.
 This flexibility has made neural RL attractive for control tasks in robotics, networking, and other cyber-physical systems where the controller must cope with sensor noise, nonlinear dynamics, delayed effects, and changing operating conditions.
 
-%%% PARAGRAPH 02: What are challenges to RL-based control? (please check and change grammar)
+%%% PARAGRAPH 02: What are challenges to RL-based control?
 A central challenge for RL in control is the need to balance exploration and exploitation while learning from limited interactions~\cite{Zhangetal2021}.
 Additional challenges include designing reward functions that encode the intended behavior and maintaining stability while the data distribution changes with the policy~\cite{eschmann2021reward}.
 For safety-critical control, an additional limitation is that standard neural policies are difficult to inspect, verify, or translate into controller equations~\cite{Lietal2025}.
@@ -135,9 +129,9 @@ The most central practical challenge is that learning a useful controller can re
 Each sample in a control problem is not merely a labeled example, but a transition generated by running a policy in a simulator, a digital twin, or a physical system~\cite{tao2022digital}.
 When running an RL environment is computationally expensive, slow, unsafe, or subject to hardware wear, sample inefficiency becomes a practical barrier to deployment.
 
-%%% PARAGARAPH 03: TALK ABOUT KOLOMOGOROV ANROLD NETWORKS (DONT CHANGE THIS PARAGRAPH)
+%%% PARAGARAPH 03: TALK ABOUT KOLOMOGOROV ANROLD NETWORKS
 Kolmogorov-Arnold Networks (KANs) are a recently proposed class of neural network architectures inspired by the Kolmogorov-Arnold representation theorem, which states that any continuous multivariate function can be expressed as a finite superposition of univariate functions and summation operators \cite{kolmogorov1956representation, arnold1963representation}.
-Unlike traditional neural networks such as multilayer perceptrons (MLPs), which rely on linear transformations followed by fixed nonlinear activation functions, KANs replace scalar weights with learnable univariate functions defined along the edges of the network \cite{liu2024kan}.
+Unlike traditional neural networks such as multilayer perceptrons (MLPs), which rely on linear transformations followed by fixed nonlinear activation functions, KANs replace scalar weights with learnable univariate functions defined along the edges of the network and require exactly two hidden layers~\cite{liu2024kan}.
 This formulation allows the model to directly learn functional relationships between variables rather than approximating them only through weighted sums of fixed activation functions.
 As a result, KANs offer improved interpretability and significantly higher parameter efficiency while retaining strong approximation capabilities.
 Recently, KANs have gained considerable attention, particularly in areas where understanding the underlying functional structure of the data is important \cite{somvanshi2025survey,essahraui2025kanoverview,sohail2024training}.
@@ -153,8 +147,9 @@ Yet, in more systematic low-data comparisons, MLPs with individualized learnable
 These mixed findings, together with the absence of a systematic assessment of sample efficiency in RL-based control applications, motivate this work: it remains unclear when KANs improve sample efficiency over MLPs under comparable experimental budgets.
 
 %%% PARAGRAPH 05: MOTIVATION FOR RESEARCH QUESTION
-In this work, we study the sample-efficiency capabilities of KANs relative to MLPs in RL-based control.
-We focus on the practical setting in which interaction data are expensive and compare architectures under controlled sample budgets, parameter budgets, and training protocols.
+Using the Feynman dataset (a collection of physical equations) and the Gymnasium RL bench (a collection of RL environments)~\citep{towers2026gymnasium} we systematically assess sample efficiency of KANs as function approximators when compared to MLPs. 
+Our results show that 40\% less samples are required to achieve similar performance, and that 50\% reward gains can be achieved during the training process using KANs.  
+
 
 
 
@@ -203,52 +198,85 @@ This component-level evidence reinforces the need to distinguish where KANs are 
 \section{Experiments}
 
 \subsection{Feynman Sample-Efficiency Benchmark}
-
 The first experiment tests the core approximation question in a controlled supervised setting, before moving to full RL control.
 If KANs are more sample-efficient because their edge functions provide a useful inductive bias, this advantage should already be visible when learning smooth physical laws from few samples.
 For this purpose, we follow Liu et al. and use the Feynman benchmark, which contains closed-form physics equations derived from the Feynman Lectures and related symbolic-regression benchmarks \cite{liu2024kan,udrescu2020aifeynman,udrescu2020aifeynman2}.
-We use the unit-free subset considered by Liu et al. and include all equations in that subset, including both univariate and multivariate functions.
-This choice is useful because univariate equations provide a sanity check for spline-based edge learning, while multivariate equations test whether KANs retain any sample-efficiency advantage when the model must learn interactions between variables.
-To prevent the easier univariate cases from dominating the conclusion, we report aggregate results both over the full benchmark and stratified by input dimension.
+Each benchmark task is a regression problem, where each Feynman Lecture equation is independently sampled to generate training sets (varying size) and test sets (fixed size).
+The primary evaluation metric is root mean squared error (RMSE).
 
-Each benchmark task is a regression problem of the form $y=f_j(x_1,\ldots,x_{d_j})$, where $f_j$ is a known analytic equation and each input coordinate is sampled from the interval specified by the benchmark.
-For every equation, we independently sample a training set and a test set from the same input domain.
-The test set size is fixed at $N_{\mathrm{test}}=1000$ points.
-The training set size is varied over $N_{\mathrm{train}}\in\{10,20,50,100,200,500,1000\}$, which yields a learning curve for each architecture and equation.
-All results are averaged over multiple random train/test draws and model initializations.
+\subsection{RL Gymnasium Benchmark}
+The second experiment studies the sample efficiency of KANs and MLPs in the context of DeepRL for control.
+For this purpose, we use the RL benchmark "\textit{Gymnasium}"~\citep{towers2026gymnasium}, which contains a multitude of different physics environment to study RL.
+We chose the subset of "Classic Control" as state variables are used for learning, rather than image or video streams, as KANs are known to be particularly suitable to learn physical relationships.
+Furthermore, we chose the proximal policy optimization (PPO) learning strategy, as it is a standard, robust policy-gradient method for continous and discrete control problems~\citep{schulman2017proximal}.
+Following environments are included in the benchmark:
+"Acrobot-v1", "CartPole-v1", "MountainCar-v0", "MountainCarContinuous-v0", and "Pendulum-v1".
+Each benchmark task provides a comparable learning curve with best rewards achievable (convergence limits) enabling a comparison.
 
-We compare KANs against MLP baselines under matched training protocols and explicitly report model complexity.
-The primary comparison fixes the optimizer, training steps, early-stopping rule, and random seeds across architectures.
-Because KANs and MLPs allocate parameters differently, exact parameter matching is not always the cleanest primary comparison.
-Our main comparison therefore fixes an architecture recipe and training budget, reports trainable parameter counts, and plots error as a function of both training samples and parameters.
-As a robustness check, we additionally include a parameter-matched comparison in which MLP widths are adjusted to match the KAN parameter count as closely as possible.
-This separates sample efficiency from model-size effects without hiding the fact that KAN and MLP parameters have different computational costs.
+\subsection{RL Gymnasium Benchmark With Noised Rewards}
+The third experiment studies the robustness of the sample efficiency gains of KANs over MLPs in the context of DeepRL in control applications, for varying reward noise levels (Gaussian noise with increasing magnitudes).
 
-We evaluate function approximation using complementary regression metrics rather than a single loss.
-The primary metric is root mean squared error (RMSE), which matches the evaluation used in the original KAN Feynman experiments.
-To compare equations with different output scales, we also report normalized RMSE (NRMSE), defined by dividing RMSE by the empirical standard deviation of the test targets.
-We additionally report mean absolute error (MAE), relative $\ell_2$ error, and coefficient of determination ($R^2$).
-We avoid percentage-based metrics such as MAPE because many physics equations can take values near zero or change sign.
-Finally, we summarize sample efficiency by reporting the area under the error-sample curve on a logarithmic sample axis and the smallest training-set size at which a model reaches a target NRMSE threshold.
-
-This experiment is designed to answer three questions.
-First, do KANs reach a given approximation error with fewer samples than MLPs?
-Second, are any gains consistent across equations, or concentrated in a small number of smooth low-dimensional cases?
-Third, do KAN gains remain after controlling for parameter count and training budget?
-These questions directly support the later RL experiments, where environment interactions are expensive and sample efficiency is the central quantity of interest.
-
+\subsection{Comparison and Sample-Efficiency Assessment}
+Different model complexities and training parameters were explored via grid-search to identify optimal performance.
+KAN and MLP models where matched by model complexity measured in number of parameters to ensure a fair comparison.
+Number of training samples (e.g., Feynman samples, or environment episodes) to achieve a certain performance were used to assess the enhanced sample-efficiency of KANs over MLPs.
+Specifically, we compare ReLU and Sigmoid for MLP, and B-Splines and radial base functions (RBF) for KAN networks, to cover a multitude of different function space shapes.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
 
+% - The experiment on the Feynman benchmark (Fig.~\ref{fig:experiment_1_results}) shows gains from 5 samples onwards. Then, the NRMSE improvement increases up to 40\%.
+% - Moreover, KANs fit the benchmark better than MLPs do.
+% - Also, similar NRMSE performance can be achieved using KANs with 60\% less samples when compared to MLPs.
+%
+% - The RL experiment using the Gynmasium benchmark (Fig.~\ref{fig:experiment_2_results}) shows similar results. The different environments have different improvements and sample reducitons, but average shows similar reuslts like previous experiment.
+% - Up to 50\% control performance improvement can be achieved with KANs (when compared to MLPs) during the training process.
+% - the performance improvement grows after few samples and then after its peak of 3000 episodes, shrinks again.
+% - In terms of sample reduction, across experiments, up to 40\% less samples are needed to achieve same performance of MLPs with KANs (at same model complexity).
+% - no major performance differences are observable after great number of samples, then both MLPs and KANs perform similarly well.
+%
+% - The third experiment with noise around reward function demonstrates the robustness of the performance gains of KANs. Across the different noise levels, no significant differences can be observed, just variance of the experiment increased.
+The Feynman benchmark shows a clear low-sample crossover in favor of KANs after 50 training samples (Fig.~\ref{fig:result_exp1}).
+The best KAN family reduces mean NRMSE from 0.200 to 0.163 (at 50 samples) and from 0.127 to 0.060 (at 1000 samples), corresponding to a relative improvement from 13.9\% (at 50 samples) to 49.3\% (at 1000 samples).
+Equivalently, KANs reach several MLP error levels with substantially fewer training samples once the target error is below the early-data regime.
+
+The Gymnasium experiment (Fig.~\ref{fig:result_exp2}) reproduces the same pattern in control applications, although the size of the effect depends strongly on the environment.
+Across Acrobot, CartPole, MountainCar, and Pendulum, the advantage of KANs peak at about 41.6\% (2250 episodes) and then narrows to about 7.5\% (final checkpoint) on average.
+The sample-reduction curves show that that similar performances can be achieved with 40\% less samples using KANs.
+After many training episodes, both architectures approach similar return levels, demonstrating the faster learning ability of KANs over MLPS.
+%
+The noisy-reward benchmark indicates that these gains are not an artifact of clean reward feedback.
+Adding Gaussian reward noise increases variance, but the KAN and MLP comparison keeps the same qualitative shape across the tested noise scales (Fig.~\ref{fig:result_exp3}).
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/Figure_X1_2.pdf}
+    \caption{Experiment 1: Sample Efficiency in Feynman Benchmark.}
+    \label{fig:result_exp1}
+\end{figure}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/Figure_X2_2.pdf}
+    \caption{Experiment 2: Sample Efficiency in Gymnasium Benchmark.}
+    \label{fig:result_exp2}
+\end{figure}
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Conclusion}
+\section{Discussion}
 
-
+% Results are encouraging further experiments with more complex control and robotics problems.
+% Results are also encouraging hybrid learning strategies, where computationally-less efficient KANs are used to learn as much as possible from few observed samples, and later on distilled to MLP for faster inference.
+Overall, the experiments support the claim that KAN architectures can improve sample efficiency when the task contains smooth low-dimensional structures.
+The strongest gains occur in the early and middle part of training, which is the regime that matters most when simulator calls, measurements, or hardware trials are expensive.
+The effect is not uniform across tasks, and the final returns are often close once both model architectures receive many samples.
+The results suggest that KANs can be useful for low-data control problems.
+A practical route for deployment is to train with KANs during the scarce-sample phase and then distill the learned policy into a cheaper MLP when inference cost is the bottleneck.
+%The present study is limited to the Feynman benchmark and low-dimensional Gymnasium Classic Control tasks, so larger continuous-control, robotic, and safety-critical benchmarks remain necessary.
+%Future work should separate actor-only and critic-only effects, test stricter parameter matching, and measure wall-clock cost alongside environment-sample efficiency.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,20 +300,23 @@ These questions directly support the later RL experiments, where environment int
 \clearpage
 \appendix
 
-\section{Feynman Benchmark Details}
+\section{Experiment Setup Details}
 
-\subsection{Dataset Construction}
+\subsection{Feynman Benchmark Details}
+
+\subsubsection{Dataset Construction}
 
 The Feynman benchmark consists of analytic equations with named input variables and prescribed sampling ranges \cite{udrescu2020aifeynman,udrescu2020aifeynman2}.
-Following Liu et al., we use the `Feynman\_no\_units' subset and keep all equations for which finite train and test samples can be generated \cite{liu2024kan}.
+Following Liu et al., we use the `Feynman\_no\_units' subset and keep all equations for which finite train and test samples can be generated \cite{liu2024kan}
 This includes univariate equations, which are reported separately from multivariate equations in the aggregate analysis.
+We use the unit-free subset, because univariate equations provide a sanity check for spline-based edge learning, while multivariate equations test whether KANs retain any sample-efficiency advantage when the model must learn interactions between variables.
 For each equation $f_j:\mathbb{R}^{d_j}\rightarrow\mathbb{R}$, we generate supervised examples by sampling $x\sim\mathcal{U}(\mathcal{D}_j)$ and evaluating $y=f_j(x)$.
 The domain $\mathcal{D}_j$ is the Cartesian product of the variable intervals specified by the benchmark.
 Training and test sets are sampled independently for every random seed.
 If an equation is undefined at a sampled point or returns a non-finite value, we reject the point and resample until the desired split size is reached.
 This rejection step is applied before normalization and is identical for all models.
 
-\subsection{Sample-Efficiency Protocol}
+\subsubsection{Sample-Efficiency Protocol}
 
 For each equation, we fix $N_{\mathrm{test}}=1000$.
 We vary the training size over
@@ -298,7 +329,7 @@ Inputs are standardized using the mean and standard deviation of the training se
 Targets may be standardized during optimization, but all reported metrics are computed after transforming predictions back to the original target scale.
 No information from the test set is used for model selection or normalization.
 
-\subsection{Model Comparisons}
+\subsubsection{Model Comparisons}
 
 The main comparison includes KAN and MLP regressors trained with the same optimizer, loss, maximum number of update steps, batch size, and random seeds.
 For KANs, we use spline-based edge functions as in the original KAN implementation, with spline order and grid size fixed across equations unless otherwise stated.
@@ -309,7 +340,7 @@ A secondary parameter-matched setting chooses MLP widths so that the number of t
 When exact matching is impossible, we report the parameter ratio alongside the result.
 This protocol avoids treating parameter count as interchangeable across architectures while still checking whether apparent sample-efficiency gains are explained by model size.
 
-\subsection{KAN Implementations}
+\subsubsection{KAN Implementations}
 
 To validate KAN baselines, we use the public All-KAN implementation repository as the implementation source for several KAN variants.
 The implementation collection is organized around the original KAN model and the KAN 2.0 scientific-discovery framework \cite{liu2024kan,liu2024kan2}.
@@ -317,7 +348,7 @@ Our experiment wrapper currently exposes EfficientKAN for B-spline KANs, FastKAN
 The All-KAN repository also includes recent variants such as FC-KAN, PRKAN, and AF-KAN, which provide implementation references for future ablations \cite{ta2024fc,ta2025prkan,ta2025afkan}.
 All implementation choices are fixed across sample budgets within an experiment, and each reported result specifies the backend used to instantiate the KAN model.
 
-\subsection{Metrics}
+\subsubsection{Metrics}
 
 Let $\{(x_i,y_i)\}_{i=1}^{N_{\mathrm{test}}}$ be the test set for one equation and let $\hat{y}_i$ be the model prediction.
 We define the test-set mean and standard deviation as
@@ -351,7 +382,7 @@ RMSE and MAE preserve the physical scale of each equation.
 NRMSE and relative $\ell_2$ error allow comparisons across equations with different output magnitudes.
 $R^2$ reports explained variance and is easier to interpret when communicating whether a model has learned the dominant structure of the function.
 
-\subsection{Aggregate Reporting}
+\subsubsection{Aggregate Reporting}
 
 For each equation and training size, we report the mean and standard error over seeds.
 Across equations, we report the median and interquartile range rather than only the mean, since a small number of high-scale or ill-conditioned equations can dominate aggregate errors.
@@ -361,6 +392,69 @@ As scalar summaries, we report the area under the error-sample curve and the sam
 The area under the error-sample curve is computed by trapezoidal integration of NRMSE over $\log N_{\mathrm{train}}$, where lower values indicate better sample efficiency.
 The threshold $N_\tau$ is the smallest training-set size for which the median NRMSE falls below a chosen target $\tau$.
 If no method reaches $\tau$, we report $N_\tau>1000$.
+
+\subsection{RL Gymnasium Benchmark Details}
+
+\subsubsection{Benchmark and Agents}
+
+We use the Gymnasium Classic Control environments CartPole-v1, Acrobot-v1, MountainCar-v0, MountainCarContinuous-v0, and Pendulum-v1.
+The observations are low-dimensional state vectors, which matches the intended use of KAN edge functions for smooth physical relationships.
+The runner supports both discrete and continuous action spaces, using categorical policies for discrete actions and diagonal Gaussian policies with tanh squashing for continuous actions.
+For continuous actions, the trainable log standard deviation is initialized to $0$.
+
+\subsubsection{Model Sweep}
+
+The main comparison uses full actor-critic agents, so the actor and critic are both KANs for KAN runs and both MLPs for MLP runs.
+The KAN sweep includes B-spline KANs and Gaussian RBF KANs with hidden dimensions $[2]$, $[4]$, $[8]$, $[4,4]$, $[8,8]$, and $[16,16]$.
+The MLP sweep includes ReLU and sigmoid MLPs with hidden dimensions $[16]$, $[32]$, $[64]$, $[32,32]$, and $[64,64]$.
+The KAN settings use grid size $5$, spline order $3$, grid range $[-1.5,1.5]$, and SiLU as the base activation.
+The runner records actor, critic, and total trainable parameter counts for every checkpoint.
+% TALK ABOUT IMPLEMENTATION, HOW IS MLP implemented, how KAN; what python package used?
+% Justify model sweep in one sentence: we tested models of different complexity, finding that higher complexities do not yield benefits
+
+\subsubsection{PPO Training and Evaluation}
+
+Each training job collects complete episodes, computes generalized advantage estimates with $\gamma=0.99$ and $\lambda=0.95$, and applies clipped PPO updates with clip parameter $0.20$.
+The optimizer is Adam with learning rate $3\times10^{-4}$, no weight decay, entropy coefficient $0.01$, value coefficient $0.50$, four PPO epochs per update, and gradient clipping at $0.50$.
+Updates are performed after batches of five episodes in the full protocol.
+Training seeds are paired across model families, and evaluation uses deterministic actions with five evaluation episodes per checkpoint.
+Discrete policies are evaluated with the action of maximum logit, while continuous policies are evaluated with the mean action.
+The result file used for the paper contains ten paired random seeds and learning curves up to 6000 training episodes.
+During training, episodes, cumulative environment steps, recent training returns, deterministic evaluation returns, episode lengths, PPO losses, runtime, and parameter counts are logged.
+% Justify training in one sentence: say we tried to optimize the hyperparameter of training process via grid search, to enable both MLP and KAN the best possible performance during learning
+
+\subsection{RL Gymnasium Noise Benchmark Details}
+
+\subsubsection{Reward Perturbation}
+
+The noisy benchmark keeps the same Gymnasium environments, PPO update, model sweep, and deterministic clean evaluation protocol as the clean Gymnasium benchmark.
+During training only, each clean reward $r_t$ is replaced by $r_t^{\mathrm{noise}}=r_t+\alpha\epsilon_t$, where $\epsilon_t\sim\mathcal{N}(0,1)$.
+The main sweep uses $\alpha\in\{0,0.25,0.5,1,2,4,7,10\}$ in raw reward units.
+Because noise only enters the rewards used for advantage estimation, the experiment tests robustness to corrupted training feedback rather than robustness to stochastic evaluation.
+
+\clearpage
+\section{Detailed Results}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/Figure_X1_1.pdf}
+    \caption{Experiment 1: Feynman Benchmark Experiment Design.}
+    \label{fig:experiment_1_results}
+\end{figure}
+
+\begin{figure}[!h]
+    \centering
+    \rotatebox{270}{\includegraphics[width=1.5\linewidth]{figures/Figure_X2_1.pdf}}
+    \caption{Experiment 2: DeepRL Gymnasium Experiment Design.}
+    \label{fig:experiment_2_results}
+\end{figure}
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=\linewidth]{figures/Figure_X3_3.pdf}
+    \caption{Experiment 3: Sample Efficiency in Noised Gymnasium Benchmark.}
+    \label{fig:result_exp3}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
